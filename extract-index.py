@@ -21,16 +21,16 @@ source_endpoints = [
      'url': None
    }
  },
- {
-   'name': 'IBET',
-   'brapiUrl': 'https://brapi.ddns.net',
-   'germplasm': {
-     'url': None
-   },
-   'study': {
-     'url': None
-   }
- },
+ # {
+   # 'name': 'IBET',
+   # 'brapiUrl': 'https://brapi.ddns.net',
+   # 'germplasm': {
+     # 'url': None
+   # },
+   # 'study': {
+     # 'url': None
+   # }
+ # },
  {
    'name': 'PIPPA',
    'brapiUrl': 'http://pippa.psb.ugent.be/pippa_experiments',
@@ -61,7 +61,7 @@ class BreedingAPIIterator:
 
   def next(self):
     if self.totalPages is not None and self.page > self.totalPages - 1:
-      return StopIteration
+      raise StopIteration
     else :
       url = self.baseUrl + '?pageSize=' + str(self.pageSize) + '&page=' + str(self.page)
       print('Fetching '+url)
@@ -74,13 +74,13 @@ class BreedingAPIIterator:
       return content['result']['data']
 
 # Extract from source endpoints and index to Elasticsearch
-def extractAndIndex(es, call, pageSize, type, idField):
+def extractAndIndex(es, call, pageSize, doctype, idField):
 
   indexNames=list()
   for endpoint in source_endpoints:
      baseUrl = endpoint['brapiUrl'] + '/brapi/v1/' + call
      print('Extracting '+endpoint['name'])
-     indexName = (type + '-' + endpoint['name']).lower()
+     indexName = (doctype + '-' + endpoint['name']).lower()
      indexNames.append(indexName)
      if es.indices.exists(indexName):
        es.indices.delete(index = indexName)
@@ -88,26 +88,27 @@ def extractAndIndex(es, call, pageSize, type, idField):
      # For each page of data
      data = list()
      for page in BreedingAPIIterator(baseUrl, pageSize):
-
+       
        # For each entry in page
        for entry in page:
+         #print(entry)
          document = dict(entry)
          # Add source endpoint name in entry
          document['sourceName'] = endpoint['name']
 
          # Add website url from source endpoint if possible
-         resourceUrl = endpoint[type]['url']
+         resourceUrl = endpoint[doctype]['url']
          if resourceUrl is not None:
            document['url'] = resourceUrl + document[idField]
 
-         data.append(indexHeader(indexName, type, document[idField]))
+         data.append(indexHeader(indexName, doctype, document[idField]))
          data.append(document)
-
+     
      print('Bulk indexing ' + indexName)
      es.bulk(index = indexName, body = data, refresh = True)
 
   # Create an alias to group all indices under one unique name
-  es.indices.put_alias(index = indexNames, name = type + '-group0')
+  es.indices.put_alias(index = indexNames, name = doctype + '-group0')
 
   print('Done.')
 
