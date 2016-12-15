@@ -50,9 +50,9 @@ def indexHeader(indexName, type, id):
 
 # Iterator class used to get all pages from a Breeding API call
 class BreedingAPIIterator:
-  def __init__(self, baseUrl):
+  def __init__(self, baseUrl, pageSize):
     self.page = 0
-    self.pageSize = 1000
+    self.pageSize = pageSize
     self.totalPages = None
     self.baseUrl = baseUrl
 
@@ -60,23 +60,26 @@ class BreedingAPIIterator:
     return self
 
   def next(self):
-    self.page += 1
-    if self.totalPages is not None and self.page < totalPages - 1:
+    if self.totalPages is not None and self.page > self.totalPages - 1:
       return StopIteration
     else :
       url = self.baseUrl + '?pageSize=' + str(self.pageSize) + '&page=' + str(self.page)
-      response = requests.get(url)
+      print('Fetching '+url)
+      response = requests.get(url, timeout = None)
       content = json.loads(response.content.decode('utf-8'))
+      print(content['metadata'])
       self.totalPages = content['metadata']['pagination']['totalPages']
+      print(self.page, self.totalPages)
+      self.page += 1
       return content['result']['data']
 
 # Extract from source endpoints and index to Elasticsearch
-def extractAndIndex(es, call, type, idField):
+def extractAndIndex(es, call, pageSize, type, idField):
 
   indexNames=list()
   for endpoint in source_endpoints:
      baseUrl = endpoint['brapiUrl'] + '/brapi/v1/' + call
-     print('Extracting '+baseUrl)
+     print('Extracting '+endpoint['name'])
      indexName = (type + '-' + endpoint['name']).lower()
      indexNames.append(indexName)
      if es.indices.exists(indexName):
@@ -84,21 +87,21 @@ def extractAndIndex(es, call, type, idField):
 
      # For each page of data
      data = list()
-     for objectsInPage in BreedingAPIIterator(baseUrl):
+     for page in BreedingAPIIterator(baseUrl, pageSize):
 
-       # For each object in page
-       for object in objectsInPage:
-         obj2 = dict(object)
-         # Add source endpoint name in object
-         obj2['sourceName'] = endpoint['name']
+       # For each entry in page
+       for entry in page:
+         document = dict(entry)
+         # Add source endpoint name in entry
+         document['sourceName'] = endpoint['name']
 
          # Add website url from source endpoint if possible
          resourceUrl = endpoint[type]['url']
          if resourceUrl is not None:
-           obj2['url'] = resourceUrl + obj2[idField]
+           document['url'] = resourceUrl + document[idField]
 
-         data.append(indexHeader(indexName, type, obj2[idField]))
-         data.append(object)
+         data.append(indexHeader(indexName, type, document[idField]))
+         data.append(document)
 
      print('Bulk indexing ' + indexName)
      es.bulk(index = indexName, body = data, refresh = True)
@@ -111,8 +114,8 @@ def extractAndIndex(es, call, type, idField):
 
 def main():
     es = Elasticsearch(hosts = [HOST])
-    extractAndIndex(es, 'studies-search', 'study', 'studyDbId')
-    extractAndIndex(es, 'germplasm-search', 'germplasm', 'germplasmDbId')
+    extractAndIndex(es, 'studies-search', 10, 'study', 'studyDbId')
+    extractAndIndex(es, 'germplasm-search', 1000, 'germplasm', 'germplasmDbId')
 
 if __name__ == '__main__':
     main()
