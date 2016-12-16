@@ -1,0 +1,53 @@
+{
+  "endpoints": [
+    {
+      "name": "GnpIS",
+      "brapiUrl": "http://localhost:8080/GnpISCore-srvidx",
+      "germplasm": "https://urgi.versailles.inra.fr/siregal/siregal/card.do?dbName=common&className=genres.accession.AccessionImpl&id=",
+      "study": null,
+      "active": false
+    },
+    {
+      "name": "WUR",
+      "brapiUrl": "http://localhost:8080/webapi/tomato",
+      "germplasm": "https://www.eu-sol.wur.nl/passport/SelectAccessionByAccessionID.do?accessionID=",
+      "study": null,
+      "active": true
+    },
+    {
+      "name": "IBET",
+      "brapiUrl": "https://brapi.ddns.net",
+      "germplasm": null,
+      "study": null,
+      "active": false
+     },
+    {
+      "name": "PIPPA",
+      "brapiUrl": "http://pippa.psb.ugent.be/pippa_experiments",
+      "germplasm": null,
+      "study": null,
+      "active": true
+    }
+  ],
+  "elasticSearch": {
+      "host": "127.0.0.1",
+      "port": 9200
+  },
+  "file_paths": {
+    "institute_files": "C:\\Users\\papou001\\git\\BrAPI-extract-index-prototype"
+  },
+  "calls": [
+    {
+      "id": "germplasm-search",
+      "idField": "germplasmDbId",
+      "doctype": "germplasm",
+      "pageSize": 1000
+    },
+    {
+      "id": "studies-search",
+      "idField": "studyDbId",
+      "doctype": "study",
+      "pageSize": 10
+    }
+  ]
+}
