@@ -9,10 +9,10 @@
     },
     {
       "name": "WUR",
-      "brapiUrl": "http://localhost:8080/webapi/tomato",
+      "brapiUrl": "http://192.168.6.148:8080/webapi/tomato",
       "germplasm": "https://www.eu-sol.wur.nl/passport/SelectAccessionByAccessionID.do?accessionID=",
       "study": null,
-      "active": true
+      "active": false
     },
     {
       "name": "IBET",
@@ -34,7 +34,7 @@
       "port": 9200
   },
   "file_paths": {
-    "institute_files": "C:\\Users\\papou001\\git\\BrAPI-extract-index-prototype"
+    "institute_files": "."
   },
   "calls": [
     {
