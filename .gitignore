@@ -2,10 +2,7 @@
 .idea/
 
 # institution index folders
-WUR/
-PIPPA/
-GnpIS/
-iBET/
+./data
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

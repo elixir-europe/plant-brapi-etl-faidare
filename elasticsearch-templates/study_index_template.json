@@ -1,5 +1,5 @@
 {
-    "template": "study*",
+    "template": "*_study*",
     "mappings": {
         "study": {
             "properties": {

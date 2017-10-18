@@ -1,0 +1,135 @@
+# Transforms BrAPI extracted JSON into JSON-LD (if it is not already json-ld)
+# 1. Add generated PUI for each entities if not already present
+# 2. Add @type annotation if not already present
+# 3. Add @context annotation
+
+import functools
+import json
+import os
+import re
+import urllib
+
+from etl.common.utils import get_file_path, get_folder_path, join_url_path, pool_worker
+
+
+# Add entity PUI if not present (ex: studyPUI, germplasmPUI, observationUnitPUI, etc.)
+# A PUI is generated using the following template: '<uri base>/{entity name}/{id}'
+# (ex: https://urgi.versailles.inra.fr/ws/webresources/brapi/v1/variables/GNPISO_1:0000002)
+def add_pui(uri_base, entity_metadata, data, flat_entity=False):
+    if '@id' not in data or flat_entity:
+        pui_field = entity_metadata['pui']
+        id_field = entity_metadata['id']
+        if pui_field not in data:
+            id = urllib.quote_plus(data[id_field].encode('utf-8'))
+            data[pui_field] = join_url_path(uri_base, entity_metadata['brapi_name'], id)
+        if not flat_entity:
+            data['@id'] = data[pui_field]
+            del data[pui_field]
+
+
+# Get dict from entity name to absolute path of json context file
+def get_jsonld_contexts(base_dir, config):
+    jsonld_contexts = dict()
+    for entity_name in config['entities']:
+        if '@context' in config['entities'][entity_name]:
+            jsonld_contexts[entity_name] = get_file_path([base_dir, config['entities'][entity_name]['@context']])
+    return jsonld_contexts
+
+
+# Add jsonld annotation if not already present
+def add_jsonld(uri_base, entities, entity_name, data):
+    entity_metadata = entities[entity_name]
+    data['@type'] = entity_metadata['@type']
+    if '@context' in entity_metadata:
+        data['@context'] = entity_metadata['@context']
+
+    add_pui(uri_base, entity_metadata, data)
+
+    # Entities referenced by their id in an other entity (ex: observationUnit.studyDbId)
+    if 'flat_entities' in entity_metadata:
+        flat_entities = entity_metadata['flat_entities']
+        for entity_name in flat_entities:
+            add_pui(uri_base, entities[entity_name], data, flat_entity=True)
+
+    # Nested JSON objects
+    if 'nested_entities' in entity_metadata:
+        nested_entities = entity_metadata['nested_entities']
+        for entity_name in nested_entities:
+            path = entities[entity_name]['brapi_name']
+            sub_object = data[path]
+            if isinstance(sub_object, list):
+                for o in sub_object:
+                    add_jsonld(uri_base, entities, entity_name, o)
+            else:
+                add_jsonld(uri_base, entities, entity_name, sub_object)
+
+
+def transform_to_jsonld(options):
+    entity_add_jsonld, json_path, jsonld_path = options
+
+    data_list = []
+    with open(json_path, 'r') as json_file:
+        for line in json_file:
+            data = json.loads(line)
+
+            # Annotate json object with JSON-LD's @id, @context and @type
+            entity_add_jsonld(data)
+            data_list.append(data)
+
+    # Write to JSON-LD file
+    with open(jsonld_path, 'a') as jsonld_file:
+        json.dump(data_list, jsonld_file)
+        jsonld_file.write('\n')
+
+
+def transform_folder(institution_add_jsonld, json_dir, jsonld_dir):
+    print('Transforming JSON from "{}" \n\tto JSON-LD in "{}"'.format(json_dir, jsonld_dir))
+
+    # List of options
+    options = list()
+    for file_name in os.listdir(json_dir):
+        matches = re.search('(\D+)(\d+).json', file_name)
+        if matches:
+            (entity_name, index) = matches.groups()
+
+            src_path = get_file_path([json_dir, entity_name], ext=str(index) + '.json')
+            dest_path = get_file_path([jsonld_dir, entity_name], ext=str(index) + '.jsonld')
+
+            # Partial function application
+            entity_add_jsonld = functools.partial(institution_add_jsonld, entity_name)
+
+            options.append((entity_add_jsonld, src_path, dest_path))
+
+    # Run transform_to_jsonld on a thread pool
+    pool_worker(transform_to_jsonld, options)
+
+
+def main(config):
+    print
+    entities = config['jsonld_entities']
+    for entity_name in entities:
+        entities[entity_name]['id'] = entity_name + 'DbId'
+        entities[entity_name]['pui'] = entity_name + 'PUI'
+
+    json_dir = get_folder_path([config['working_dir'], 'json'])
+    if not os.path.exists(json_dir):
+        raise Exception('No json folder found in {}'.format(json_dir))
+    jsonld_dir = get_folder_path([config['working_dir'], 'json-ld'], recreate=True)
+
+    institutions = config['institutions']
+    for institution_name in institutions:
+        institution = institutions[institution_name]
+        if not institution['active']:
+            continue
+        institution_json_dir = get_folder_path([json_dir, institution])
+        if not os.path.exists(institution_json_dir):
+            continue
+        institution_jsonld_dir = get_folder_path([jsonld_dir, institution], recreate=True)
+
+        # Partial function application
+        uri_base = institution['uri_base'] if 'uri_base' in institution else institution['brapi_url']
+        institution_add_jsonld = functools.partial(add_jsonld, uri_base, entities)
+
+        transform_folder(institution_add_jsonld, institution_json_dir, institution_jsonld_dir)
+
+

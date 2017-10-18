@@ -1,26 +1,22 @@
-Breeding API Elasticsearch indexing prototype
-=========
+Elixir plant Breeding API JSON ETL
+==================================
 
-## I. Preparation
+- **E**xtract BrAPI endpoint.
+- **T**ransform extracted data (into Elasticsearch bulk json, into json-ld, into rdf)
+- **L**oad JSON into Elasticsearch or RDF into a virtuoso
 
-1. Install & launch Elasticsearch 2.3.x
-2. Create indices templates:
+See [`README-elasticsearch.md`](README-elasticsearch.md) for specific details on BrAPI to elasticsearch ETL.
 
-```sh
-python ./create-index-template.py
-```
+See [`README-virtuoso.md`](README-virtuoso.md) for specific details on BrAPI to virtuoso ETL.
 
-## II. Extract & Index
+## I. Script requirements
 
-```sh
-python ./extract-index.py
-```
+- Python version 2.7.x
+- Python dependencies (pip install -r requirements.txt)
 
-## Two-step data fetching and indexing
-The process of creating an index may be broken up into 2 steps: fetching the data and indexing it. Both operations, as well as their combination, require a configuration file.
+## II. Configuration
 
-### Configuration
-The script uses the `host_confg.json` file. 
+The script uses the `config.json` file.
 
 In it, a **BrAPI endpoint** is defined as follows:
 
@@ -28,128 +24,35 @@ In it, a **BrAPI endpoint** is defined as follows:
 "endpoints": [
   {
     "name": "GnpIS",
-    "brapiUrl": "http://localhost:8080/GnpISCore-srvidx",
-    "germplasm": "https://urgi.versailles.inra.fr/siregal/siregal/card.do?dbName=common&className=genres.accession.AccessionImpl&id=",
-    "study": null,
+    "url": "http://localhost:8080/GnpISCore-srvidx",
     "active": false
   }
 ]
 ```
 
-The `name` field serves as a reference for that particular BrAPI endpoint, and can be used as a command line parameter for subsequent fetching or indexing processes.  
-The `germplasm` and `study` fields are optional and may point to a website describing the corresponding resource.  
+The `name` field serves as a reference for that particular BrAPI endpoint, and can be used as a command line parameter for subsequent fetching or indexing processes.
 If `active` is `false`, the endpoint will not be considered for future fetching or re-indexing operations.
-
-The **ElasticSearch** server details are specified as:
-
-```json
-"elasticSearch": {
-    "host": "127.0.0.1",
-    "port": 9200
-}
-```
-
-The calls to be made to *all* BrAPI endpoints marked as `active` are listed under `calls`:
-
-```json
-"calls": [
-  {
-    "id": "germplasm-search",
-    "idField": "germplasmDbId",
-    "doctype": "germplasm",
-    "pageSize": 1000
-  }
-]
-```
-
-The call `id` must be the part of the BrAPI URL defining it, according to the BrAPI specifications.
-The `idField` and `doctype` concern the ElasticSearch indexing configuration. The `pageSize` for calls with large response items (and hence higher response data volume) should be low - for example, 10 response items composing a page worth 500KB of data.
 
 Finally, the path for the fetched data files must be set. This is done as:
 
 ```json
-"file_paths": {
-  "institute_files": "."
-}
+"working_dir": "data"
 ```
 
-The path can be absolute or relative.
+The path can be absolute or relative. It will contain a `json` folder in which extracted data will be stored, a `json-bulk` folder for Elasticsearch JSON bulk files, a `json-ld` folder for JSON-LD files and a `rdf` folder for RDF turtle files.
 
-### Execution
+## III. Execution
 
-* You can view the help output for the reindexing script with:
+The `main.py` script can be used to launch the full BrAPI to elasticsearch or BrAPI to virtuoso ETL. To get the usage help run the following command:
 
 ```sh
-python ./reindex.py
-
-usage: reindex.py [-h] [--institute INSTITUTION] [--task TASK] [--host HOST]
-                  [--port PORT] [--verbose VERBOSE]
-                  [files [files ...]]
-
-Reindex one or more institutions for elasticsearch.
-
-positional arguments:
-  files                 bulk_files or bulk_file_folders
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --institute INSTITUTION, -i INSTITUTION
-                        institutes for which data files should be acquired
-                        (default: all)
-  --task TASK, -t TASK  task to be done: reindex, fetch, bulkindex (default:
-                        reindex, combining both fetch and bulkindex). For
-                        bulkindex, at least one file or folder must be
-                        specified.
-  --host HOST           elasticsearch HTTP gateway host (default: 127.0.0.1)
-  --port PORT, -p PORT  elasticsearch HTTP gateway port (default: 9200)
-  --verbose VERBOSE, -v VERBOSE
-                        process verbosity, on or off
-```
-
-* If no parameters are specified, the script will fetch all data, for each specified and `active` institution and each specified calls.
-
-```sh
-python ./reindex.py
-```
-To the same effect, the `--task reindex` might be specified without any parameters.
-
-* A single institution's data can be fetched with:
-
-```sh
-python ./reindex.py --task fetch --institution [institution]
-```
-
-* The data for all active institutions can be fetched by omitting the `--institution` parameter:
-
-```sh
-python ./reindex.py --task fetch
-```
-
-The data is stored in a folder by the name of the institution, and in one json file per call, under the `institute_files` path.
-
-
-* To bulk index the data, the files or folders with files to be indexed must be provided as script parameters.
-
-For example:
-
-```sh
-python ./reindex.py --task bulkindex WUR
+python2 main.py
 ```
 
 
-```sh
-python ./reindex.py --task bulkindex WUR PIPPA
-```
-
-```sh
-python ./reindex.py --task bulkindex germplasm-search.json
-```
-
-```sh
-python ./reindex.py --task bulkindex WUR\germplasm-search_data.json PIPPA\studies-search_data.json
-```
-
-If the files exist with at least a (very low) minimum size, the indices will be deleted and the file data will be indexed by ElasticSearch.
-The index name is retrieved from the respective file, and for the time being each file is expected to only refer to one ElasticSearch index.
-
+## TODOs
+- BrAPI extract: Optimize BrAPI JSON file size
+- BrAPI extract: Check availability of BrAPI call on an endpoint
+- BrAPI extract: Rollback on BrAPI extract error for an institution
+- ES load: Exhaustive list index template for all document types
 

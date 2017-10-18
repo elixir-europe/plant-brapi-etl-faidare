@@ -1,5 +1,5 @@
 {
-    "template": "germplasm*",
+    "template": "*_germplasm*",
     "mappings": {
         "germplasm": {
             "properties": {
