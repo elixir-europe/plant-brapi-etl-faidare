@@ -1,1 +1,17 @@
-/home/gcornut/git/BrAPI-jsonld/brapi-centric/context/GermplasmAttribute.jsonld
+{
+  "@context": {
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "brapi": "https://brapi.org/rdf/",
+
+    "Germplasm": "brapi:Germplasm",
+    "Attribute": "brapi:Germplasm#Attribute",
+
+    "data": "brapi:hasGermplasmAttribute",
+
+    "attributeDbId": "brapi:hasDatabaseIdentifier",
+    "attributeName": "brapi:hasName",
+    "attributeCode": "brapi:hasCode",
+    "value": "brapi:hasValue",
+    "determinedDate": "brapi:hasDateTime"
+  }
+}

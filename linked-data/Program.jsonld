@@ -1,1 +1,15 @@
-/home/gcornut/git/BrAPI-jsonld/brapi-centric/context/Program.jsonld
+{
+  "@context": {
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "brapi": "https://brapi.org/rdf/",
+
+    "Program": "brapi:Program",
+
+    "programPUI": "@id",
+    "programDbId": "brapi:hasDatabaseIdentifier",
+    "name": "brapi:hasName",
+    "abbreviation": "brapi:hasAbbreviation",
+    "objective": "brapi:hasObjective",
+    "leadPerson": "brapi:hasLeadPerson"
+  }
+}

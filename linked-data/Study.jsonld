@@ -1,1 +1,32 @@
-/home/gcornut/git/BrAPI-jsonld/brapi-centric/context/Study.jsonld
+{
+  "@context": {
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "brapi": "https://brapi.org/rdf/",
+
+    "Study": "brapi:Study",
+    "Trial": "brapi:Trial",
+    "Location": "brapi:Location",
+
+    "studyPUI": "@id",
+    "studyDbId": "brapi:hasDatabaseIdentifier",
+    "studyName": "brapi:hasName",
+    "name": "brapi:hasName",
+    "studyType": "brapi:hasType",
+    "seasons": "brapi:hasSeason",
+    "studyDescription": "brapi:hasDescription",
+    "license": "brapi:hasLicense",
+    "startDate": "brapi:hasStartDate",
+    "endDate": "brapi:hasEndDate",
+    "active": "brapi:isActive",
+
+    "trialPUI": {
+      "@id": "brapi:hasTrial",
+      "@type": "@id"
+    },
+
+    "locationPUI": {
+      "@id": "brapi:hasLocation",
+      "@type": "@id"
+    }
+  }
+}

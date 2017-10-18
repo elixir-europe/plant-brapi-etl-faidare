@@ -1,1 +1,60 @@
-/home/gcornut/git/BrAPI-jsonld/brapi-centric/context/ObservationUnit.jsonld
+{
+  "@context": {
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "brapi": "https://brapi.org/rdf/",
+
+    "Germplasm": "brapi:Germplasm",
+    "Study": "brapi:Study",
+
+    "ObservationUnit": "brapi:ObservationUnit",
+    "Treatment": "brapi:Treatment",
+    "Observation": "brapi:Observation",
+    "ObservationVariable": "brapi:ObservationVariable",
+
+    "observationUnitPUI": "@id",
+    "observationUnitDbId": "brapi:hasDatabaseIdentifier",
+    "observationUnitName": "brapi:hasName",
+    "observationLevel": "brapi:hasObservationLevel",
+    "plotNumber": "brapi:hasPlotNumber",
+    "plantNumber": "brapi:hasPlantNumber",
+    "blockNumber": "brapi:hasBlockNumber",
+    "replicate": "brapi:hasReplicate",
+    "entryType": "brapi:hasEntryType",
+    "entryNumber": "brapi:hasEntryNumber",
+    "X": "brapi:hasX",
+    "Y": "brapi:hasY",
+
+    "observationUnitXref": "brapi:XRef",
+    "id": "brapi:hasDatabaseIdentifier",
+    "source": "brapi:hasSource",
+
+    "germplasmPUI": {
+      "@id": "brapi:hasGermplasm",
+      "@type": "@id"
+    },
+
+    "studyPUI": {
+      "@id": "brapi:hasStudy",
+      "@type": "@id"
+    },
+
+    "treatments": "brapi:hasTreatment",
+    "factor": "brapi:hasFactor",
+    "modality": "brapi:hasModality",
+
+    "observations": "brapi:hasObservation",
+    "observationPUI": "@id",
+    "observationDbId": "brapi:hasDatabaseIdentifier",
+    "season": "brapi:hasSeason",
+    "collector": "brapi:hasCollector",
+    "value": "brapi:hasValue",
+    "observationTimeStamp": "brapi:hasDateTime",
+
+    "observationVariablePUI": {
+      "@id": "brapi:hasVariable",
+      "@type": "@id"
+    }
+
+  }
+}

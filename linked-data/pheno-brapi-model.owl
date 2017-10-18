@@ -1,1 +1,762 @@
-/home/gcornut/git/BrAPI-jsonld/brapi-centric/brapi-model.owl
+<?xml version="1.0"?>
+<rdf:RDF xmlns="https://brapi.org/rdf/"
+     xml:base="https://brapi.org/rdf/"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+    <owl:Ontology rdf:about="https://brapi.org/rdf/">
+        <rdfs:comment>Pheno BrAPI UNOFFICIAL OWL model
+Warning: Will be replaced by an ontology regrouping MIAPPE, MCPD, CropOntology, ect!</rdfs:comment>
+    </owl:Ontology>
+
+
+
+    <!--
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+
+
+
+    <!-- https://brapi.org/rdf/hasGermplasm -->
+
+    <owl:ObjectProperty rdf:about="https://brapi.org/rdf/hasGermplasm">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/ObservationUnit"/>
+        <rdfs:range rdf:resource="https://brapi.org/rdf/Germplasm"/>
+    </owl:ObjectProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasGermplasmAttribute -->
+
+    <owl:ObjectProperty rdf:about="https://brapi.org/rdf/hasGermplasmAttribute">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/Germplasm"/>
+        <rdfs:range rdf:resource="https://brapi.org/rdf/Germplasm#Attribute"/>
+    </owl:ObjectProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasGermplasmDonor -->
+
+    <owl:ObjectProperty rdf:about="https://brapi.org/rdf/hasGermplasmDonor">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/Germplasm"/>
+        <rdfs:range rdf:resource="https://brapi.org/rdf/Germplasm#Donor"/>
+    </owl:ObjectProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasLocation -->
+
+    <owl:ObjectProperty rdf:about="https://brapi.org/rdf/hasLocation">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/Study"/>
+        <rdfs:range rdf:resource="https://brapi.org/rdf/Location"/>
+    </owl:ObjectProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasObservation -->
+
+    <owl:ObjectProperty rdf:about="https://brapi.org/rdf/hasObservation">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/ObservationUnit"/>
+        <rdfs:range rdf:resource="https://brapi.org/rdf/Observation"/>
+    </owl:ObjectProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasProgram -->
+
+    <owl:ObjectProperty rdf:about="https://brapi.org/rdf/hasProgram">
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Study"/>
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Trial"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
+        <rdfs:range rdf:resource="https://brapi.org/rdf/Program"/>
+    </owl:ObjectProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasStudy -->
+
+    <owl:ObjectProperty rdf:about="https://brapi.org/rdf/hasStudy">
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="https://brapi.org/rdf/ObservationUnit"/>
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Study"/>
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Trial"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
+        <rdfs:range rdf:resource="https://brapi.org/rdf/Study"/>
+    </owl:ObjectProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasTreatment -->
+
+    <owl:ObjectProperty rdf:about="https://brapi.org/rdf/hasTreatment">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/ObservationUnit"/>
+        <rdfs:range rdf:resource="https://brapi.org/rdf/Treatment"/>
+    </owl:ObjectProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasTrial -->
+
+    <owl:ObjectProperty rdf:about="https://brapi.org/rdf/hasTrial">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/Study"/>
+        <rdfs:range rdf:resource="https://brapi.org/rdf/Trial"/>
+    </owl:ObjectProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasVariable -->
+
+    <owl:ObjectProperty rdf:about="https://brapi.org/rdf/hasVariable">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/Observation"/>
+        <rdfs:range rdf:resource="https://brapi.org/rdf/ObservationVariable"/>
+    </owl:ObjectProperty>
+
+
+
+    <!-- https://brapi.org/rdf/isDerivedFromGermplam -->
+
+    <owl:ObjectProperty rdf:about="https://brapi.org/rdf/isDerivedFromGermplam">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/Germplasm#Donor"/>
+        <rdfs:range rdf:resource="https://brapi.org/rdf/Germplasm"/>
+    </owl:ObjectProperty>
+
+
+
+    <!--
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+
+
+
+    <!-- https://brapi.org/rdf/hasAbbreviation -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasAbbreviation">
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Location"/>
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Program"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasAccessionNumber -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasAccessionNumber">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/Germplasm"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasAcquisitionDate -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasAcquisitionDate">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/Germplasm"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasAltitude -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasAltitude">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/Location"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasBiologicalStatusOfAccessionCode -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasBiologicalStatusOfAccessionCode">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/Germplasm"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasBlockNumber -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasBlockNumber">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/ObservationUnit"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasCode -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasCode">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/Germplasm#Attribute"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasCollectingOrAcquisitionSourceCode -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasCollectingOrAcquisitionSourceCode">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/Germplasm"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasCollector -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasCollector">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/Observation"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasCountryCode -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasCountryCode">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/Location"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasCountryName -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasCountryName">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/Location"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasCountryOfOriginCode -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasCountryOfOriginCode">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/Germplasm"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasDatabaseIdentifier -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasDatabaseIdentifier">
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Germplasm"/>
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Location"/>
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Observation"/>
+                    <rdf:Description rdf:about="https://brapi.org/rdf/ObservationUnit"/>
+                    <rdf:Description rdf:about="https://brapi.org/rdf/ObservationVariable"/>
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Program"/>
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Study"/>
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Trial"/>
+                    <rdf:Description rdf:about="https://brapi.org/rdf/XRef"/>
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Germplasm#Attribute"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasDateTime -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasDateTime">
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Observation"/>
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Germplasm#Attribute"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasDescription -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasDescription">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/Study"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasEndDate -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasEndDate">
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Study"/>
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Trial"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasEntryNumber -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasEntryNumber">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/ObservationUnit"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasEntryType -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasEntryType">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/ObservationUnit"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasFactor -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasFactor">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/Treatment"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasGenus -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasGenus">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/Germplasm"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasInstituteAdress -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasInstituteAdress">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/Location"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasInstituteCode -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasInstituteCode">
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Germplasm"/>
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Location"/>
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Germplasm#Donor"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasInstituteName -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasInstituteName">
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Germplasm"/>
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Location"/>
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Germplasm#Donor"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasLatitude -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasLatitude">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/Location"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasLeadPerson -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasLeadPerson">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/Program"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasLicense -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasLicense">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/Study"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasLongitude -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasLongitude">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/Location"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasModality -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasModality">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/Treatment"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasName -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasName">
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Location"/>
+                    <rdf:Description rdf:about="https://brapi.org/rdf/ObservationUnit"/>
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Program"/>
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Study"/>
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Trial"/>
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Germplasm#Attribute"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasObjective -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasObjective">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/Program"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasObservationLevel -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasObservationLevel">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/ObservationUnit"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasPlantNumber -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasPlantNumber">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/ObservationUnit"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasPlotNumber -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasPlotNumber">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/ObservationUnit"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasReplicate -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasReplicate">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/ObservationUnit"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasSeason -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasSeason">
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Observation"/>
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Study"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasSource -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasSource">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/XRef"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasSpecies -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasSpecies">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/Germplasm"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasSpeciesAuthority -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasSpeciesAuthority">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/Germplasm"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasStartDate -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasStartDate">
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Study"/>
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Trial"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasSubtaxa -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasSubtaxa">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/Germplasm"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasSubtaxaAuthority -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasSubtaxaAuthority">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/Germplasm"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasType -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasType">
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Location"/>
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Study"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasTypeOfGermplasmStorageCode -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasTypeOfGermplasmStorageCode">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/Germplasm"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasValue -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasValue">
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Observation"/>
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Germplasm#Attribute"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasX -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasX">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/ObservationUnit"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/hasY -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/hasY">
+        <rdfs:domain rdf:resource="https://brapi.org/rdf/ObservationUnit"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://brapi.org/rdf/isActive -->
+
+    <owl:DatatypeProperty rdf:about="https://brapi.org/rdf/isActive">
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Study"/>
+                    <rdf:Description rdf:about="https://brapi.org/rdf/Trial"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!--
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+
+
+
+    <!-- https://brapi.org/rdf/Germplasm -->
+
+    <owl:Class rdf:about="https://brapi.org/rdf/Germplasm"/>
+
+
+
+    <!-- https://brapi.org/rdf/Location -->
+
+    <owl:Class rdf:about="https://brapi.org/rdf/Location"/>
+
+
+
+    <!-- https://brapi.org/rdf/Observation -->
+
+    <owl:Class rdf:about="https://brapi.org/rdf/Observation"/>
+
+
+
+    <!-- https://brapi.org/rdf/ObservationUnit -->
+
+    <owl:Class rdf:about="https://brapi.org/rdf/ObservationUnit">
+        <rdfs:label>Observation unit</rdfs:label>
+    </owl:Class>
+
+
+
+    <!-- https://brapi.org/rdf/ObservationVariable -->
+
+    <owl:Class rdf:about="https://brapi.org/rdf/ObservationVariable">
+        <rdfs:label>Observation variable</rdfs:label>
+    </owl:Class>
+
+
+
+    <!-- https://brapi.org/rdf/Program -->
+
+    <owl:Class rdf:about="https://brapi.org/rdf/Program"/>
+
+
+
+    <!-- https://brapi.org/rdf/Study -->
+
+    <owl:Class rdf:about="https://brapi.org/rdf/Study"/>
+
+
+
+    <!-- https://brapi.org/rdf/Treatment -->
+
+    <owl:Class rdf:about="https://brapi.org/rdf/Treatment"/>
+
+
+
+    <!-- https://brapi.org/rdf/Trial -->
+
+    <owl:Class rdf:about="https://brapi.org/rdf/Trial"/>
+
+
+
+    <!-- https://brapi.org/rdf/XRef -->
+
+    <owl:Class rdf:about="https://brapi.org/rdf/XRef"/>
+
+
+
+    <!-- https://brapi.org/rdf/Germplasm#Attribute -->
+
+    <owl:Class rdf:about="https://brapi.org/rdf/Germplasm#Attribute"/>
+
+
+
+    <!-- https://brapi.org/rdf/Germplasm#Donor -->
+
+    <owl:Class rdf:about="https://brapi.org/rdf/Germplasm#Donor"/>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 4.2.8.20170104-2310) https://github.com/owlcs/owlapi -->

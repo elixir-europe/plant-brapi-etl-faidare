@@ -97,7 +97,13 @@ if __name__ == "__main__":
         config['institutions'] = {args.institution: config['institutions'][args.institution]}
 
     # Replace working dir path with an absolute path
-    config['working_dir'] = get_folder_path([base_dir, config['working_dir']], create=True)
+    if not os.path.exists(config['working_dir']):
+        working_dir = get_folder_path([base_dir, config['working_dir']], create=True)
+        if not os.path.exists(config['working_dir']):
+            raise Exception('Could not find working dir "{}" defined in "{}"'.format(
+                config['working_dir'], config_file_name
+            ))
+        config['working_dir'] = working_dir
 
     # Replace JSON-LD context path with absolute path
     for entity_name in config['jsonld_entities']:

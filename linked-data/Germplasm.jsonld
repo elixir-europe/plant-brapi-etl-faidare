@@ -1,1 +1,47 @@
-/home/gcornut/git/BrAPI-jsonld/brapi-centric/context/Germplasm.jsonld
+{
+  "@context": {
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "brapi": "https://brapi.org/rdf/",
+
+    "Germplasm": "brapi:Germplasm",
+    "Donor": "brapi:Donor",
+
+    "germplasmPUI": "@id",
+    "germplasmDbId": "brapi:hasDatabaseIdentifier",
+    "accessionNumber": "brapi:hasAccessionNumber",
+    "genus": "brapi:hasGenus",
+    "species": "brapi:hasSpecies",
+    "speciesAuthority": "brapi:hasSpeciesAuthority",
+    "subtaxa": "brapi:hasSubtaxa",
+    "subtaxaAuthority": "brapi:hasSubtaxaAuthority",
+    "countryOfOriginCode": "brapi:hasCountryOfOriginCode",
+    "instituteCode": "brapi:hasInstituteCode",
+    "instituteName": "brapi:hasInstituteName",
+    "biologicalStatusOfAccessionCode": "brapi:hasBiologicalStatusOfAccessionCode",
+    "collectingOrAcquisitionSourceCode": "brapi:hasCollectingOrAcquisitionSourceCode",
+    "typeOfGermplasmStorageCode": "brapi:hasTypeOfGermplasmStorageCode",
+    "acquisitionDate": "brapi:hasAcquisitionDate",
+
+    "donors": {
+      "@id": "brapi:hasGermplasmDonor",
+      "@type": "Donor"
+    },
+    "donorAccessionNumber": "brapi:hasAccessionNumber",
+    "donorInstituteCode": "brapi:hasInstituteCode",
+    "donorInstituteName": "brapi:hasInstituteName",
+    "donorGermplasmPUI": {
+      "@id": "brapi:isDerivedFromGermplasm",
+      "@type": "@id"
+    },
+
+    "taxonIds": {
+      "@id": "brapi:hasTaxon",
+      "@type": "@id"
+    },
+    "ncbiTaxon": {
+      "@id": "brapi:hasTaxon",
+      "@type": "@id"
+    }
+
+  }
+}

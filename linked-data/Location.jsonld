@@ -1,1 +1,25 @@
-/home/gcornut/git/BrAPI-jsonld/brapi-centric/context/Location.jsonld
+{
+  "@context": {
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "brapi": "https://brapi.org/rdf/",
+
+    "Location": "brapi:Location",
+
+    "locationPUI": "@id",
+    "locationDbId": "brapi:hasDatabaseIdentifier",
+
+    "name": "brapi:hasName",
+    "abreviation": "brapi:hasAbreviation",
+    "locationType": "brapi:hasType",
+
+    "countryCode": "brapi:hasCountryCode",
+    "countryName": "brapi:hasCountryName",
+
+    "instituteName": "brapi:hasInstituteName",
+    "instituteAdress": "brapi:hasInstituteAdress",
+
+    "latitude": "brapi:hasLatitude",
+    "longitude": "brapi:hasLongitude",
+    "altitude": "brapi:hasAltitude"
+  }
+}

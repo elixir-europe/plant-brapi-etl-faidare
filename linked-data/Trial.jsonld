@@ -1,1 +1,24 @@
-/home/gcornut/git/BrAPI-jsonld/brapi-centric/context/Trial.jsonld
+{
+  "@context": {
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "brapi": "https://brapi.org/rdf/",
+
+    "Trial": "brapi:Trial",
+    "Program": "brapi:Program",
+
+    "trialPUI": "@id",
+    "trialDbId": "brapi:hasDatabaseIdentifier",
+    "trialName": "brapi:hasName",
+    "startDate": "brapi:hasStartDate",
+    "endDate": "brapi:hasEndDate",
+    "active": "brapi:hasActive",
+
+    "programPUI": {
+      "@id": "brapi:hasProgram",
+      "@type": "@id"
+    },
+
+    "studies": "brapi:hasStudy",
+    "studyPUI": "@id"
+  }
+}

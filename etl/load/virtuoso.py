@@ -1,4 +1,3 @@
-import json
 import os
 
 import requests
@@ -8,6 +7,9 @@ from etl.common.utils import get_file_path, get_folder_path, replace_template
 
 
 def delete_graph(virtuoso_config, graph_uri):
+    print('Deleting Virtuoso graph "{}" on "{}"'.format(
+        graph_uri, virtuoso_config['url']
+    ))
     url = virtuoso_config['url']
     auth = HTTPDigestAuth(virtuoso_config['user'], virtuoso_config['password'])
     requests.delete(url, params={'graph-uri': graph_uri}, auth=auth)
