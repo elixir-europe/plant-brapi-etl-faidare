@@ -1,6 +1,5 @@
-# Load json bulk file into elasticsearch
+# Load json bulk files into elasticsearch
 
-import json
 import os
 import re
 import sys
@@ -14,15 +13,14 @@ class BulkException(Exception):
 
 
 # Init Elasticsearch and test connection
-def init_es_client(host, port):
-    address = host + ':' + str(port)
-    es_client = elasticsearch.Elasticsearch(host=host, port=port)
+def init_es_client(url):
+    es_client = elasticsearch.Elasticsearch([url])
     indices_client = elasticsearch.client.IndicesClient(es_client)
     try:
         info = es_client.info()
-        print('Connected to node "{}" of cluster "{}" on "{}"'.format(info['name'], info['cluster_name'], address))
+        print('Connected to node "{}" of cluster "{}" on "{}"'.format(info['name'], info['cluster_name'], url))
     except elasticsearch.exceptions.ConnectionError as e:
-        print('Connection error: Elasticsearch unavailable on "{}".\nPlease check your configuration'.format(address))
+        print('Connection error: Elasticsearch unavailable on "{}".\nPlease check your configuration'.format(url))
         raise e
     return es_client, indices_client
 
@@ -38,11 +36,9 @@ def create_index(indices_client, index):
 
 
 def delete_index(indices_client, index):
-    sys.stdout.write('Deleting index "{}"'.format(index))
     exists = indices_client.exists(index)
-    if not exists:
-        print(': Ignored (non-existent)')
-    else:
+    if exists:
+        sys.stdout.write('Deleting index "{}"'.format(index))
         indices_client.delete(index)
         print(': Ok')
 
@@ -71,8 +67,8 @@ def load_bulk(es_clients, bulk_files, index_name):
 
 
 def load_folder(institution_name, institution_bulk_dir, es_clients, es_options):
-    print('Loading JSON bulk files from "{}" \n\t into elasticsearch "{}:{}"'.format(
-        institution_bulk_dir, es_options['host'], es_options['port']))
+    print('Loading JSON bulk files from "{}" \n\t into elasticsearch "{}"'.format(
+        institution_bulk_dir, es_options['url']))
     es_client, indices_client = es_clients
     bulk_per_index = dict()
     for file_name in os.listdir(institution_bulk_dir):
@@ -104,7 +100,7 @@ def main(config):
     if not os.path.exists(bulk_dir):
         raise Exception('No json bulk folder found in ' + bulk_dir)
     es_options = config['elasticsearch']
-    es_clients = init_es_client(es_options['host'], es_options['port'])
+    es_clients = init_es_client(es_options['url'])
 
     institutions = config['institutions']
     for institution_name in institutions:
@@ -115,4 +111,4 @@ def main(config):
         if not os.path.exists(institution_bulk_dir):
             continue
 
-        load_folder(institution, institution_bulk_dir, es_clients, es_options)
+        load_folder(institution_name, institution_bulk_dir, es_clients, es_options)

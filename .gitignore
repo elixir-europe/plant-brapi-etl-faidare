@@ -2,7 +2,7 @@
 .idea/
 
 # institution index folders
-./data
+/data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

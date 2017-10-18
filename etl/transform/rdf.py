@@ -24,7 +24,7 @@ def transform_to_rdf(options):
 
 
 def transform_folder(jsonld_dir, rdf_dir):
-    print('Transforming JSON from "{}" \n\tto RDF in "{}"'.format(jsonld_dir, rdf_dir))
+    print('Transforming JSON-LD from "{}" \n\tto RDF in "{}"'.format(jsonld_dir, rdf_dir))
 
     options = list()
     for file_name in os.listdir(jsonld_dir):

@@ -121,10 +121,10 @@ def main(config):
         institution = institutions[institution_name]
         if not institution['active']:
             continue
-        institution_json_dir = get_folder_path([json_dir, institution])
+        institution_json_dir = get_folder_path([json_dir, institution_name])
         if not os.path.exists(institution_json_dir):
             continue
-        institution_jsonld_dir = get_folder_path([jsonld_dir, institution], recreate=True)
+        institution_jsonld_dir = get_folder_path([jsonld_dir, institution_name], recreate=True)
 
         # Partial function application
         uri_base = institution['uri_base'] if 'uri_base' in institution else institution['brapi_url']

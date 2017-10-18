@@ -2,8 +2,7 @@
   "working_dir": "data",
   "institutions": {
     "URGI": {
-      "brapi_url": "https://urgi.versailles.inra.fr/E1DfertSn986wm-GnpISCore-srv/brapi/v1/",
-      "uri_base": "https://urgi.versailles.inra.fr/GnpISCore-srv/brapi/v1/",
+      "brapi_url": "https://urgi.versailles.inra.fr/GnpISCore-srv/brapi/v1/",
       "active": true
     },
     "WUR": {
@@ -61,8 +60,7 @@
     }
   },
   "elasticsearch": {
-    "host": "127.0.0.1",
-    "port": 9200,
+    "url": "http://127.0.0.1:9200",
     "index_name_template": "{institution}_{document_type}"
   },
   "virtuoso": {
