@@ -5,11 +5,6 @@ Elixir plant Breeding API JSON ETL
 - **T**ransform extracted data (into Elasticsearch bulk json, into JSON-LD, into RDF)
 - **L**oad JSON into Elasticsearch or RDF into a virtuoso
 
-#### TODOs
-- BrAPI extract: Optimize BrAPI JSON file size
-- BrAPI extract: Check availability of BrAPI call on an endpoint
-- BrAPI extract: Rollback on BrAPI extract error for an institution
-
 ## I. Script requirements
 
 - Python version 2.7.x

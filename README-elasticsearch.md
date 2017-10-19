@@ -2,9 +2,17 @@
 
 ## I. Requirements
 
-1. Install & launch Elasticsearch 2.3.x
-2. (Optionally) Create indices templates
+Software requirements:
 
+- Same requirements as in [README.md](README.md)
+- Elasticsearch 2.3.x
+
+BrAPI endpoint requirements:
+
+- Provide BrAPI calls listed in the `config.json` file under `"brapi_calls"`
+- (Optionally) provide `"url"` field on each BrAPI entity
+
+Before indexing into Elasticsearch, you can load the index template from the `elasticsearch-templates` folder in order to validate .
 The index template is used to validate data during indexing. If you do not create the index templates, the data will be indexed without validation, without warning or errors.
 
 To create the index templates:
@@ -13,9 +21,8 @@ To create the index templates:
 python2 create-index-template.py
 ```
 
-TODO:
-- Update this README
 
+**TODO: Update this README with latest ETL modifications**
 
 ## II. Configuration
 
@@ -125,5 +132,3 @@ python ./reindex.py --task bulkindex WUR\germplasm-search_data.json PIPPA\studie
 
 If the files exist with at least a (very low) minimum size, the indices will be deleted and the file data will be indexed by ElasticSearch.
 The index name is retrieved from the respective file, and for the time being each file is expected to only refer to one ElasticSearch index.
-
-
