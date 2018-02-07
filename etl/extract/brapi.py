@@ -5,7 +5,7 @@ import math
 import requests
 
 # Map from entity to brapi call
-from etl.common.utils import get_folder_path, get_file_path, join_url_path, remove_nulls, replace_template
+from etl.common.utils import get_folder_path, get_file_path, join_url_path, remove_null_and_empty, replace_template
 
 
 # Iterator class used to get all pages from a Breeding API call
@@ -82,7 +82,14 @@ def extract_entity(institution, institution_url, output_dir, extracted_entities,
         else:
             call['path'] = institution['observationVariableCall']
 
+    parent_child_ids = None
     if parent:
+        if entity_id_field in parent:
+            parent_child_ids = parent[entity_id_field]
+        else:
+            parent_child_ids = []
+            parent[entity_id_field] = parent_child_ids
+
         call['path'] = replace_template(call['path'], parent)
         if 'param' in call:
             call['param'] = call['param'].copy()
@@ -92,8 +99,9 @@ def extract_entity(institution, institution_url, output_dir, extracted_entities,
     for page in BreedingAPIIterator(institution_url, call):
         for data in page:
             data_id = data[entity_id_field]
-            #data_id = str(data[entity_id_field])
-            #data[entity_id_field] = data_id
+            data['type'] = entity_name
+            if parent_child_ids is not None:
+                parent_child_ids.append(data_id)
             # De-duplication (only save objects that haven't been saved yet)
             if data_id in extracted_entities[entity_name]:
                 continue
@@ -101,15 +109,10 @@ def extract_entity(institution, institution_url, output_dir, extracted_entities,
             data['source'] = institution['name']
 
             # Compact object by removing nulls
-            data = remove_nulls(data)
+            data = remove_null_and_empty(data)
 
             index = int(math.ceil(float(len(extracted_entities[entity_name])) / float(max_line)))
             json_path = get_file_path([output_dir, entity_name], ext=str(index) + '.json', create=True)
-
-            # Append object in json file
-            with open(json_path, 'a') as json_file:
-                json.dump(data, json_file)
-                json_file.write('\n')
 
             # Extract children entities if any
             if 'children' in call:
@@ -117,6 +120,12 @@ def extract_entity(institution, institution_url, output_dir, extracted_entities,
                 for children_entity in children_call:
                     extract_entity(institution, institution_url, output_dir, extracted_entities,
                                    entity_name=children_entity, entity_call=children_call.copy(), parent=data)
+
+            # Append object in json file
+            with open(json_path, 'a') as json_file:
+                json.dump(data, json_file)
+                json_file.write('\n')
+
 
 
 # Extract all supported brapi calls from an endpoint into a json folder

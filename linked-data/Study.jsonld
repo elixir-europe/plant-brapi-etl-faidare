@@ -27,6 +27,11 @@
     "locationPUI": {
       "@id": "brapi:hasLocation",
       "@type": "@id"
+    },
+
+    "germplasmPUI": {
+      "@id": "brapi:hasGermplasm",
+      "@type": "@id"
     }
   }
 }

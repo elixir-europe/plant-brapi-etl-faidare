@@ -12,6 +12,12 @@ import urllib
 from etl.common.utils import get_file_path, get_folder_path, join_url_path, pool_worker
 
 
+# Generate URI
+def generate_uri(uri_base, entity_brapi_name, object_id):
+    encoded_id = urllib.quote_plus(object_id.encode('utf-8'))
+    return join_url_path(uri_base, entity_brapi_name, encoded_id)
+
+
 # Add entity PUI if not present (ex: studyPUI, germplasmPUI, observationUnitPUI, etc.)
 # A PUI is generated using the following template: '<uri base>/{entity name}/{id}'
 # (ex: https://urgi.versailles.inra.fr/ws/webresources/brapi/v1/variables/GNPISO_1:0000002)
@@ -19,9 +25,15 @@ def add_pui(uri_base, entity_metadata, data, flat_entity=False):
     if '@id' not in data or flat_entity:
         pui_field = entity_metadata['pui']
         id_field = entity_metadata['id']
-        if pui_field not in data:
-            id = urllib.quote_plus(data[id_field].encode('utf-8'))
-            data[pui_field] = join_url_path(uri_base, entity_metadata['brapi_name'], id)
+        if pui_field not in data and id_field in data:
+            raw_id = data[id_field]
+            generate_entity_uri = functools.partial(generate_uri, uri_base, entity_metadata['brapi_name'])
+
+            if flat_entity:
+                data_ids = raw_id if isinstance(raw_id, list) else [raw_id]
+                data[pui_field] = map(generate_entity_uri, data_ids)
+            else:
+                data[pui_field] = generate_entity_uri(raw_id)
         if not flat_entity:
             data['@id'] = data[pui_field]
             del data[pui_field]
@@ -102,6 +114,8 @@ def transform_folder(institution_add_jsonld, json_dir, jsonld_dir):
 
     # Run transform_to_jsonld on a thread pool
     pool_worker(transform_to_jsonld, options)
+    # Run synchronously
+    #map(transform_to_jsonld, options)
 
 
 def main(config):
@@ -114,7 +128,7 @@ def main(config):
     json_dir = get_folder_path([config['working_dir'], 'json'])
     if not os.path.exists(json_dir):
         raise Exception('No json folder found in {}'.format(json_dir))
-    jsonld_dir = get_folder_path([config['working_dir'], 'json-ld'], recreate=True)
+    jsonld_dir = get_folder_path([config['working_dir'], 'json-ld'], create=True)
 
     institutions = config['institutions']
     for institution_name in institutions:

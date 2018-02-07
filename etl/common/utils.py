@@ -63,11 +63,11 @@ def pool_worker(fn, array_of_args, nb_thread=default_nb_threads):
 
 
 # Remove None values from list and dict recursively
-def remove_nulls(e):
+def remove_null_and_empty(e):
     if isinstance(e, list):
-        return [remove_nulls(elem) for elem in e if elem]
+        return [remove_null_and_empty(elem) for elem in e if elem and elem != ""]
     elif isinstance(e, dict):
-        return {key: remove_nulls(value) for key, value in e.iteritems() if value}
+        return {key: remove_null_and_empty(value) for key, value in e.iteritems() if value}
     else:
         return e
 
