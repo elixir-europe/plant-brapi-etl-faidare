@@ -1,0 +1,134 @@
+{
+  "working_dir": "data",
+  "institutions": {
+    "URGI": {
+      "brapi_url": "https://urgi.versailles.inra.fr/GnpISCore-srv/brapi/v1/",
+      "active": true
+    },
+    "WUR": {
+      "brapi_url": "http://192.168.6.148:8080/webapi/tomato/brapi/v1/",
+      "active": false
+    },
+    "IBET": {
+      "brapi_url": "https://brapi.ddns.net/brapi/v1/",
+      "active": false
+    },
+    "PIPPA": {
+      "brapi_url": "http://pippa.psb.ugent.be/pippa_experiments/brapi/v1/",
+      "active": false
+    }
+  },
+  "brapi_calls": {
+    "trial": {
+      "method": "GET",
+      "path": "/trials",
+      "page_size": 500
+    },
+    "study": {
+      "method": "POST",
+      "path": "/studies-search",
+      "page_size": 500,
+      "children": {
+        "program": {
+          "method": "GET",
+          "path": "/programs/{programDbId}",
+          "page_size": null
+        },
+        "location": {
+          "method": "GET",
+          "path": "/locations/{locationDbId}",
+          "page_size": null
+        },
+        "observationVariable": {
+          "method": "GET",
+          "path": "/studies/{studyDbId}/observationvariables",
+          "page_size": 500
+        },
+        "observationUnit": {
+          "-method": "GET",
+          "-path": "/studies/{studyDbId}/observationUnits",
+          "method": "POST",
+          "path": "/phenotypes-search",
+          "param": {
+            "studyDbIds": [
+              "{studyDbId}"
+            ]
+          },
+          "page_size": 500
+        },
+        "germplasm": {
+          "method": "GET",
+          "path": "/studies/{studyDbId}/germplasm",
+          "page_size": 500
+        }
+      }
+    }
+  },
+  "elasticsearch": {
+    "url": "http://127.0.0.1:9200",
+    "index_name_template": "{institution}_{document_type}"
+  },
+  "virtuoso": {
+    "user": "dba",
+    "password": "dba",
+    "url": "http://127.0.0.1:8890/sparql-graph-crud-auth",
+    "graph_uri_template": "urn:{institution}:pheno-brapi"
+  },
+  "jsonld_model": "linked-data/pheno-brapi-model.owl",
+  "jsonld_entities": {
+    "program": {
+      "@type": "Program",
+      "@context": "linked-data/Program.jsonld",
+      "brapi_name": "programs"
+    },
+    "trial": {
+      "@type": "Trial",
+      "@context": "linked-data/Trial.jsonld",
+      "brapi_name": "trials",
+      "nested_entities": [
+        "study"
+      ]
+    },
+    "study": {
+      "@type": "Study",
+      "@context": "linked-data/Study.jsonld",
+      "brapi_name": "studies",
+      "flat_entities": [
+        "location"
+      ]
+    },
+    "germplasm": {
+      "@type": "Germplasm",
+      "@context": "linked-data/Germplasm.jsonld",
+      "brapi_name": "germplasm"
+    },
+    "observationUnit": {
+      "@type": "ObservationUnit",
+      "@context": "linked-data/ObservationUnit.jsonld",
+      "brapi_name": "observationUnits",
+      "flat_entities": [
+        "study",
+        "germplasm"
+      ],
+      "nested_entities": [
+        "observation"
+      ]
+    },
+    "observation": {
+      "@type": "Observation",
+      "brapi_name": "observations",
+      "flat_entities": [
+        "observationVariable"
+      ]
+    },
+    "observationVariable": {
+      "@type": "ObservationVariable",
+      "brapi_name": "variables"
+    },
+    "location": {
+      "@type": "Location",
+      "@context": "linked-data/Location.jsonld",
+      "brapi_name": "locations"
+    }
+  }
+}

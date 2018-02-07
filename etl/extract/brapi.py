@@ -34,7 +34,7 @@ class BreedingAPIIterator:
             params.update(self.call['param'])
         params_json = json.dumps(params)
 
-        # print('Fetching {} {}'.format(url, params_json))
+        print('Fetching {} {} {}'.format(self.call['method'], url.encode('utf-8'), params_json))
         response = None
         if self.call['method'] == 'GET':
             response = requests.get(url, params=params, headers=headers)
@@ -65,11 +65,22 @@ class BreedingAPIIterator:
 
 
 # Extract a specific brapi call from an endpoint into a json file
-def extract_entity(institution_name, institution_url, output_dir, extracted_entities, entity_name, entity_call, parent=None):
+def extract_entity(institution, institution_url, output_dir, extracted_entities, entity_name, entity_call, parent=None):
     call = entity_call[entity_name].copy()
     entity_id_field = entity_name + 'DbId'
 
     max_line = 1000
+
+    # TODO: Use calls call autodetect
+    if entity_name == 'study' and 'studyGET' in institution and institution['studyGET']:
+        call['method'] = 'GET'
+
+    # TODO: Fix URGI implementation & autodetect if implemented with calls call
+    if entity_name == 'observationVariable' and 'observationVariableCall' in institution:
+        if institution['observationVariableCall'] is None:
+            return
+        else:
+            call['path'] = institution['observationVariableCall']
 
     if parent:
         call['path'] = replace_template(call['path'], parent)
@@ -81,11 +92,13 @@ def extract_entity(institution_name, institution_url, output_dir, extracted_enti
     for page in BreedingAPIIterator(institution_url, call):
         for data in page:
             data_id = data[entity_id_field]
+            #data_id = str(data[entity_id_field])
+            #data[entity_id_field] = data_id
             # De-duplication (only save objects that haven't been saved yet)
             if data_id in extracted_entities[entity_name]:
                 continue
             extracted_entities[entity_name].add(data_id)
-            data['source'] = institution_name
+            data['source'] = institution['name']
 
             # Compact object by removing nulls
             data = remove_nulls(data)
@@ -102,19 +115,19 @@ def extract_entity(institution_name, institution_url, output_dir, extracted_enti
             if 'children' in call:
                 children_call = call['children']
                 for children_entity in children_call:
-                    extract_entity(institution_name, institution_url, output_dir, extracted_entities,
+                    extract_entity(institution, institution_url, output_dir, extracted_entities,
                                    entity_name=children_entity, entity_call=children_call.copy(), parent=data)
 
 
 # Extract all supported brapi calls from an endpoint into a json folder
-def extract_institution(institution_name, institution_url, entity_names, calls, institution_json_dir):
+def extract_institution(institution, institution_url, entity_names, calls, institution_json_dir):
     print('Extracting endpoint "{}" \n\tinto "{}"'.format(institution_url, institution_json_dir))
 
     # Dict from entity name to set of identifiers of already extracted objects
     extracted_entities = {entity_name: set() for entity_name in entity_names}
 
     for entity_name in calls:
-        extract_entity(institution_name, institution_url, institution_json_dir,
+        extract_entity(institution, institution_url, institution_json_dir,
                        extracted_entities, entity_name, entity_call=calls.copy())
 
 
@@ -133,11 +146,12 @@ def main(config):
     # List all entity names (recursively walking down the calls definitions)
     entity_names = get_entities(calls)
 
-    json_dir = get_folder_path([config['working_dir'], 'json'], recreate=True)
+    json_dir = get_folder_path([config['working_dir'], 'json'], create=True)
     institutions = config['institutions']
     for institution_name in institutions:
         institution = institutions[institution_name]
+        institution['name'] = institution_name
         if not institution['active']:
             continue
         institution_json_dir = get_folder_path([json_dir, institution_name], recreate=True)
-        extract_institution(institution_name, institution['brapi_url'], entity_names, calls, institution_json_dir)
+        extract_institution(institution, institution['brapi_url'], entity_names, calls, institution_json_dir)
