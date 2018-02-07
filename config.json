@@ -1,1 +1,106 @@
-config.json.hackathonfebruary
+{
+  "working_dir": "data",
+  "institutions": {
+    "URGI": {
+      "brapi_url": "https://urgi.versailles.inra.fr/GnpISCore-srv/brapi/v1/",
+      "active": false,
+      "observationVariableCall": "/studies/{studyDbId}/observationvariables"
+    },
+    "WUR": {
+      "-brapi_url": "https://www.eu-sol.wur.nl/webapi/tomato/brapi/v1/",
+      "brapi_url": "http://172.20.10.10:8080/webapi/tomato/brapi/v1/",
+      "active": false,
+      "studyGET": true
+    },
+    "IBET": {
+      "brapi_url": "https://brapi.biodata.pt/brapi/v1/",
+      "active": false,
+      "observationVariableCall": null
+    },
+    "VIB-PIPPA": {
+      "brapi_url": "http://pippa.psb.ugent.be/pippa_experiments/brapi/v1/",
+      "active": true
+    }
+  },
+  "brapi_calls": {
+    "study": {
+      "method": "POST",
+      "path": "/studies-search",
+      "page_size": 500,
+      "children": {
+        "germplasm": {
+          "method": "GET",
+          "path": "/studies/{studyDbId}/germplasm",
+          "page_size": 500
+        }
+      }
+    }
+  },
+  "elasticsearch": {
+    "url": "http://127.0.0.1:9200",
+    "index_name_template": "{institution}_{document_type}"
+  },
+  "virtuoso": {
+    "user": "dba",
+    "password": "dba",
+    "url": "http://127.0.0.1:8890/sparql-graph-crud-auth",
+    "graph_uri_template": "urn:{institution}:pheno-brapi"
+  },
+  "jsonld_model": "linked-data/pheno-brapi-model.owl",
+  "jsonld_entities": {
+    "program": {
+      "@type": "Program",
+      "@context": "linked-data/Program.jsonld",
+      "brapi_name": "programs"
+    },
+    "trial": {
+      "@type": "Trial",
+      "@context": "linked-data/Trial.jsonld",
+      "brapi_name": "trials",
+      "nested_entities": [
+        "study"
+      ]
+    },
+    "study": {
+      "@type": "Study",
+      "@context": "linked-data/Study.jsonld",
+      "brapi_name": "studies",
+      "flat_entities": [
+        "location"
+      ]
+    },
+    "germplasm": {
+      "@type": "Germplasm",
+      "@context": "linked-data/Germplasm.jsonld",
+      "brapi_name": "germplasm"
+    },
+    "observationUnit": {
+      "@type": "ObservationUnit",
+      "@context": "linked-data/ObservationUnit.jsonld",
+      "brapi_name": "observationUnits",
+      "flat_entities": [
+        "study",
+        "germplasm"
+      ],
+      "nested_entities": [
+        "observation"
+      ]
+    },
+    "observation": {
+      "@type": "Observation",
+      "brapi_name": "observations",
+      "flat_entities": [
+        "observationVariable"
+      ]
+    },
+    "observationVariable": {
+      "@type": "ObservationVariable",
+      "brapi_name": "variables"
+    },
+    "location": {
+      "@type": "Location",
+      "@context": "linked-data/Location.jsonld",
+      "brapi_name": "locations"
+    }
+  }
+}
