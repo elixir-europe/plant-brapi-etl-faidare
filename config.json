@@ -4,6 +4,7 @@
     "URGI": {
       "brapi_url": "https://urgi.versailles.inra.fr/GnpISCore-srv/brapi/v1/",
       "active": false,
+      "uri_base": "https://data.inra.fr/brapi/",
       "observationVariableCall": "/studies/{studyDbId}/observationvariables"
     },
     "WUR": {
@@ -66,7 +67,7 @@
       "@context": "linked-data/Study.jsonld",
       "brapi_name": "studies",
       "flat_entities": [
-        "location"
+        "location", "germplasm"
       ]
     },
     "germplasm": {

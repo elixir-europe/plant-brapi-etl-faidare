@@ -110,6 +110,8 @@ def extract_entity(institution, institution_url, output_dir, extracted_entities,
 
             # Compact object by removing nulls
             data = remove_null_and_empty(data)
+            if 'germplasmPUI' in data:
+                del data['germplasmPUI']
 
             index = int(math.ceil(float(len(extracted_entities[entity_name])) / float(max_line)))
             json_path = get_file_path([output_dir, entity_name], ext=str(index) + '.json', create=True)
