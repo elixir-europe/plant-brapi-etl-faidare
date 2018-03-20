@@ -1,168 +1,217 @@
-import json
-import os
+import shutil
+import traceback
 
-import math
-import requests
-
-# Map from entity to brapi call
-from etl.common.utils import get_folder_path, get_file_path, join_url_path, remove_null_and_empty, replace_template
-
-
-# Iterator class used to get all pages from a Breeding API call
-class BreedingAPIIterator:
-    def __init__(self, brapi_url, call):
-        self.page = 0
-        self.page_size = call['page_size']
-        self.total_pages = None
-        self.brapi_url = brapi_url
-        self.call = call
-
-    def __iter__(self):
-        return self
-
-    def next(self):
-        if self.total_pages and self.page > self.total_pages - 1:
-            raise StopIteration
-
-        url = join_url_path(self.brapi_url, self.call['path'])
-        headers = {'Content-type': 'application/json',
-                   'Accept': 'application/json, application/ld+json'}
-        params = {}
-        if self.page_size:
-            params = {'page': self.page, 'pageSize': self.page_size}
-        if 'param' in self.call:
-            params.update(self.call['param'])
-        params_json = json.dumps(params)
-
-        print('Fetching {} {} {}'.format(self.call['method'], url.encode('utf-8'), params_json))
-        response = None
-        if self.call['method'] == 'GET':
-            response = requests.get(url, params=params, headers=headers)
-        elif self.call['method'] == 'POST':
-            response = requests.post(url, data=params_json, headers=headers)
-
-        if response.status_code != 200:
-            try:
-                message = response.json()['metadata']
-            except:
-                message = str(response.content)
-            print("Error:", message)
-            self.total_pages = -1
-            return []
-
-        content = response.json()
-
-        if self.page_size:
-            self.total_pages = content['metadata']['pagination']['totalPages']
-            self.page += 1
-        else:
-            self.total_pages = -1
-
-        if self.page_size:
-            return content['result']['data']
-        else:
-            return [content['result']]
+from etl.common.brapi import BreedingAPIIterator, NotFound
+from etl.common.brapi import get_identifier
+from etl.common.store import MergeStore
+from etl.common.utils import get_folder_path, resolve_path
+from etl.common.utils import pool_worker
+from etl.common.utils import replace_template
 
 
-# Extract a specific brapi call from an endpoint into a json file
-def extract_entity(institution, institution_url, output_dir, extracted_entities, entity_name, entity_call, parent=None):
-    call = entity_call[entity_name].copy()
-    entity_id_field = entity_name + 'DbId'
-
-    max_line = 1000
-
-    # TODO: Use calls call autodetect
-    if entity_name == 'study' and 'studyGET' in institution and institution['studyGET']:
-        call['method'] = 'GET'
-
-    # TODO: Fix URGI implementation & autodetect if implemented with calls call
-    if entity_name == 'observationVariable' and 'observationVariableCall' in institution:
-        if institution['observationVariableCall'] is None:
-            return
-        else:
-            call['path'] = institution['observationVariableCall']
-
-    parent_child_ids = None
-    if parent:
-        if entity_id_field in parent:
-            parent_child_ids = parent[entity_id_field]
-        else:
-            parent_child_ids = []
-            parent[entity_id_field] = parent_child_ids
-
-        call['path'] = replace_template(call['path'], parent)
-        if 'param' in call:
-            call['param'] = call['param'].copy()
-            for param_name in call['param']:
-                call['param'][param_name] = replace_template(call['param'][param_name], parent)
-
-    for page in BreedingAPIIterator(institution_url, call):
-        for data in page:
-            data_id = data[entity_id_field]
-            data['type'] = entity_name
-            if parent_child_ids is not None:
-                parent_child_ids.append(data_id)
-            # De-duplication (only save objects that haven't been saved yet)
-            if data_id in extracted_entities[entity_name]:
-                continue
-            extracted_entities[entity_name].add(data_id)
-            data['source'] = institution['name']
-
-            # Compact object by removing nulls
-            data = remove_null_and_empty(data)
-            if 'germplasmPUI' in data:
-                del data['germplasmPUI']
-
-            index = int(math.ceil(float(len(extracted_entities[entity_name])) / float(max_line)))
-            json_path = get_file_path([output_dir, entity_name], ext=str(index) + '.json', create=True)
-
-            # Extract children entities if any
-            if 'children' in call:
-                children_call = call['children']
-                for children_entity in children_call:
-                    extract_entity(institution, institution_url, output_dir, extracted_entities,
-                                   entity_name=children_entity, entity_call=children_call.copy(), parent=data)
-
-            # Append object in json file
-            with open(json_path, 'a') as json_file:
-                json.dump(data, json_file)
-                json_file.write('\n')
+class BrokenLink(Exception):
+    pass
 
 
+def get_call_id(call):
+    return call['method'] + " " + call["path"]
 
-# Extract all supported brapi calls from an endpoint into a json folder
-def extract_institution(institution, institution_url, entity_names, calls, institution_json_dir):
-    print('Extracting endpoint "{}" \n\tinto "{}"'.format(institution_url, institution_json_dir))
 
-    # Dict from entity name to set of identifiers of already extracted objects
-    extracted_entities = {entity_name: set() for entity_name in entity_names}
+def get_implemented_calls(source):
+    implemented_calls = set()
+    calls_call = {'method': 'GET', 'path': '/calls', 'page-size': 100}
 
-    for entity_name in calls:
-        extract_entity(institution, institution_url, institution_json_dir,
-                       extracted_entities, entity_name, entity_call=calls.copy())
+    for call in BreedingAPIIterator.fetch_all(source['brapi:endpointUrl'], calls_call, logger):
+        for method in call["methods"]:
+            implemented_calls.add(method + " " + call["call"].replace('/brapi/v1/', '').replace(' /', ''))
+    return implemented_calls
+
+
+def get_implemented_call(source, call_group, context=None):
+    if 'implemented-calls' not in source:
+        source['implemented-calls'] = get_implemented_calls(source)
+
+    calls = call_group['call'].copy()
+    if not isinstance(calls, list):
+        calls = [calls]
+
+    for call in calls:
+        call_id = get_call_id(call)
+
+        if call_id in source['implemented-calls']:
+            call = call.copy()
+            if context:
+                call['path'] = replace_template(call['path'], context)
+
+                if 'param' in call:
+                    call['param'] = call['param'].copy()
+                    for param_name in call['param']:
+                        call['param'][param_name] = replace_template(call['param'][param_name], context)
+
+            return call
+
+    if call_group.get('required'):
+        calls_description = "\n".join(map(get_call_id, calls))
+        raise NotFound('{} does not implement required call '
+                       'in list:\n{}'.format(source['schema:name'], calls_description))
+    return None
+
+
+def link_object(entity_id, dest_object, src_object_id):
+    dest_object_ref = entity_id + 's'
+    if dest_object_ref not in dest_object:
+        dest_object[dest_object_ref] = set([src_object_id])
+    else:
+        dest_object_ids = dest_object[dest_object_ref]
+        if isinstance(dest_object_ids, list):
+            dest_object_ids = set(dest_object_ids)
+        if not isinstance(dest_object_ids, set):
+            dest_object_ids = set([dest_object_ids])
+        dest_object_ids.add(src_object_id)
+
+
+def link_objects(entity, object, object_id, linked_entity, linked_objects_by_id):
+    for (link_id, linked_object) in linked_objects_by_id.items():
+        was_in_store = link_id in linked_entity['store']
+
+        if was_in_store:
+            linked_object = linked_entity['store'][link_id]
+
+        if linked_object:
+            link_object(entity['identifier'], linked_object, object_id)
+        link_object(linked_entity['identifier'], object, link_id)
+
+        if not was_in_store and linked_object:
+            linked_entity['store'].store(linked_object)
+
+
+def fetch_object_details(options):
+    source, entity, object_id = options
+    if 'detail' not in entity:
+        return
+    detail_call_group = entity['detail']
+
+    in_store = object_id in entity['store']
+    skip_if_in_store = detail_call_group.get('skip-if-in-store')
+    already_detailed = resolve_path(entity['store'], [object_id, 'etl:detailed'])
+    if in_store and (skip_if_in_store or already_detailed):
+        return
+
+    entity_id = entity['identifier']
+    detail_call = get_implemented_call(source, detail_call_group, {entity_id: object_id})
+
+    if not detail_call:
+        return
+
+    details = BreedingAPIIterator.fetch_all(source['brapi:endpointUrl'], detail_call, logger).__next__()
+    details['etl:detailed'] = True
+    return entity['store'].store(details)
+
+
+def fetch_all_details_old(source, entities):
+    for (entity_name, entity) in entities.items():
+        for (object_id, object) in entity['store'].items():
+            fetch_object_details((source, entity, object_id))
+
+
+def fetch_all_details(source, entities):
+    args = list()
+    for (entity_name, entity) in entities.items():
+        for (object_id, object) in entity['store'].items():
+            args.append((source, entity, object_id))
+    pool_worker(fetch_object_details, args)
+
+
+def extract_source(source, entities, output_dir):
+    # Initialize stores
+    for (entity_name, entity) in entities.items():
+        entity['store'] = MergeStore(source, entity)
+
+    # Fetch entities
+    for (entity_name, entity) in entities.items():
+        if 'list' not in entity:
+            continue
+
+        call = get_implemented_call(source, entity['list'])
+        if call is None:
+            continue
+
+        for data in BreedingAPIIterator.fetch_all(source['brapi:endpointUrl'], call, logger):
+            entity['store'].store(data)
+
+    # Detail entity
+    fetch_all_details(source, entities)
+
+    # Link entity
+    for (entity_name, entity) in entities.items():
+        if 'links' not in entity:
+            continue
+
+        for link in entity['links']:
+            for (object_id, object) in entity['store'].items():
+                linked_entity = entities[link['entity']]
+                linked_objects_by_id = {}
+
+                if link['type'].startswith('internal'):
+                    link_path = link['json-path']
+
+                    link_value = resolve_path(object, link_path.split('.'))
+                    if not link_value:
+                        if link.get('required'):
+                            raise NotFound("Could not find required field '{}' in {} object id '{}'"
+                                           .format(link_path, entity_name, object_id))
+                        continue
+
+                    link_values = [link_value] if not isinstance(link_value, list) else link_value
+
+                    if link['type'] == 'internal-object':
+                        for link_value in link_values:
+                            link_id = get_identifier(linked_entity, link_value)
+                            linked_objects_by_id[link_id] = link_value
+
+                    elif link['type'] == 'internal':
+                        for link_id in link_values:
+                            linked_objects_by_id[link_id] = None
+
+                elif link['type'] == 'external-object':
+                    call = get_implemented_call(source, link, context=object)
+                    if not call:
+                        continue
+
+                    link_values = list(BreedingAPIIterator.fetch_all(source['brapi:endpointUrl'], call, logger))
+                    for link_value in link_values:
+                        link_id = link_value[linked_entity['identifier']]
+                        linked_objects_by_id[link_id] = link_value
+
+                link_objects(entity, object, object_id, linked_entity, linked_objects_by_id)
+
+    # Detail entity
+    fetch_all_details(source, entities)
+
+    # Save to file
+    for (entity_name, entity) in entities.items():
+        entity['store'].save(output_dir)
 
 
 def main(config):
-    print
-    calls = config["brapi_calls"].copy()
+    global logger
+    logger = config['logger']
 
-    def get_entities(calls):
-        entities = list()
-        for entity_name in calls:
-            call = calls[entity_name]
-            if 'children' in call:
-                entities.extend(get_entities(call['children']))
-            entities.append(entity_name)
-        return entities
-    # List all entity names (recursively walking down the calls definitions)
-    entity_names = get_entities(calls)
+    entities = config["extract-brapi"]["entities"]
+    for (entity_name, entity) in entities.items():
+        entity['name'] = entity_name
 
-    json_dir = get_folder_path([config['working_dir'], 'json'], create=True)
-    institutions = config['institutions']
-    for institution_name in institutions:
-        institution = institutions[institution_name]
-        institution['name'] = institution_name
-        if not institution['active']:
-            continue
-        institution_json_dir = get_folder_path([json_dir, institution_name], recreate=True)
-        extract_institution(institution, institution['brapi_url'], entity_names, calls, institution_json_dir)
+    json_dir = get_folder_path([config['data-dir'], 'json'], create=True)
+    sources = config['sources']
+    for source_name in sources:
+        source_json_dir = get_folder_path([json_dir, source_name], recreate=True)
+
+        logger.info("Extracting BrAPI %s...", source_name)
+        logger.debug("Output dir: %s", source_json_dir)
+        try:
+            extract_source(sources[source_name], entities.copy(), source_json_dir)
+        except Exception as e:
+            logger.error(traceback.format_exc())
+            logger.error(str(e))
+            shutil.rmtree(source_json_dir)
+        print("")

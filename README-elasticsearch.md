@@ -70,7 +70,7 @@ python2 main.py etl elasticsearch
 ```
 
 If no parameters are specified, the script will fetch all data, for each specified and `active` institution and each specified calls.
-The extracted BrAPI data will be stored in `{working_dir}/json/{institution}/{entity}.json`
+The extracted BrAPI data will be stored in `{data-dir}/json/{institution}/{entity}.json`
 
 For a more fined grain execution step-by-step execution:
 

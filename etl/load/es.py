@@ -5,6 +5,7 @@ import re
 import sys
 
 import elasticsearch
+
 from etl.common.utils import get_folder_path, get_file_path, replace_template
 
 
@@ -95,8 +96,8 @@ def load_folder(institution_name, institution_bulk_dir, es_clients, es_options):
 
 
 def main(config):
-    print
-    bulk_dir = os.path.join(config['working_dir'], 'json-bulk')
+    print()
+    bulk_dir = os.path.join(config['data-dir'], 'json-bulk')
     if not os.path.exists(bulk_dir):
         raise Exception('No json bulk folder found in ' + bulk_dir)
     es_options = config['elasticsearch']

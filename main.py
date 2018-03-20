@@ -1,16 +1,15 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 import json
+import logging
 import os
 import sys
 
 import etl.extract.brapi
+import etl.load.es
+import etl.load.virtuoso
 import etl.transform.es
 import etl.transform.jsonld
 import etl.transform.rdf
-import etl.load.es
-import etl.load.virtuoso
-import logging
-
 from etl.common.utils import get_file_path, get_folder_path
 
 sys.path.append(os.path.dirname(__file__))
@@ -22,11 +21,11 @@ def parse_cli_arguments():
     import argparse
 
     parser = argparse.ArgumentParser(description='ETL: BrAPI to Elasticsearch. BrAPI to RDF.')
-    parser.add_argument('--institution', help='Restrict ETL to a specific institution from config.json')
+    parser.add_argument('--source', help='Restrict ETL to a specific source from "./config/sources".')
     parser_actions = parser.add_subparsers(help='Actions')
 
     # ETL
-    parser_etl = parser_actions.add_parser('etl', help='Extract, Transform, Load')
+    parser_etl = parser_actions.add_parser('etl', help='Extract, Transform & Load')
     parser_etl.set_defaults(etl=True)
     etl_targets = parser_etl.add_subparsers(help='etl targets')
 
@@ -73,67 +72,112 @@ def parse_cli_arguments():
     load_virtuoso = load_targets.add_parser('virtuoso', help='Load RDF into virtuoso')
     load_virtuoso.set_defaults(load_virtuoso=True)
 
-    if len(sys.argv[1:]) == 0:
+    if len(sys.argv) == 1:
         parser.print_help()
-    return parser.parse_args()
+    return vars(parser.parse_args())
+
+
+def load_config(directory, file_name):
+    config = dict()
+    base_name = os.path.splitext(os.path.basename(file_name))[0]
+    file_path = os.path.join(directory, file_name)
+    with open(file_path) as config_file:
+        config[base_name] = json.loads(config_file.read())
+    return config
+
+
+def launch_action(config, action, ns):
+    # Configure logger
+    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+    log_file = get_file_path([config['log-dir'], action], ext='.log', recreate=True)
+    handler = logging.FileHandler(log_file)
+    handler.setFormatter(formatter)
+
+    config['logger'] = logging.getLogger(action.upper())
+    config['logger'].addHandler(handler)
+    config['logger'].setLevel(logging.DEBUG)
+
+    ns.main(config)
+
+
+def launch_etl(options, config):
+    # Restrict sources list
+    if options['source'] is not None:
+        sources = set(options['source'].split(","))
+
+        for source in sources:
+            if source not in config['sources']:
+                raise Exception('source "{}" is not found in folder "{}"'.format(
+                    source, config['source-dir']
+                ))
+
+        for source_to_remove in set(config['sources']).difference(sources):
+            del config['sources'][source_to_remove]
+
+    # Execute ETL actions based on CLI arguments:
+    if options['extract'] or options['etl_es'] or options['etl_virtuoso']:
+        config.update(load_config(config['conf-dir'], 'extract-brapi.json'))
+        launch_action(config, 'extract-brapi', etl.extract.brapi)
+
+    if options['transform_elasticsearch'] or options['etl_es']:
+        launch_action(config, 'transform-elasticsearch', etl.transform.es)
+
+    if options['transform_jsonld'] or options['transform_rdf'] or options['etl_virtuoso']:
+        config.update(load_config(config['conf-dir'], 'transform-jsonld.json'))
+
+        # Replace JSON-LD context path with absolute path
+        for entity_name in config['transform-jsonld']['entities']:
+            entity = config['transform-jsonld']['entities'][entity_name]
+            if '@context' in entity:
+                entity['@context'] = get_file_path([config['conf-dir'], entity['@context']])
+                if not os.path.exists(entity['@context']):
+                    raise Exception('JSON-LD context file "{}" defined in "{}" does not exist'.format(
+                        entity['@context'], os.path.join(config['conf-dir'], 'transform-jsonld.json')
+                    ))
+
+        # Replace JSON-LD model path with an absolute path
+        config['transform-jsonld']['model'] = get_file_path([config['conf-dir'], config['transform-jsonld']['model']])
+
+        launch_action(config, 'transform-jsonld', etl.transform.jsonld)
+
+    if options['transform_rdf'] or options['etl_virtuoso']:
+        launch_action(config, 'transform-rdf', etl.transform.rdf)
+
+    if options['load_elasticsearch'] or options['etl_es']:
+        config.update(load_config(config['conf-dir'], 'load-elasticsearch.json'))
+        launch_action(config, 'load-elasticsearch', etl.transform.rdf)
+
+    if options['load_virtuoso'] or options['etl_virtuoso']:
+        config.update(load_config(config['conf-dir'], 'load-virtuoso.json'))
+        launch_action(config, 'load-virtuoso', etl.transform.rdf)
+
+
+def __main():
+    # Parse command line arguments
+    options = parse_cli_arguments()
+
+    # Load configs
+    config = dict()
+    config['root-dir'] = os.path.dirname(__file__)
+    config['conf-dir'] = os.path.join(config['root-dir'], 'config')
+    config['source-dir'] = os.path.join(config['conf-dir'], 'sources')
+    config['data-dir'] = os.path.join(config['root-dir'], 'data')
+    config['log-dir'] = get_folder_path([config['root-dir'], 'log'], create=True)
+
+    # Sources config
+    sources_config = filter(lambda s: s.endswith('.json'), os.listdir(config['source-dir']))
+    config['sources'] = dict()
+    for source_config in sources_config:
+        config['sources'].update(load_config(config['source-dir'], source_config))
+
+    try:
+        launch_etl(options, config)
+    except KeyError:
+        pass
 
 
 # If used directly in command line
 if __name__ == "__main__":
-    args = parse_cli_arguments()
+    __main()
 
-    # ETL config
-    base_dir = os.path.dirname(__file__)
-    config_file_name = 'config.json'
-    with open(os.path.join(base_dir, config_file_name)) as configFile:
-        config = json.load(configFile)
-
-    # Restrict institutions list
-    if hasattr(args, 'institution') and args.institution:
-        if args.institution not in config['institutions']:
-            raise Exception('Institution "{}" is not specified in the configuration file "{}"'.format(
-                args.institution, config_file_name
-            ))
-        config['institutions'] = {args.institution: config['institutions'][args.institution]}
-
-    # Replace working dir path with an absolute path
-    if not os.path.exists(config['working_dir']):
-        working_dir = get_folder_path([base_dir, config['working_dir']], create=True)
-        if not os.path.exists(config['working_dir']):
-            raise Exception('Could not find working dir "{}" defined in "{}"'.format(
-                config['working_dir'], config_file_name
-            ))
-        config['working_dir'] = working_dir
-
-    # Replace JSON-LD context path with absolute path
-    for entity_name in config['jsonld_entities']:
-        entity = config['jsonld_entities'][entity_name]
-        if '@context' in entity:
-            entity['@context'] = get_file_path([base_dir, entity['@context']])
-            if not os.path.exists(entity['@context']):
-                raise Exception('JSON-LD context file "{}" defined in "{}" does not exist'.format(
-                    entity['@context'], config_file_name
-                ))
-
-    # Replace JSON-LD model path with an absolute path
-    config['jsonld_model'] = get_file_path([base_dir, config['jsonld_model']], create=True)
-
-    # Execute ETL actions based on CLI arguments:
-    if hasattr(args, 'extract') or hasattr(args, 'etl_es') or hasattr(args, 'etl_virtuoso'):
-        etl.extract.brapi.main(config)
-
-    if hasattr(args, 'transform_elasticsearch') or hasattr(args, 'etl_es'):
-        etl.transform.es.main(config)
-
-    if hasattr(args, 'transform_jsonld') or hasattr(args, 'transform_rdf') or hasattr(args, 'etl_virtuoso'):
-        etl.transform.jsonld.main(config)
-
-    if hasattr(args, 'transform_rdf') or hasattr(args, 'etl_virtuoso'):
-        etl.transform.rdf.main(config)
-
-    if hasattr(args, 'load_elasticsearch') or hasattr(args, 'etl_es'):
-        etl.load.es.main(config)
-
-    if hasattr(args, 'load_virtuoso') or hasattr(args, 'etl_virtuoso'):
-        etl.load.virtuoso.main(config)
 

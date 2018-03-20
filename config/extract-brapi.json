@@ -1,0 +1,224 @@
+{
+  "entities": {
+    "trial": {
+      "identifier": "trialDbId",
+      "list": {
+        "call": [
+          {
+            "method": "GET",
+            "path": "trials",
+            "page-size": 500
+          }
+        ]
+      },
+      "detail": {
+        "call": {
+          "method": "GET",
+          "path": "trials/{trialDbId}"
+        }
+      },
+      "links": [
+        {
+          "type": "internal",
+          "entity": "study",
+          "json-path": "studies.studyDbId"
+        },
+        {
+          "type": "internal",
+          "entity": "program",
+          "json-path": "programDbId"
+        }
+      ]
+    },
+    "study": {
+      "identifier": "studyDbId",
+      "list": {
+        "required": true,
+        "call": [
+          {
+            "method": "GET",
+            "path": "studies-search",
+            "page-size": 500
+          },
+          {
+            "method": "POST",
+            "path": "studies-search",
+            "page-size": 500
+          }
+        ]
+      },
+      "detail": {
+        "required": true,
+        "call": {
+          "method": "GET",
+          "path": "studies/{studyDbId}"
+        }
+      },
+      "links": [
+        {
+          "type": "external-object",
+          "entity": "germplasm",
+          "required": true,
+          "call": {
+            "method": "GET",
+            "path": "studies/{studyDbId}/germplasm",
+            "page-size": 500
+          }
+        },
+        {
+          "type": "external-object",
+          "entity": "observationVariable",
+          "required": false,
+          "call": [
+            {
+              "method": "GET",
+              "path": "studies/{studyDbId}/observationvariables",
+              "page-size": 500
+            },
+            {
+              "method": "GET",
+              "path": "studies/{studyDbId}/observationVariables",
+              "page-size": 500
+            }
+          ]
+        },
+        {
+          "type": "-external-object",
+          "entity": "observationUnit",
+          "call": [
+            {
+              "method": "GET",
+              "path": "studies/{studyDbId}/observationunits",
+              "page-size": 500
+            },
+            {
+              "method": "GET",
+              "path": "studies/{studyDbId}/observationUnits",
+              "page-size": 500
+            }
+          ]
+        },
+        {
+          "type": "internal-object",
+          "entity": "location",
+          "json-path": "location"
+        },
+        {
+          "type": "internal",
+          "entity": "location",
+          "json-path": "locationDbId"
+        },
+        {
+          "type": "internal",
+          "entity": "program",
+          "json-path": "programDbId"
+        }
+      ]
+    },
+    "germplasm": {
+      "identifier": "germplasmDbId",
+      "-list": {
+        "call": [
+          {
+            "method": "GET",
+            "path": "germplasm-search",
+            "page-size": 500
+          },
+          {
+            "method": "POST",
+            "path": "germplasm-search",
+            "page-size": 500
+          }
+        ]
+      },
+      "detail": {
+        "call": {
+          "method": "GET",
+          "path": "germplasm/{germplasmDbId}"
+        }
+      }
+    },
+    "location": {
+      "identifier": "locationDbId",
+      "list": {
+        "call": [
+          {
+            "method": "GET",
+            "path": "locations",
+            "page-size": 500
+          }
+        ]
+      },
+      "detail": {
+        "skip-if-in-store": true,
+        "call": {
+          "method": "GET",
+          "path": "locations/{locationDbId}"
+        }
+      }
+    },
+    "observationVariable": {
+      "identifier": "observationVariableDbId",
+      "list": {
+        "call": [
+          {
+            "method": "GET",
+            "path": "variables",
+            "page-size": 500
+          },
+          {
+            "method": "POST",
+            "path": "variables-search",
+            "page-size": 500
+          }
+        ]
+      }
+    },
+    "program": {
+      "identifier": "programDbId",
+      "list": {
+        "call": [
+          {
+            "method": "GET",
+            "path": "programs",
+            "page-size": 500
+          },
+          {
+            "method": "POST",
+            "path": "programs-search",
+            "page-size": 500
+          }
+        ]
+      }
+    },
+    "observationUnit": {
+      "identifier": "observationUnitDbId",
+      "-list": {
+        "call": [
+          {
+            "method": "POST",
+            "path": "phenotypes-search",
+            "page-size": 500
+          }
+        ]
+      },
+      "links": [
+        {
+          "type": "internal",
+          "entity": "study",
+          "json-path": "studyDbId"
+        },
+        {
+          "type": "internal",
+          "entity": "germplasm",
+          "json-path": "germplasmDbId"
+        },
+        {
+          "type": "internal",
+          "entity": "observationVariable",
+          "json-path": "observations.observationVariableDbId"
+        }
+      ]
+    }
+  }
+}

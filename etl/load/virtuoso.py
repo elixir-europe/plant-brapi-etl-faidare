@@ -36,7 +36,7 @@ def load_folder(graph_uri, endpoint_rdf_dir, virtuoso_config):
 
 
 def main(config):
-    rdf_dir = os.path.join(config['working_dir'], 'rdf')
+    rdf_dir = os.path.join(config['data-dir'], 'rdf')
     if not os.path.exists(rdf_dir):
         raise Exception('No rdf folder found in ' + rdf_dir)
 

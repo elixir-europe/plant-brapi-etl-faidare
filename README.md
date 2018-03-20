@@ -35,10 +35,10 @@ The `brapi_url` should be the URL of the BrAPI version 1 server implemented by t
 If `active` is `false`, the endpoint will not be considered for future fetching or re-indexing operations.
 
 During the extract, transform and load processes, a "working directory" will be used to store intermediary data (extracted JSON, transformed JSON, JSON-LD, etc.).
-You change this directory using the `working_dir` field in the configuration file:
+You change this directory using the `data-dir` field in the configuration file:
 
 ```json
-"working_dir": "data",
+"data-dir": "data",
 ```
 
 The path can be absolute or relative. It will contain a `json` folder in which extracted data will be stored, a `json-bulk` folder for Elasticsearch JSON bulk files, a `json-ld` folder for JSON-LD files and a `rdf` folder for RDF turtle files.

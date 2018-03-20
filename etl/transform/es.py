@@ -47,12 +47,12 @@ def transform_folder(json_dir, bulk_dir):
 
 
 def main(config):
-    print
-    json_dir = get_folder_path([config['working_dir'], 'json'])
+    print()
+    json_dir = get_folder_path([config['data-dir'], 'json'])
     if not os.path.exists(json_dir):
         raise Exception('No json folder found in {}'.format(json_dir))
 
-    bulk_dir = get_folder_path([config['working_dir'], 'json-bulk'], recreate=True)
+    bulk_dir = get_folder_path([config['data-dir'], 'json-bulk'], recreate=True)
 
     institutions = config['institutions']
     for institution_name in institutions:

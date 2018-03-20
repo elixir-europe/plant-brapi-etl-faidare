@@ -52,15 +52,15 @@ def transform_brapi_model(model_path, rdf_dir):
 
 
 def main(config):
-    print
+    print()
     # Pheno brapi OWL model
     model_path = config['jsonld_model']
 
-    jsonld_dir = get_folder_path([config['working_dir'], 'json-ld'])
+    jsonld_dir = get_folder_path([config['data-dir'], 'json-ld'])
     if not os.path.exists(jsonld_dir):
         raise Exception('No jsonld folder found in ' + jsonld_dir)
 
-    rdf_dir = get_folder_path([config['working_dir'], 'rdf'], recreate=True)
+    rdf_dir = get_folder_path([config['data-dir'], 'rdf'], recreate=True)
 
     institutions = config['institutions']
     for institution_name in institutions:

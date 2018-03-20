@@ -1,0 +1,4 @@
+{
+  "url": "http://127.0.0.1:9200",
+  "index-name-template": "{institution}_{document_type}"
+}

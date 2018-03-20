@@ -1,0 +1,11 @@
+{
+  "@context": {
+    "schema": "http://schema.org/",
+    "brapi": "https://brapi.org/"
+  },
+  "@type": "schema:DataCatalog",
+  "@id": "http://www.nib.si",
+  "schema:identifier": "NIB",
+  "schema:name": "NIB",
+  "brapi:endpointUrl": "http://pisa.nib.si/brapi/v1/"
+}

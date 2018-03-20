@@ -1,13 +1,14 @@
+import multiprocessing
 import os
 import re
 import shutil
-
 import signal
+import sys
+from functools import reduce
 from multiprocessing import Pool
 
-import sys
+from past.types import basestring
 
-import multiprocessing
 default_nb_threads = multiprocessing.cpu_count() + 2
 
 
@@ -63,13 +64,27 @@ def pool_worker(fn, array_of_args, nb_thread=default_nb_threads):
 
 
 # Remove None values from list and dict recursively
-def remove_null_and_empty(e):
-    if isinstance(e, list):
-        return [remove_null_and_empty(elem) for elem in e if elem and elem != ""]
-    elif isinstance(e, dict):
-        return {key: remove_null_and_empty(value) for key, value in e.iteritems() if value}
+def remove_null_and_empty(value, predicate=bool):
+    if not value:
+        return None
+    if isinstance(value, list):
+        new_list = list()
+        for element in value:
+            new_element = remove_null_and_empty(element)
+            if predicate(new_element):
+                new_list.append(new_element)
+        if new_list:
+            return new_list
+    elif isinstance(value, dict):
+        new_dict = dict()
+        for key, value in value.items():
+            new_value = remove_null_and_empty(value)
+            if key and predicate(new_value):
+                new_dict[key] = new_value
+        if new_dict:
+            return new_dict
     else:
-        return e
+        return value
 
 
 # Replace variables in template strings (ex: "{id}/") by its value in "value_dict" dict (ex: value_dict['id'])
@@ -84,3 +99,19 @@ def replace_template(template, value_dict):
         for var_sub, var_name in matches:
             value = value.replace(var_sub, value_dict[var_name])
     return value
+
+
+def flatten(value):
+    return reduce(lambda acc, x: acc + flatten(x) if isinstance(x, list) else acc + [x], value, [])
+
+
+def resolve_path(value, path):
+    """Recursively list values in dict and list nested objects following a path."""
+    if not path:
+        return value
+    first, rest = path[0], path[1:]
+    if isinstance(value, dict) and first in value:
+        return remove_null_and_empty(resolve_path(value[first], rest))
+    if isinstance(value, list) or isinstance(value, set):
+        return remove_null_and_empty(flatten(map(lambda v: resolve_path(v, path), value)))
+    return None

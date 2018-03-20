@@ -1,0 +1,60 @@
+{
+  "model": "linked-data/pheno-brapi-model.owl",
+  "entities": {
+    "program": {
+      "@type": "Program",
+      "@context": "linked-data/Program.jsonld",
+      "brapi-name": "programs"
+    },
+    "trial": {
+      "@type": "Trial",
+      "@context": "linked-data/Trial.jsonld",
+      "brapi-name": "trials",
+      "nested-entities": [
+        "study"
+      ]
+    },
+    "study": {
+      "@type": "Study",
+      "@context": "linked-data/Study.jsonld",
+      "brapi-name": "studies",
+      "flat-entities": [
+        "location",
+        "germplasm"
+      ]
+    },
+    "germplasm": {
+      "@type": "Germplasm",
+      "@context": "linked-data/Germplasm.jsonld",
+      "brapi-name": "germplasm"
+    },
+    "observationUnit": {
+      "@type": "ObservationUnit",
+      "@context": "linked-data/ObservationUnit.jsonld",
+      "brapi-name": "observationUnits",
+      "flat-entities": [
+        "study",
+        "germplasm"
+      ],
+      "nested-entities": [
+        "observation"
+      ]
+    },
+    "observation": {
+      "@type": "Observation",
+      "brapi-name": "observations",
+      "flat-entities": [
+        "observationVariable"
+      ]
+    },
+    "observationVariable": {
+      "@type": "ObservationVariable",
+      "brapi-name": "variables"
+    },
+    "location": {
+      "@type": "Location",
+      "@context": "linked-data/Location.jsonld",
+      "brapi-name": "locations"
+    }
+  }
+}
