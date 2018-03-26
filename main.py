@@ -13,16 +13,23 @@ import etl.load.virtuoso
 import etl.transform.es
 import etl.transform.jsonld
 import etl.transform.rdf
-from etl.common.utils import get_file_path, get_folder_path
+from etl.common.utils import get_file_path, get_folder_path, create_logger
 
 urllib3.disable_warnings()
+
+
+def add_sub_parser(parser_actions, action, help):
+    sub_parser = parser_actions.add_parser(action, help=help)
+    sub_parser.add_argument('sources', metavar='source-config.json', type=str, nargs='+',
+                            help='List of data source JSON configuration files')
+    return sub_parser
 
 
 # Parse command line interface arguments
 def parse_cli_arguments():
 
     parser = ArgumentParser(description='ETL: BrAPI to Elasticsearch. BrAPI to RDF.')
-    parser.add_argument('--source', help='Restrict ETL to a specific source from "./config/sources".')
+    # parser.add_argument('--source', help='Restrict ETL to a specific source from "./config/sources".')
     parser_actions = parser.add_subparsers(help='Actions')
 
     # ETL
@@ -30,34 +37,38 @@ def parse_cli_arguments():
     parser_etl.set_defaults(etl=True)
     etl_targets = parser_etl.add_subparsers(help='etl targets')
 
-    ## ETL Elasticsearch
+    # ETL Elasticsearch
     etl_es = etl_targets.add_parser('elasticsearch', help="Extract BrAPI, Transform to ES bulk, Load in ES")
     etl_es.set_defaults(etl_es=True)
 
-    ## ETL Virtuoso
+    # ETL Virtuoso
     etl_virtuoso = etl_targets.add_parser('virtuoso', help="Extract BrAPI, Transform to JSON-LD/RDF, Load in virtuoso")
     etl_virtuoso.set_defaults(etl_virtuoso=True)
 
-    ## Extract
-    parser_extract = parser_actions.add_parser('extract', help='Extract data from BrAPI endpoints')
-    # TODO: add --trialDbId arg
+    # Extract
+    parser_extract = add_sub_parser(parser_actions, 'extract', help='Extract data from BrAPI endpoints')
     parser_extract.set_defaults(extract=True)
 
     # Transform
     parser_transform = parser_actions.add_parser('transform', help='Transform BrAPI data')
     transform_targets = parser_transform.add_subparsers(help='transform targets')
 
-    ## Transform elasticsearch
-    transform_elasticsearch = transform_targets.add_parser('elasticsearch', help='Transform BrAPI data for elasticsearch indexing')
+    # Transform elasticsearch
+    transform_elasticsearch = add_sub_parser(
+        transform_targets, 'elasticsearch',
+        help='Transform BrAPI data for elasticsearch indexing')
     transform_elasticsearch.set_defaults(transform_elasticsearch=True)
 
-    ## Transform jsonld
-    transform_jsonld = transform_targets.add_parser('jsonld', help='Transform BrAPI data into JSON-LD')
+    # Transform jsonld
+    transform_jsonld = add_sub_parser(
+        transform_targets, 'jsonld',
+        help='Transform BrAPI data into JSON-LD')
     transform_jsonld.set_defaults(transform_jsonld=True)
 
-    ## Transform rdf
-    transform_rdf = transform_targets.add_parser(
-        'rdf', help='Transform BrAPI data into RDF (requires JSON-LD transformation beforehand)')
+    # Transform rdf
+    transform_rdf = add_sub_parser(
+        transform_targets, 'rdf',
+        help='Transform BrAPI data into RDF (requires JSON-LD transformation beforehand)')
     transform_rdf.set_defaults(transform_rdf=True)
 
     # Load
@@ -65,12 +76,16 @@ def parse_cli_arguments():
     parser_load.set_defaults(load=True)
     load_targets = parser_load.add_subparsers(help='load targets')
 
-    ## Load Elasticsearch
-    load_elasticsearch = load_targets.add_parser('elasticsearch', help='Load JSON bulk file into ElasticSearch')
+    # Load Elasticsearch
+    load_elasticsearch = add_sub_parser(
+        load_targets, 'elasticsearch',
+        help='Load JSON bulk file into ElasticSearch')
     load_elasticsearch.set_defaults(load_elasticsearch=True)
 
-    ## Load Virtuoso
-    load_virtuoso = load_targets.add_parser('virtuoso', help='Load RDF into virtuoso')
+    # Load Virtuoso
+    load_virtuoso = add_sub_parser(
+        load_targets, 'virtuoso',
+        help='Load RDF into virtuoso')
     load_virtuoso.set_defaults(load_virtuoso=True)
 
     if len(sys.argv) == 1:
@@ -87,42 +102,13 @@ def load_config(directory, file_name):
     return config
 
 
-def launch_action(config, action, ns):
-    # Configure logger
-    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-    log_file = get_file_path([config['log-dir'], action], ext='.log', recreate=True)
-    file_handler = logging.FileHandler(log_file)
-    file_handler.setFormatter(formatter)
-    stdout_handler = logging.StreamHandler(sys.stdout)
-
-    config['logger'] = logging.getLogger(action.upper())
-    config['logger'].addHandler(file_handler)
-    config['logger'].addHandler(stdout_handler)
-    config['logger'].setLevel(logging.DEBUG)
-
-    ns.main(config)
-
-
 def launch_etl(options, config):
-    # Restrict sources list
-    if options['source'] is not None:
-        sources = set(options['source'].split(","))
-
-        for source in sources:
-            if source not in config['sources']:
-                raise Exception('source "{}" is not found in folder "{}"'.format(
-                    source, config['source-dir']
-                ))
-
-        for source_to_remove in set(config['sources']).difference(sources):
-            del config['sources'][source_to_remove]
-
     # Execute ETL actions based on CLI arguments:
     if 'extract' in options or 'etl_es' in options or 'etl_virtuoso' in options:
-        launch_action(config, 'extract-brapi', etl.extract.brapi)
+        etl.extract.brapi.main(config)
 
     if 'transform_elasticsearch' in options or 'etl_es' in options:
-        launch_action(config, 'transform-elasticsearch', etl.transform.es)
+        etl.transform.es.main(config)
 
     if 'transform_jsonld' in options or 'transform_rdf' in options or 'etl_virtuoso' in options:
         # Replace JSON-LD context path with absolute path
@@ -137,16 +123,16 @@ def launch_etl(options, config):
         # Replace JSON-LD model path with an absolute path
         config['transform-jsonld']['model'] = get_file_path([config['conf-dir'], config['transform-jsonld']['model']])
 
-        launch_action(config, 'transform-jsonld', etl.transform.jsonld)
+        etl.transform.jsonld.main(config)
 
     if 'transform_rdf' in options or 'etl_virtuoso' in options:
-        launch_action(config, 'transform-rdf', etl.transform.rdf)
+        etl.transform.rdf.main(config)
 
     if 'load_elasticsearch' in options or 'etl_es' in options:
-        launch_action(config, 'load-elasticsearch', etl.load.es)
+        etl.load.es.main(config)
 
     if 'load_virtuoso' in options or 'etl_virtuoso' in options:
-        launch_action(config, 'load-virtuoso', etl.load.virtuoso)
+        etl.load.virtuoso.main(config)
 
 
 def main():
@@ -162,10 +148,20 @@ def main():
     config['log-dir'] = get_folder_path([config['root-dir'], 'log'], create=True)
 
     # Sources config
-    sources_config = filter(lambda s: s.endswith('.json'), os.listdir(config['source-dir']))
     config['sources'] = dict()
-    for source_config in sources_config:
-        config['sources'].update(load_config(config['source-dir'], source_config))
+    source_id_field = 'schema:identifier'
+    for source in options['sources']:
+        with open(source) as source_file:
+            source_config = json.loads(source_file.read())
+            if source_id_field not in source_config:
+                raise Exception("No field '{}' in data source JSON configuration file {}"
+                                .format(source_id_field, source))
+            identifier = source_config[source_id_field]
+            if identifier in config['sources']:
+                raise Exception("Source id '{}' found twice in source list: {}\n"
+                                "Please verify the '{}' field in your files."
+                                .format(identifier, options['sources'], source_id_field))
+            config['sources'][identifier] = source_config
 
     # Other configs
     conf_files = filter(lambda s: s.endswith('.json'), os.listdir(config['conf-dir']))

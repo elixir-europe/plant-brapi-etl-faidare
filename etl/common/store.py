@@ -2,7 +2,6 @@ import collections
 import json
 import math
 
-from past.builtins import xrange
 from six import itervalues
 
 from etl.common.brapi import get_identifier
@@ -82,17 +81,17 @@ class MergeStore(dict):
                 dict_merge(old_value, data)
             else:
                 self[data_id] = data
-            return self[data_id]
 
-    def save(self, output_dir, max_line=1000):
+    def save(self, output_dir):
         entity_name = self.entity['name']
-        objects = list(itervalues(self))
-        for index in xrange(0, len(objects), max_line):
-            file_index = int(math.ceil(float(index) / float(max_line)))
-            json_path = get_file_path([output_dir, entity_name], ext=str(file_index) + '.json', create=True)
-            with open(json_path, 'w') as json_file:
-                for object in objects[index:index + max_line]:
-                    if 'etl:detailed' in object:
-                        del object['etl:detailed']
-                    json.dump(object, json_file, cls=CustomJSONEncoder)
-                    json_file.write('\n')
+        if len(self) <= 0:
+            return
+        data_list = list(itervalues(self))
+        json_path = get_file_path([output_dir, entity_name], ext='.json', create=True)
+
+        with open(json_path, 'w') as json_file:
+            for data in data_list:
+                if 'etl:detailed' in data:
+                    del data['etl:detailed']
+                json.dump(data, json_file, cls=CustomJSONEncoder)
+                json_file.write('\n')

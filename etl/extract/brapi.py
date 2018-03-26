@@ -1,12 +1,20 @@
 import shutil
 import traceback
 
-from etl.common.brapi import BreedingAPIIterator, NotFound
+import threading
+
+import sys
+
+from etl.common.brapi import BreedingAPIIterator, BrapiServerError
 from etl.common.brapi import get_identifier
 from etl.common.store import MergeStore
-from etl.common.utils import get_folder_path, resolve_path, remove_null_and_empty
+from etl.common.utils import get_folder_path, resolve_path, remove_null_and_empty, create_logger
 from etl.common.utils import pool_worker
 from etl.common.utils import replace_template
+
+import copy
+
+thread_local = threading.local()
 
 
 class BrokenLink(Exception):
@@ -21,16 +29,13 @@ def get_implemented_calls(source):
     implemented_calls = set()
     calls_call = {'method': 'GET', 'path': '/calls', 'page-size': 100}
 
-    for call in BreedingAPIIterator.fetch_all(source['brapi:endpointUrl'], calls_call, logger):
+    for call in BreedingAPIIterator.fetch_all(source['brapi:endpointUrl'], calls_call, thread_local.logger):
         for method in call["methods"]:
             implemented_calls.add(method + " " + call["call"].replace('/brapi/v1/', '').replace(' /', ''))
     return implemented_calls
 
 
 def get_implemented_call(source, call_group, context=None):
-    if 'implemented-calls' not in source:
-        source['implemented-calls'] = get_implemented_calls(source)
-
     calls = call_group['call'].copy()
     if not isinstance(calls, list):
         calls = [calls]
@@ -52,8 +57,8 @@ def get_implemented_call(source, call_group, context=None):
 
     if call_group.get('required'):
         calls_description = "\n".join(map(get_call_id, calls))
-        raise NotFound('{} does not implement required call '
-                       'in list:\n{}'.format(source['schema:name'], calls_description))
+        raise NotImplementedError('{} does not implement required call in list:\n{}'
+                                  .format(source['schema:name'], calls_description))
     return None
 
 
@@ -81,7 +86,23 @@ def link_objects(entity, object, object_id, linked_entity, linked_objects_by_id)
             linked_entity['store'].store(linked_object)
 
 
-def fetch_object_details(options):
+def fetch_all_in_store(entities, fetch_function, arguments):
+    """
+    Run a fetch function with arguments in a pool worker and collect results in the entity MergeStore
+    """
+    results = remove_null_and_empty(pool_worker(fetch_function, arguments, nb_thread=2))
+    if not results:
+        return
+
+    for (entity_name, data_list) in results:
+        for data in data_list:
+            entities[entity_name]['store'].store(data)
+
+
+def fetch_details(options):
+    """
+    Fetch details call for a BrAPI object (ex: /brapi/v1/studies/{id})
+    """
     source, entity, object_id = options
     if 'detail' not in entity:
         return
@@ -99,46 +120,58 @@ def fetch_object_details(options):
     if not detail_call:
         return
 
-    details = BreedingAPIIterator.fetch_all(source['brapi:endpointUrl'], detail_call, logger).__next__()
+    details = BreedingAPIIterator.fetch_all(source['brapi:endpointUrl'], detail_call, thread_local.logger).__next__()
     details['etl:detailed'] = True
-    return entity['name'], details
+    return entity['name'], [details]
 
 
 def fetch_all_details(source, entities):
+    """
+    Fetch all details for each object of each entity
+    """
     args = list()
     for (entity_name, entity) in entities.items():
         for (object_id, object) in entity['store'].items():
             args.append((source, entity, object_id))
+    fetch_all_in_store(entities, fetch_details, args)
 
-    results = remove_null_and_empty(pool_worker(fetch_object_details, args))
-    if not results:
+
+def list_object(options):
+    """
+    Fetch list for one entity (studies-search, germplasm-search, etc.)
+    """
+    source, entity = options
+    if 'list' not in entity:
         return
 
-    for (entity_name, details) in results:
-        entities[entity_name]['store'].store(details)
+    call = get_implemented_call(source, entity['list'])
+    if call is None:
+        return
+
+    data_list = list(BreedingAPIIterator.fetch_all(source['brapi:endpointUrl'], call, thread_local.logger))
+    return entity['name'], data_list
 
 
-def extract_source(source, entities, output_dir):
-    # Initialize stores
+def fetch_all_list(source, entities):
+    """
+    Fetch entities list for all entities
+    """
+    args = list()
     for (entity_name, entity) in entities.items():
-        entity['store'] = MergeStore(source, entity)
+        args.append((source, entity))
+    fetch_all_in_store(entities, list_object, args)
 
-    # Fetch entities
-    for (entity_name, entity) in entities.items():
-        if 'list' not in entity:
-            continue
 
-        call = get_implemented_call(source, entity['list'])
-        if call is None:
-            continue
-
-        for data in BreedingAPIIterator.fetch_all(source['brapi:endpointUrl'], call, logger):
-            entity['store'].store(data)
-
-    # Detail entity
-    fetch_all_details(source, entities)
-
-    # Link entity
+def fetch_all_links(source, entities):
+    """
+    Link objects across entities.
+     - Internal: link an object (ex: study) to another using an identifier inside the JSON object
+      (ex: link a location via study.locationDbId)
+     - Internal object: link an object (ex: study) to another contained inside the first
+      (ex: link a location via study.location.locationDbId)
+     - External object: link an object (ex: study) to another using a dedicated call
+      (ex: link to observation variables via /brapi/v1/studies/{id}/observationvariables)
+    """
     for (entity_name, entity) in entities.items():
         if 'links' not in entity:
             continue
@@ -154,8 +187,8 @@ def extract_source(source, entities, output_dir):
                     link_value = resolve_path(object, link_path.split('.'))
                     if not link_value:
                         if link.get('required'):
-                            raise NotFound("Could not find required field '{}' in {} object id '{}'"
-                                           .format(link_path, entity_name, object_id))
+                            raise BrapiServerError("Could not find required field '{}' in {} object id '{}'"
+                                                   .format(link_path, entity_name, object_id))
                         continue
 
                     link_values = [link_value] if not isinstance(link_value, list) else link_value
@@ -174,40 +207,78 @@ def extract_source(source, entities, output_dir):
                     if not call:
                         continue
 
-                    link_values = list(BreedingAPIIterator.fetch_all(source['brapi:endpointUrl'], call, logger))
+                    link_values = list(BreedingAPIIterator.fetch_all(source['brapi:endpointUrl'], call, thread_local.logger))
                     for link_value in link_values:
                         link_id = get_identifier(linked_entity, link_value)
                         linked_objects_by_id[link_id] = link_value
 
                 link_objects(entity, object, object_id, linked_entity, linked_objects_by_id)
 
-    # Detail entity
-    fetch_all_details(source, entities)
 
-    # Save to file
-    for (entity_name, entity) in entities.items():
-        entity['store'].save(output_dir)
+def extract_source(source, entities, log_dir, output_dir):
+    """
+    Full JSON BrAPI source extraction process
+    """
+    source_name = source['schema:identifier']
+    action = 'extract-' + source_name
+    thread_local.logger = create_logger(action, [log_dir, action])
+
+    print("Extracting BrAPI {} to '{}'...".format(source_name, output_dir))
+    try:
+        # Initialize stores
+        for (entity_name, entity) in entities.items():
+            entity['store'] = MergeStore(source, entity)
+
+        # Fetch source implemented calls
+        if 'implemented-calls' not in source:
+            source['implemented-calls'] = get_implemented_calls(source)
+
+        # Fetch entities lists
+        fetch_all_list(source, entities)
+
+        # Detail entities
+        fetch_all_details(source, entities)
+
+        # Link entities (internal links, internal object links and external object links)
+        fetch_all_links(source, entities)
+
+        # Detail entities
+        fetch_all_details(source, entities)
+
+        # Save to file
+        for (entity_name, entity) in entities.items():
+            entity['store'].save(output_dir)
+        
+        print("SUCCEEDED Extracting BrAPI {}.".format(source_name))
+    except:
+        print("FAILED Extracting BrAPI {}. Check the logs in {} for more details".format(source_name, log_dir))
+        thread_local.logger.error(traceback.format_exc())
+        shutil.rmtree(output_dir)
 
 
 def main(config):
-    global logger
-    logger = config['logger']
-
     entities = config["extract-brapi"]["entities"]
     for (entity_name, entity) in entities.items():
         entity['name'] = entity_name
 
     json_dir = get_folder_path([config['data-dir'], 'json'], create=True)
     sources = config['sources']
+    log_dir = config['log-dir']
+
+    threads = list()
     for source_name in sources:
         source_json_dir = get_folder_path([json_dir, source_name], recreate=True)
 
-        logger.info("Extracting BrAPI %s...", source_name)
-        logger.debug("Output dir: %s", source_json_dir)
+        thread = threading.Thread(target=extract_source,
+                                  args=(copy.deepcopy(sources[source_name]), copy.deepcopy(entities), log_dir, source_json_dir))
+        thread.daemon = True
+        thread.start()
+        threads.append(thread)
+
+    for thread in threads:
         try:
-            extract_source(sources[source_name], entities.copy(), source_json_dir)
-        except Exception as e:
-            logger.error(traceback.format_exc())
-            logger.error(str(e))
-            shutil.rmtree(source_json_dir)
-        print("")
+            while thread.isAlive():
+                thread.join(500)
+        except (KeyboardInterrupt, SystemExit):
+            print('Received keyboard interrupt, quitting threads.\n')
+            sys.exit()

@@ -7,8 +7,7 @@ import sys
 from functools import reduce
 from multiprocessing import Pool
 
-from past.types import basestring
-
+import logging
 default_nb_threads = multiprocessing.cpu_count() + 2
 
 
@@ -45,9 +44,13 @@ def join_url_path(*parts):
 # Run a function on a thread pool with an array of args for each function call
 # Handles interrupts correctly
 def pool_worker(fn, array_of_args, nb_thread=default_nb_threads):
-    original_sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
     pool = Pool(nb_thread)
-    signal.signal(signal.SIGINT, original_sigint_handler)
+    try:
+        original_sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
+        signal.signal(signal.SIGINT, original_sigint_handler)
+    except:
+        # Listening for signal won't work on non main thread
+        pass
     terminate = False
     res = None
     try:
@@ -100,7 +103,7 @@ def replace_template(template, value_dict):
         value = list()
         for sub_template in template:
             value.append(replace_template(sub_template, value_dict))
-    elif isinstance(template, basestring):
+    elif isinstance(template, str):
         matches = re.findall('({(\w+)})', template, re.DOTALL)
         for var_sub, var_name in matches:
             value = value.replace(var_sub, value_dict[var_name])
@@ -121,3 +124,21 @@ def resolve_path(value, path):
     if isinstance(value, list) or isinstance(value, set):
         return remove_null_and_empty(flatten(map(lambda v: resolve_path(v, path), value)))
     return None
+
+
+def create_logger(name, file_path):
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.DEBUG)
+
+    # Log file
+    log_file = get_file_path(file_path, ext='.log', recreate=True)
+    file_handler = logging.FileHandler(log_file)
+    file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(message)s'))
+    logger.addHandler(file_handler)
+
+    # Log stdout
+    # stdout_handler = logging.StreamHandler(sys.stdout)
+    # stdout_handler.setLevel(logging.INFO)
+    # logger.addHandler(stdout_handler)
+
+    return logger

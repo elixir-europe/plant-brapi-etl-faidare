@@ -5,7 +5,7 @@ self contained binary package (with embedded dependencies and python VM)
 for CentOS 6.
 
 CentOS 6 was chosen as a build target for compatibility issue but the
-binary package should work on more recent linux distributions/
+binary package should work on more recent linux distributions.
 
 This build is achieved using [pyinstaller](https://www.pyinstaller.org/) 
 in a CentOS 6 [Vagrant](https://www.vagrantup.com) VM (**Vagrant must be

@@ -61,7 +61,7 @@ class BreedingAPIIterator:
             except ValueError:
                 message = str(response.content)
             self.total_pages = -1
-            raise NotFound(message)
+            raise BrapiServerError(message)
 
         content = response.json()
 
@@ -82,7 +82,7 @@ class BreedingAPIIterator:
         return chain.from_iterable(BreedingAPIIterator(brapi_url, call, logger))
 
 
-class NotFound(Exception):
+class BrapiServerError(Exception):
     pass
 
 
