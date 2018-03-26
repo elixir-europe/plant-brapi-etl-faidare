@@ -68,7 +68,12 @@ class MergeStore(dict):
         # Compact object by removing nulls
         data = remove_null_and_empty(data)
         if data:
-            data['type'] = self.entity['name']
+            entity_name = self.entity['name']
+            object_name = entity_name + 'Name'
+            if 'name' in data and object_name not in data:
+                data[object_name] = data['name']
+
+            data['type'] = entity_name
             data['source'] = self.source['@id']
 
             data_id = get_identifier(self.entity, data)
@@ -80,10 +85,11 @@ class MergeStore(dict):
             return self[data_id]
 
     def save(self, output_dir, max_line=1000):
+        entity_name = self.entity['name']
         objects = list(itervalues(self))
         for index in xrange(0, len(objects), max_line):
             file_index = int(math.ceil(float(index) / float(max_line)))
-            json_path = get_file_path([output_dir, self.entity['name']], ext=str(file_index) + '.json', create=True)
+            json_path = get_file_path([output_dir, entity_name], ext=str(file_index) + '.json', create=True)
             with open(json_path, 'w') as json_file:
                 for object in objects[index:index + max_line]:
                     if 'etl:detailed' in object:

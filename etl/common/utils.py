@@ -49,9 +49,10 @@ def pool_worker(fn, array_of_args, nb_thread=default_nb_threads):
     pool = Pool(nb_thread)
     signal.signal(signal.SIGINT, original_sigint_handler)
     terminate = False
+    res = None
     try:
-        res = pool.map_async(fn, array_of_args)
-        res.get(500)  # Without the timeout this blocking call ignores all signals.
+        workers = pool.map_async(fn, array_of_args)
+        res = workers.get(5000)  # Without the timeout this blocking call ignores all signals.
     except KeyboardInterrupt:
         print('Caught KeyboardInterrupt, terminating workers')
         pool.terminate()
@@ -61,28 +62,33 @@ def pool_worker(fn, array_of_args, nb_thread=default_nb_threads):
     pool.join()
     if terminate:
         sys.exit(1)
+    return res
 
 
 # Remove None values from list and dict recursively
 def remove_null_and_empty(value, predicate=bool):
     if not value:
         return None
-    if isinstance(value, list):
-        new_list = list()
+    is_list = isinstance(value, list)
+    is_set = isinstance(value, set)
+    is_dict = isinstance(value, dict)
+    if is_dict or is_list or is_set:
+        new_value = (type(value))()
         for element in value:
+            key = True
+            if is_dict:
+                key = element
+                element = value[element]
             new_element = remove_null_and_empty(element)
-            if predicate(new_element):
-                new_list.append(new_element)
-        if new_list:
-            return new_list
-    elif isinstance(value, dict):
-        new_dict = dict()
-        for key, value in value.items():
-            new_value = remove_null_and_empty(value)
-            if key and predicate(new_value):
-                new_dict[key] = new_value
-        if new_dict:
-            return new_dict
+            if key and predicate(new_element):
+                if is_dict:
+                    new_value[key] = new_element
+                if is_list:
+                    new_value.append(new_element)
+                if is_set:
+                    new_value.add(new_element)
+        if new_value:
+            return new_value
     else:
         return value
 

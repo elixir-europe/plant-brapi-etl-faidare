@@ -3,6 +3,9 @@ import json
 import logging
 import os
 import sys
+from argparse import ArgumentParser
+
+import urllib3
 
 import etl.extract.brapi
 import etl.load.es
@@ -12,15 +15,13 @@ import etl.transform.jsonld
 import etl.transform.rdf
 from etl.common.utils import get_file_path, get_folder_path
 
-sys.path.append(os.path.dirname(__file__))
-logging.basicConfig()
+urllib3.disable_warnings()
 
 
 # Parse command line interface arguments
 def parse_cli_arguments():
-    import argparse
 
-    parser = argparse.ArgumentParser(description='ETL: BrAPI to Elasticsearch. BrAPI to RDF.')
+    parser = ArgumentParser(description='ETL: BrAPI to Elasticsearch. BrAPI to RDF.')
     parser.add_argument('--source', help='Restrict ETL to a specific source from "./config/sources".')
     parser_actions = parser.add_subparsers(help='Actions')
 
@@ -90,11 +91,13 @@ def launch_action(config, action, ns):
     # Configure logger
     formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
     log_file = get_file_path([config['log-dir'], action], ext='.log', recreate=True)
-    handler = logging.FileHandler(log_file)
-    handler.setFormatter(formatter)
+    file_handler = logging.FileHandler(log_file)
+    file_handler.setFormatter(formatter)
+    stdout_handler = logging.StreamHandler(sys.stdout)
 
     config['logger'] = logging.getLogger(action.upper())
-    config['logger'].addHandler(handler)
+    config['logger'].addHandler(file_handler)
+    config['logger'].addHandler(stdout_handler)
     config['logger'].setLevel(logging.DEBUG)
 
     ns.main(config)
@@ -115,19 +118,15 @@ def launch_etl(options, config):
             del config['sources'][source_to_remove]
 
     # Execute ETL actions based on CLI arguments:
-    if options['extract'] or options['etl_es'] or options['etl_virtuoso']:
-        config.update(load_config(config['conf-dir'], 'extract-brapi.json'))
+    if 'extract' in options or 'etl_es' in options or 'etl_virtuoso' in options:
         launch_action(config, 'extract-brapi', etl.extract.brapi)
 
-    if options['transform_elasticsearch'] or options['etl_es']:
+    if 'transform_elasticsearch' in options or 'etl_es' in options:
         launch_action(config, 'transform-elasticsearch', etl.transform.es)
 
-    if options['transform_jsonld'] or options['transform_rdf'] or options['etl_virtuoso']:
-        config.update(load_config(config['conf-dir'], 'transform-jsonld.json'))
-
+    if 'transform_jsonld' in options or 'transform_rdf' in options or 'etl_virtuoso' in options:
         # Replace JSON-LD context path with absolute path
-        for entity_name in config['transform-jsonld']['entities']:
-            entity = config['transform-jsonld']['entities'][entity_name]
+        for (entity_name, entity) in config['transform-jsonld']['entities'].items():
             if '@context' in entity:
                 entity['@context'] = get_file_path([config['conf-dir'], entity['@context']])
                 if not os.path.exists(entity['@context']):
@@ -140,19 +139,17 @@ def launch_etl(options, config):
 
         launch_action(config, 'transform-jsonld', etl.transform.jsonld)
 
-    if options['transform_rdf'] or options['etl_virtuoso']:
+    if 'transform_rdf' in options or 'etl_virtuoso' in options:
         launch_action(config, 'transform-rdf', etl.transform.rdf)
 
-    if options['load_elasticsearch'] or options['etl_es']:
-        config.update(load_config(config['conf-dir'], 'load-elasticsearch.json'))
-        launch_action(config, 'load-elasticsearch', etl.transform.rdf)
+    if 'load_elasticsearch' in options or 'etl_es' in options:
+        launch_action(config, 'load-elasticsearch', etl.load.es)
 
-    if options['load_virtuoso'] or options['etl_virtuoso']:
-        config.update(load_config(config['conf-dir'], 'load-virtuoso.json'))
-        launch_action(config, 'load-virtuoso', etl.transform.rdf)
+    if 'load_virtuoso' in options or 'etl_virtuoso' in options:
+        launch_action(config, 'load-virtuoso', etl.load.virtuoso)
 
 
-def __main():
+def main():
     # Parse command line arguments
     options = parse_cli_arguments()
 
@@ -170,14 +167,20 @@ def __main():
     for source_config in sources_config:
         config['sources'].update(load_config(config['source-dir'], source_config))
 
+    # Other configs
+    conf_files = filter(lambda s: s.endswith('.json'), os.listdir(config['conf-dir']))
+    for conf_file in conf_files:
+        config.update(load_config(config['conf-dir'], conf_file))
+
     try:
         launch_etl(options, config)
-    except KeyError:
+    except KeyError as e:
+        print(e)
         pass
 
 
 # If used directly in command line
 if __name__ == "__main__":
-    __main()
+    main()
 
 

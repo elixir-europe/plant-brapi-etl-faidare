@@ -4,7 +4,7 @@ import traceback
 from etl.common.brapi import BreedingAPIIterator, NotFound
 from etl.common.brapi import get_identifier
 from etl.common.store import MergeStore
-from etl.common.utils import get_folder_path, resolve_path
+from etl.common.utils import get_folder_path, resolve_path, remove_null_and_empty
 from etl.common.utils import pool_worker
 from etl.common.utils import replace_template
 
@@ -59,15 +59,11 @@ def get_implemented_call(source, call_group, context=None):
 
 def link_object(entity_id, dest_object, src_object_id):
     dest_object_ref = entity_id + 's'
-    if dest_object_ref not in dest_object:
-        dest_object[dest_object_ref] = set([src_object_id])
-    else:
-        dest_object_ids = dest_object[dest_object_ref]
-        if isinstance(dest_object_ids, list):
-            dest_object_ids = set(dest_object_ids)
-        if not isinstance(dest_object_ids, set):
-            dest_object_ids = set([dest_object_ids])
-        dest_object_ids.add(src_object_id)
+    dest_object_ids = dest_object.get(dest_object_ref) or set()
+    if isinstance(dest_object_ids, list):
+        dest_object_ids = set(dest_object_ids)
+    dest_object_ids.add(src_object_id)
+    dest_object[dest_object_ref] = remove_null_and_empty(dest_object_ids)
 
 
 def link_objects(entity, object, object_id, linked_entity, linked_objects_by_id):
@@ -105,13 +101,7 @@ def fetch_object_details(options):
 
     details = BreedingAPIIterator.fetch_all(source['brapi:endpointUrl'], detail_call, logger).__next__()
     details['etl:detailed'] = True
-    return entity['store'].store(details)
-
-
-def fetch_all_details_old(source, entities):
-    for (entity_name, entity) in entities.items():
-        for (object_id, object) in entity['store'].items():
-            fetch_object_details((source, entity, object_id))
+    return entity['name'], details
 
 
 def fetch_all_details(source, entities):
@@ -119,7 +109,13 @@ def fetch_all_details(source, entities):
     for (entity_name, entity) in entities.items():
         for (object_id, object) in entity['store'].items():
             args.append((source, entity, object_id))
-    pool_worker(fetch_object_details, args)
+
+    results = remove_null_and_empty(pool_worker(fetch_object_details, args))
+    if not results:
+        return
+
+    for (entity_name, details) in results:
+        entities[entity_name]['store'].store(details)
 
 
 def extract_source(source, entities, output_dir):
@@ -180,7 +176,7 @@ def extract_source(source, entities, output_dir):
 
                     link_values = list(BreedingAPIIterator.fetch_all(source['brapi:endpointUrl'], call, logger))
                     for link_value in link_values:
-                        link_id = link_value[linked_entity['identifier']]
+                        link_id = get_identifier(linked_entity, link_value)
                         linked_objects_by_id[link_id] = link_value
 
                 link_objects(entity, object, object_id, linked_entity, linked_objects_by_id)
