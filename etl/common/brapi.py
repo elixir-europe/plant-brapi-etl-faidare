@@ -3,7 +3,7 @@ from itertools import chain
 
 import requests
 
-from etl.common.utils import join_url_path, remove_null_and_empty
+from etl.common.utils import join_url_path, remove_null_and_empty, replace_template
 
 
 class BreedingAPIIterator:
@@ -95,3 +95,44 @@ def get_identifier(entity, object):
         object_id = str(hash(json.dumps(simplified_object, sort_keys=True)))
         object[entity_id] = object_id
     return object_id
+
+
+def get_call_id(call):
+    return call['method'] + " " + call["path"]
+
+
+def get_implemented_calls(source, logger):
+    implemented_calls = set()
+    calls_call = {'method': 'GET', 'path': '/calls', 'page-size': 100}
+
+    for call in BreedingAPIIterator.fetch_all(source['brapi:endpointUrl'], calls_call, logger):
+        for method in call["methods"]:
+            implemented_calls.add(method + " " + call["call"].replace('/brapi/v1/', '').replace(' /', ''))
+    return implemented_calls
+
+
+def get_implemented_call(source, call_group, context=None):
+    calls = call_group['call'].copy()
+    if not isinstance(calls, list):
+        calls = [calls]
+
+    for call in calls:
+        call_id = get_call_id(call)
+
+        if call_id in source['implemented-calls']:
+            call = call.copy()
+            if context:
+                call['path'] = replace_template(call['path'], context)
+
+                if 'param' in call:
+                    call['param'] = call['param'].copy()
+                    for param_name in call['param']:
+                        call['param'][param_name] = replace_template(call['param'][param_name], context)
+
+            return call
+
+    if call_group.get('required'):
+        calls_description = "\n".join(map(get_call_id, calls))
+        raise NotImplementedError('{} does not implement required call in list:\n{}'
+                                  .format(source['schema:name'], calls_description))
+    return None

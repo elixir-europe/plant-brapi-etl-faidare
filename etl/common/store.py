@@ -55,7 +55,9 @@ class CustomJSONEncoder(json.JSONEncoder):
 
 
 class MergeStore(dict):
-    """"""
+    """
+    BrAPI entity in memory data store that can merge object by id and save objects in JSON file.
+    """
 
     def __init__(self, source, entity):
         super(MergeStore, self).__init__()
@@ -72,8 +74,8 @@ class MergeStore(dict):
             if 'name' in data and object_name not in data:
                 data[object_name] = data['name']
 
-            data['type'] = entity_name
-            data['source'] = self.source['@id']
+            # data['type'] = entity_name
+            data['source'] = self.source['schema:identifier']
 
             data_id = get_identifier(self.entity, data)
             if data_id in self:

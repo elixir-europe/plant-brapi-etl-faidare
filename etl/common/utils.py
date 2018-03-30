@@ -13,7 +13,8 @@ default_nb_threads = multiprocessing.cpu_count() + 2
 
 def __get_path(parts, ext, create=False, recreate=False, is_file=True):
     base_path = os.path.join(*parts)
-    path = os.path.abspath(base_path + ext)
+    # path = os.path.abspath(base_path + ext)
+    path = base_path + ext
     create = True if recreate else create
     if recreate and os.path.exists(path):
         if is_file:
@@ -22,6 +23,9 @@ def __get_path(parts, ext, create=False, recreate=False, is_file=True):
             shutil.rmtree(path)
     if create and not os.path.exists(path):
         if is_file:
+            dir = os.path.dirname(path)
+            if not os.path.exists(dir):
+                os.makedirs(dir)
             open(path, 'a').close()
         else:
             os.makedirs(path)
@@ -126,12 +130,11 @@ def resolve_path(value, path):
     return None
 
 
-def create_logger(name, file_path):
+def create_logger(name, log_file):
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
 
     # Log file
-    log_file = get_file_path(file_path, ext='.log', recreate=True)
     file_handler = logging.FileHandler(log_file)
     file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(message)s'))
     logger.addHandler(file_handler)

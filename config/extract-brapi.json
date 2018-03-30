@@ -157,6 +157,18 @@
         }
       }
     },
+    "ontology": {
+      "identifier": "ontologyDbId",
+      "list": {
+        "call": [
+          {
+            "method": "GET",
+            "path": "ontologies",
+            "page-size": 500
+          }
+        ]
+      }
+    },
     "observationVariable": {
       "identifier": "observationVariableDbId",
       "list": {
@@ -172,7 +184,14 @@
             "page-size": 500
           }
         ]
-      }
+      },
+      "links": [
+        {
+          "type": "internal",
+          "entity": "ontology",
+          "json-path": "ontologyDbId"
+        }
+      ]
     },
     "program": {
       "identifier": "programDbId",

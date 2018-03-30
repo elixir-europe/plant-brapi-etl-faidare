@@ -1,65 +1,20 @@
+import copy
 import shutil
+import sys
+import threading
 import traceback
 
-import threading
-
-import sys
-
-from etl.common.brapi import BreedingAPIIterator, BrapiServerError
+from etl.common.brapi import BreedingAPIIterator, BrapiServerError, get_implemented_calls, get_implemented_call
 from etl.common.brapi import get_identifier
 from etl.common.store import MergeStore
-from etl.common.utils import get_folder_path, resolve_path, remove_null_and_empty, create_logger
+from etl.common.utils import get_folder_path, resolve_path, remove_null_and_empty, create_logger, get_file_path
 from etl.common.utils import pool_worker
-from etl.common.utils import replace_template
-
-import copy
 
 thread_local = threading.local()
 
 
 class BrokenLink(Exception):
     pass
-
-
-def get_call_id(call):
-    return call['method'] + " " + call["path"]
-
-
-def get_implemented_calls(source):
-    implemented_calls = set()
-    calls_call = {'method': 'GET', 'path': '/calls', 'page-size': 100}
-
-    for call in BreedingAPIIterator.fetch_all(source['brapi:endpointUrl'], calls_call, thread_local.logger):
-        for method in call["methods"]:
-            implemented_calls.add(method + " " + call["call"].replace('/brapi/v1/', '').replace(' /', ''))
-    return implemented_calls
-
-
-def get_implemented_call(source, call_group, context=None):
-    calls = call_group['call'].copy()
-    if not isinstance(calls, list):
-        calls = [calls]
-
-    for call in calls:
-        call_id = get_call_id(call)
-
-        if call_id in source['implemented-calls']:
-            call = call.copy()
-            if context:
-                call['path'] = replace_template(call['path'], context)
-
-                if 'param' in call:
-                    call['param'] = call['param'].copy()
-                    for param_name in call['param']:
-                        call['param'][param_name] = replace_template(call['param'][param_name], context)
-
-            return call
-
-    if call_group.get('required'):
-        calls_description = "\n".join(map(get_call_id, calls))
-        raise NotImplementedError('{} does not implement required call in list:\n{}'
-                                  .format(source['schema:name'], calls_description))
-    return None
 
 
 def link_object(entity_id, dest_object, src_object_id):
@@ -80,6 +35,9 @@ def link_objects(entity, object, object_id, linked_entity, linked_objects_by_id)
 
         if linked_object:
             link_object(entity['identifier'], linked_object, object_id)
+        else:
+            raise BrokenLink("{} object id {} not found in store"
+                             .format(linked_entity['name'], link_id))
         link_object(linked_entity['identifier'], object, link_id)
 
         if not was_in_store and linked_object:
@@ -221,17 +179,18 @@ def extract_source(source, entities, log_dir, output_dir):
     """
     source_name = source['schema:identifier']
     action = 'extract-' + source_name
-    thread_local.logger = create_logger(action, [log_dir, action])
+    log_file = get_file_path([log_dir, action], ext='.log', recreate=True)
+    thread_local.logger = create_logger(action, log_file)
 
-    print("Extracting BrAPI {} to '{}'...".format(source_name, output_dir))
+    print("Extracting BrAPI {}...".format(source_name))
     try:
-        # Initialize stores
+        # Initialize JSON merge stores
         for (entity_name, entity) in entities.items():
             entity['store'] = MergeStore(source, entity)
 
-        # Fetch source implemented calls
+        # Fetch server implemented calls
         if 'implemented-calls' not in source:
-            source['implemented-calls'] = get_implemented_calls(source)
+            source['implemented-calls'] = get_implemented_calls(source, thread_local.logger)
 
         # Fetch entities lists
         fetch_all_list(source, entities)
@@ -245,15 +204,20 @@ def extract_source(source, entities, log_dir, output_dir):
         # Detail entities
         fetch_all_details(source, entities)
 
-        # Save to file
-        for (entity_name, entity) in entities.items():
-            entity['store'].save(output_dir)
-        
         print("SUCCEEDED Extracting BrAPI {}.".format(source_name))
     except:
-        print("FAILED Extracting BrAPI {}. Check the logs in {} for more details".format(source_name, log_dir))
         thread_local.logger.error(traceback.format_exc())
         shutil.rmtree(output_dir)
+        output_dir = output_dir + '-failed'
+        print("FAILED Extracting BrAPI {}.\n"
+              "=> Check the logs ({}) and data ({}) for more details."
+              .format(source_name, log_file, output_dir))
+
+    # Save to file
+    print("Saving BrAPI {} to '{}'...".format(source_name, output_dir))
+    for (entity_name, entity) in entities.items():
+        entity['store'].save(output_dir)
+        entity['store'].clear()
 
 
 def main(config):
@@ -269,8 +233,11 @@ def main(config):
     for source_name in sources:
         source_json_dir = get_folder_path([json_dir, source_name], recreate=True)
 
+        source = copy.deepcopy(sources[source_name])
+        entities_copy = copy.deepcopy(entities)
+
         thread = threading.Thread(target=extract_source,
-                                  args=(copy.deepcopy(sources[source_name]), copy.deepcopy(entities), log_dir, source_json_dir))
+                                  args=(source, entities_copy, log_dir, source_json_dir))
         thread.daemon = True
         thread.start()
         threads.append(thread)
