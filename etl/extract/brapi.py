@@ -1,8 +1,11 @@
 import copy
+import os
 import shutil
 import sys
 import threading
 import traceback
+
+import urllib3
 
 from etl.common.brapi import BreedingAPIIterator, BrapiServerError, get_implemented_calls, get_implemented_call
 from etl.common.brapi import get_identifier
@@ -11,6 +14,8 @@ from etl.common.utils import get_folder_path, resolve_path, remove_null_and_empt
 from etl.common.utils import pool_worker
 
 thread_local = threading.local()
+
+urllib3.disable_warnings()
 
 
 class BrokenLink(Exception):
@@ -36,8 +41,8 @@ def link_objects(entity, object, object_id, linked_entity, linked_objects_by_id)
         if linked_object:
             link_object(entity['identifier'], linked_object, object_id)
         else:
-            raise BrokenLink("{} object id {} not found in store"
-                             .format(linked_entity['name'], link_id))
+            raise BrokenLink("{} object id {} not found in store while trying to link with {} object id {}"
+                             .format(linked_entity['name'], link_id, entity['name'], object_id))
         link_object(linked_entity['identifier'], object, link_id)
 
         if not was_in_store and linked_object:
@@ -232,6 +237,9 @@ def main(config):
     threads = list()
     for source_name in sources:
         source_json_dir = get_folder_path([json_dir, source_name], recreate=True)
+        source_json_dir_failed = source_json_dir + '-failed'
+        if os.path.exists(source_json_dir_failed):
+            shutil.rmtree(source_json_dir_failed)
 
         source = copy.deepcopy(sources[source_name])
         entities_copy = copy.deepcopy(entities)

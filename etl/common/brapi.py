@@ -51,9 +51,9 @@ class BreedingAPIIterator:
             self.logger.debug('Fetching {} {} {}'.format(self.call['method'], url.encode('utf-8'), params_json))
         response = None
         if self.call['method'] == 'GET':
-            response = requests.get(url, params=params, headers=headers)
+            response = requests.get(url, params=params, headers=headers, verify=False)
         elif self.call['method'] == 'POST':
-            response = requests.post(url, data=params_json, headers=headers)
+            response = requests.post(url, data=params_json, headers=headers, verify=False)
 
         if response.status_code != 200:
             try:

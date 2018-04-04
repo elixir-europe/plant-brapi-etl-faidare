@@ -1,11 +1,8 @@
 #!/usr/bin/env python
+import argparse
 import json
-import logging
 import os
 import sys
-from argparse import ArgumentParser
-
-import urllib3
 
 import etl.extract.brapi
 import etl.load.es
@@ -13,37 +10,30 @@ import etl.load.virtuoso
 import etl.transform.es
 import etl.transform.jsonld
 import etl.transform.rdf
-from etl.common.utils import get_file_path, get_folder_path, create_logger
+from etl.common.utils import get_file_path, get_folder_path
 
-urllib3.disable_warnings()
+default_data_dir = 'data'
+
+
+def add_data_dir_argument(parser):
+    parser.add_argument('--data-dir',
+                        help='set directory in which ETL data will be stored '
+                             '(default is \'{}\')'.format(default_data_dir))
 
 
 def add_sub_parser(parser_actions, action, help):
     sub_parser = parser_actions.add_parser(action, help=help)
-    sub_parser.add_argument('sources', metavar='source-config.json', type=str, nargs='+',
+    sub_parser.add_argument('sources', metavar='source-config.json', type=argparse.FileType('r'), nargs='+',
                             help='List of data source JSON configuration files')
+    add_data_dir_argument(sub_parser)
     return sub_parser
 
 
 # Parse command line interface arguments
 def parse_cli_arguments():
-
-    parser = ArgumentParser(description='ETL: BrAPI to Elasticsearch. BrAPI to RDF.')
-    # parser.add_argument('--source', help='Restrict ETL to a specific source from "./config/sources".')
+    parser = argparse.ArgumentParser(description='ETL: BrAPI to Elasticsearch. BrAPI to RDF.')
+    add_data_dir_argument(parser)
     parser_actions = parser.add_subparsers(help='Actions')
-
-    # ETL
-    parser_etl = parser_actions.add_parser('etl', help='Extract, Transform & Load')
-    parser_etl.set_defaults(etl=True)
-    etl_targets = parser_etl.add_subparsers(help='etl targets')
-
-    # ETL Elasticsearch
-    etl_es = etl_targets.add_parser('elasticsearch', help="Extract BrAPI, Transform to ES bulk, Load in ES")
-    etl_es.set_defaults(etl_es=True)
-
-    # ETL Virtuoso
-    etl_virtuoso = etl_targets.add_parser('virtuoso', help="Extract BrAPI, Transform to JSON-LD/RDF, Load in virtuoso")
-    etl_virtuoso.set_defaults(etl_virtuoso=True)
 
     # Extract
     parser_extract = add_sub_parser(parser_actions, 'extract', help='Extract data from BrAPI endpoints')
@@ -144,24 +134,23 @@ def main():
     config['root-dir'] = os.path.dirname(__file__)
     config['conf-dir'] = os.path.join(config['root-dir'], 'config')
     config['source-dir'] = os.path.join(config['conf-dir'], 'sources')
-    config['data-dir'] = os.path.join(config['root-dir'], 'data')
+    config['data-dir'] = os.path.join(config['root-dir'], default_data_dir)
     config['log-dir'] = get_folder_path([config['root-dir'], 'log'], create=True)
 
     # Sources config
     config['sources'] = dict()
     source_id_field = 'schema:identifier'
-    for source in options['sources']:
-        with open(source) as source_file:
-            source_config = json.loads(source_file.read())
-            if source_id_field not in source_config:
-                raise Exception("No field '{}' in data source JSON configuration file {}"
-                                .format(source_id_field, source))
-            identifier = source_config[source_id_field]
-            if identifier in config['sources']:
-                raise Exception("Source id '{}' found twice in source list: {}\n"
-                                "Please verify the '{}' field in your files."
-                                .format(identifier, options['sources'], source_id_field))
-            config['sources'][identifier] = source_config
+    for source_file in (options.get('sources') or list()):
+        source_config = json.loads(source_file.read())
+        if source_id_field not in source_config:
+            raise Exception("No field '{}' in data source JSON configuration file '{}'"
+                            .format(source_id_field, source_file.name))
+        identifier = source_config[source_id_field]
+        if identifier in config['sources']:
+            raise Exception("Source id '{}' found twice in source list: {}\n"
+                            "Please verify the '{}' field in your files."
+                            .format(identifier, options['sources'], source_id_field))
+        config['sources'][identifier] = source_config
 
     # Other configs
     conf_files = filter(lambda s: s.endswith('.json'), os.listdir(config['conf-dir']))

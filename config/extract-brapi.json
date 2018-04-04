@@ -19,9 +19,9 @@
       },
       "links": [
         {
-          "type": "internal",
+          "type": "internal-object",
           "entity": "study",
-          "json-path": "studies.studyDbId"
+          "json-path": "studies"
         },
         {
           "type": "internal",
