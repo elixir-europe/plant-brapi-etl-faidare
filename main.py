@@ -5,9 +5,9 @@ import os
 import sys
 
 import etl.extract.brapi
-import etl.load.es
+import etl.load.elasticsearch
 import etl.load.virtuoso
-import etl.transform.es
+import etl.transform.elasticsearch
 import etl.transform.jsonld
 import etl.transform.rdf
 from etl.common.utils import get_file_path, get_folder_path
@@ -98,7 +98,11 @@ def launch_etl(options, config):
         etl.extract.brapi.main(config)
 
     if 'transform_elasticsearch' in options or 'etl_es' in options:
-        etl.transform.es.main(config)
+        validation_config = config['transform-elasticsearch']['validation']
+        base_definitions = validation_config['base-definitions']
+        for (document_name, document_schema) in validation_config['documents'].items():
+            document_schema['definitions'] = base_definitions
+        etl.transform.elasticsearch.main(config)
 
     if 'transform_jsonld' in options or 'transform_rdf' in options or 'etl_virtuoso' in options:
         # Replace JSON-LD context path with absolute path
@@ -119,7 +123,7 @@ def launch_etl(options, config):
         etl.transform.rdf.main(config)
 
     if 'load_elasticsearch' in options or 'etl_es' in options:
-        etl.load.es.main(config)
+        etl.load.elasticsearch.main(config)
 
     if 'load_virtuoso' in options or 'etl_virtuoso' in options:
         etl.load.virtuoso.main(config)

@@ -68,3 +68,40 @@ class MergeStore(dict):
                     del data['etl:detailed']
                 json.dump(data, json_file, cls=CustomJSONEncoder)
                 json_file.write('\n')
+
+
+class JSONSplitStore(object):
+    """
+    Store JSON in JSON files split by file size.
+    """
+
+    def __init__(self, max_file_byte_size, output_dir, base_json_name):
+        self.file_index = 0
+        self.json_file = None
+        self.max_file_byte_size = max_file_byte_size
+        self.output_dir = output_dir
+        self.base_json_name = base_json_name
+
+    def __get_or_create_json_file_writer(self):
+        if not self.json_file or self.json_file.tell() >= self.max_file_byte_size:
+            self.close()
+            self.file_index += 1
+            json_path = get_file_path([self.output_dir, self.base_json_name], ext=str(self.file_index) + ".json")
+            self.json_file = open(json_path, 'a')
+        return self.json_file
+
+    def close(self):
+        """
+        Close currently opened json file
+        """
+        if self.json_file:
+            self.json_file.close()
+
+    def dump(self, *data):
+        """
+        Dump JSON objects into a file one object per line
+        """
+        json_file = self.__get_or_create_json_file_writer()
+        for data in data:
+            json.dump(data, json_file, cls=CustomJSONEncoder)
+            json_file.write('\n')

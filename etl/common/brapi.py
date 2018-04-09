@@ -2,6 +2,7 @@ import json
 from itertools import chain
 
 import requests
+import rfc3987
 
 from etl.common.utils import join_url_path, remove_falsey, replace_template
 
@@ -95,6 +96,31 @@ def get_identifier(entity_name, object):
         object_id = str(hash(json.dumps(simplified_object, sort_keys=True)))
         object[entity_id] = object_id
     return object_id
+
+
+def get_uri(source, entity_name, object):
+    """Get URI from BrAPI object or generate one"""
+    pui_field = entity_name + 'PUI'
+    object_uri = object.get(pui_field)
+
+    if object_uri and rfc3987.match(object_uri, rule='URI'):
+        # The original URI is valid
+        return object_uri
+
+    source_id = source['schema:identifier']
+    object_id = get_identifier(entity_name, object)
+    if not object_uri:
+        # Generate URI from scratch
+        object_uri = 'urn:{}/{}/{}'.format(source_id, entity_name, object_id)
+    else:
+        # Generate URI by prepending the original URI with the source identifier
+        object_uri = 'urn:{}/{}'.format(source_id, object_uri)
+
+    if not rfc3987.match(object_uri, rule='URI'):
+        raise Exception('Could not get or create a correct URI for {} object id {}'
+                        .format(entity_name, object_id))
+
+    return object_uri
 
 
 def get_call_id(call):
