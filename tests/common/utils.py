@@ -1,6 +1,6 @@
 import unittest
 
-from etl.common.utils import resolve_path, remove_null_and_empty, flatten
+from etl.common.utils import resolve_path, remove_falsey, flatten
 
 
 class TestFlatten(unittest.TestCase):
@@ -23,25 +23,25 @@ class TestRemoveNull(unittest.TestCase):
     def test_remove_empty(self):
         input_value = []
         expected = None
-        actual = remove_null_and_empty(input_value)
+        actual = remove_falsey(input_value)
         self.assertEqual(expected, actual)
 
     def test_remove_heterogeneous(self):
-        input_value = [None, "", {1, 2, None}]
+        input_value = [None, "", {1, 2, None}, 0]
         expected = [{1, 2}]
-        actual = remove_null_and_empty(input_value)
+        actual = remove_falsey(input_value)
         self.assertEqual(expected, actual)
 
     def test_remove_in_dict(self):
         input_value = {"a": None, "b": 2}
         expected = {"b": 2}
-        actual = remove_null_and_empty(input_value)
+        actual = remove_falsey(input_value)
         self.assertEqual(expected, actual)
 
     def test_remove_in_composed_value(self):
         input_value = [None,  {"a": None, "b": 2, "c": [{"a": None, "b": "", "c": 1}, ""]}]
         expected = [{'b': 2, 'c': [{'c': 1}]}]
-        actual = remove_null_and_empty(input_value)
+        actual = remove_falsey(input_value)
         self.assertEqual(expected, actual)
 
 

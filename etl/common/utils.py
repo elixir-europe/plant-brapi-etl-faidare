@@ -1,13 +1,17 @@
+import itertools
+import logging
 import multiprocessing
 import os
 import re
 import shutil
 import signal
 import sys
+from functools import partial
 from functools import reduce
 from multiprocessing import Pool
 
-import logging
+import collections
+
 default_nb_threads = multiprocessing.cpu_count() + 2
 
 
@@ -72,32 +76,34 @@ def pool_worker(fn, array_of_args, nb_thread=default_nb_threads):
     return res
 
 
-# Remove None values from list and dict recursively
-def remove_null_and_empty(value, predicate=bool):
-    if not value:
+def remove_falsey(value, predicate=bool):
+    """Remove falsey values for collections and both keys and values for dictionaries"""
+    if not predicate(value):
         return None
-    is_list = isinstance(value, list)
-    is_set = isinstance(value, set)
-    is_dict = isinstance(value, dict)
-    if is_dict or is_list or is_set:
-        new_value = (type(value))()
-        for element in value:
-            key = True
-            if is_dict:
-                key = element
-                element = value[element]
-            new_element = remove_null_and_empty(element)
-            if key and predicate(new_element):
-                if is_dict:
-                    new_value[key] = new_element
-                if is_list:
-                    new_value.append(new_element)
-                if is_set:
-                    new_value.add(new_element)
-        if new_value:
-            return new_value
-    else:
-        return value
+    if not isinstance(value, str) and isinstance(value, collections.Iterable):
+        original_type = type(value)
+        is_dict = isinstance(value, dict)
+
+        if is_dict:
+            def filter_process(entry):
+                new_entry = remove_falsey(entry, predicate)
+                try:
+                    key, value = new_entry
+                    return [key, value]
+                except ValueError:
+                    return None
+            value = value.items()
+        else:
+            filter_process = partial(remove_falsey, predicate=predicate)
+        filter_none = partial(filter, lambda x: x is not None)
+        filtered_values = filter_none(map(filter_process, value))
+        return as_collection_type(original_type, filtered_values)
+    return value
+
+
+def remove_null(value):
+    """Remove `None` values (and keys) from collections and dictionaries"""
+    return remove_falsey(value, predicate=lambda x: x is not None)
 
 
 # Replace variables in template strings (ex: "{id}/") by its value in "value_dict" dict (ex: value_dict['id'])
@@ -115,19 +121,42 @@ def replace_template(template, value_dict):
 
 
 def flatten(value):
-    return reduce(lambda acc, x: acc + flatten(x) if isinstance(x, list) else acc + [x], value, [])
+    return list(reduce(
+        lambda acc, x:
+            itertools.chain(acc, flatten(x))
+            if isinstance(x, collections.Iterable) and not isinstance(x, str)
+            else itertools.chain(acc, [x]),
+        value,
+        itertools.chain()
+    ))
 
 
-def resolve_path(value, path):
-    """Recursively list values in dict and list nested objects following a path."""
+def resolve_path(values, path):
     if not path:
-        return value
-    first, rest = path[0], path[1:]
-    if isinstance(value, dict) and first in value:
-        return remove_null_and_empty(resolve_path(value[first], rest))
-    if isinstance(value, list) or isinstance(value, set):
-        return remove_null_and_empty(flatten(map(lambda v: resolve_path(v, path), value)))
+        return values
+    if isinstance(values, dict):
+        first, rest = path[0], path[1:]
+        if first in values:
+            return remove_null(resolve_path(values[first], rest)) or None
+        else:
+            return None
+    if isinstance(values, collections.Iterable):
+        return remove_null(flatten(map(lambda value: resolve_path(value, path), values))) or None
     return None
+
+
+def as_collection_type(type, value):
+    if type in [dict, list, set, tuple]:
+        return type(value)
+    return value
+
+
+def as_list(x):
+    if not x:
+        return []
+    if isinstance(x, list):
+        return x
+    return [x]
 
 
 def create_logger(name, log_file):
@@ -143,5 +172,4 @@ def create_logger(name, log_file):
     # stdout_handler = logging.StreamHandler(sys.stdout)
     # stdout_handler.setLevel(logging.INFO)
     # logger.addHandler(stdout_handler)
-
     return logger

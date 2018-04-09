@@ -1,32 +1,10 @@
 import collections
 import json
-import math
 
 from six import itervalues
 
 from etl.common.brapi import get_identifier
-from etl.common.utils import get_file_path, remove_null_and_empty
-
-
-class JSONStore(object):
-    """Stores JSON BrAPI entities in output directory"""
-
-    def __init__(self, entity, output_dir):
-        self.entity = entity
-        self.output_dir = output_dir
-        self.stored_ids = set()
-        self.max_line = 1000
-
-    def store(self, data):
-        file_index = int(math.ceil(float(len(self.stored_ids)) / float(self.max_line)))
-        json_path = get_file_path([self.output_dir, self.entity['name']], ext=str(file_index) + '.json', create=True)
-
-        with open(json_path, 'a') as json_file:
-            json.dump(data, json_file)
-            json_file.write('\n')
-
-        data_id = data[self.entity["identifier"]]
-        self.stored_ids.add(data_id)
+from etl.common.utils import get_file_path, remove_falsey
 
 
 def dict_merge(into, merge_dct):
@@ -61,23 +39,17 @@ class MergeStore(dict):
 
     def __init__(self, source, entity):
         super(MergeStore, self).__init__()
-        self.entity = entity
-        self.data_store = dict()
+        self.entity_name = entity['name']
         self.source = source
 
     def store(self, data):
-        # Compact object by removing nulls
-        data = remove_null_and_empty(data)
+        # Compact object by removing nulls and empty
+        data = remove_falsey(data)
         if data:
-            entity_name = self.entity['name']
-            object_name = entity_name + 'Name'
-            if 'name' in data and object_name not in data:
-                data[object_name] = data['name']
-
             # data['type'] = entity_name
             data['source'] = self.source['schema:identifier']
 
-            data_id = get_identifier(self.entity, data)
+            data_id = get_identifier(self.entity_name, data)
             if data_id in self:
                 old_value = self[data_id]
                 dict_merge(old_value, data)
@@ -85,11 +57,10 @@ class MergeStore(dict):
                 self[data_id] = data
 
     def save(self, output_dir):
-        entity_name = self.entity['name']
         if len(self) <= 0:
             return
         data_list = list(itervalues(self))
-        json_path = get_file_path([output_dir, entity_name], ext='.json', create=True)
+        json_path = get_file_path([output_dir, self.entity_name], ext='.json', create=True)
 
         with open(json_path, 'w') as json_file:
             for data in data_list:

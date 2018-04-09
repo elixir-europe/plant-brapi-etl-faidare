@@ -5,7 +5,7 @@
   },
   "@type": "schema:DataCatalog",
   "@id": "https://test-server.brapi.org",
-  "schema:identifier": "TEST",
+  "schema:identifier": "BRAPI_TEST",
   "schema:name": "BRAPI TEST",
   "brapi:endpointUrl": "https://test-server.brapi.org/brapi/v1/"
 }

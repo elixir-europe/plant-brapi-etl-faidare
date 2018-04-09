@@ -1,16 +1,18 @@
-import copy
+
 import os
 import shutil
 import sys
 import threading
 import traceback
+from copy import deepcopy
 
 import urllib3
 
-from etl.common.brapi import BreedingAPIIterator, BrapiServerError, get_implemented_calls, get_implemented_call
+from etl.common.brapi import BreedingAPIIterator, get_implemented_calls, get_implemented_call
 from etl.common.brapi import get_identifier
 from etl.common.store import MergeStore
-from etl.common.utils import get_folder_path, resolve_path, remove_null_and_empty, create_logger, get_file_path
+from etl.common.utils import get_folder_path, resolve_path, remove_falsey, create_logger, get_file_path, remove_null, \
+    as_list
 from etl.common.utils import pool_worker
 
 thread_local = threading.local()
@@ -22,16 +24,17 @@ class BrokenLink(Exception):
     pass
 
 
-def link_object(entity_id, dest_object, src_object_id):
-    dest_object_ref = entity_id + 's'
+def link_object(dest_entity_name, dest_object, src_object_id):
+    dest_object_ref = dest_entity_name + 'DbIds'
     dest_object_ids = dest_object.get(dest_object_ref) or set()
-    if isinstance(dest_object_ids, list):
+    if not isinstance(dest_object_ids, set):
         dest_object_ids = set(dest_object_ids)
     dest_object_ids.add(src_object_id)
-    dest_object[dest_object_ref] = remove_null_and_empty(dest_object_ids)
+    dest_object[dest_object_ref] = remove_falsey(dest_object_ids)
 
 
-def link_objects(entity, object, object_id, linked_entity, linked_objects_by_id):
+def link_objects(entity, object, linked_entity, linked_objects_by_id):
+    object_id = get_identifier(entity['name'], object)
     for (link_id, linked_object) in linked_objects_by_id.items():
         was_in_store = link_id in linked_entity['store']
 
@@ -39,11 +42,11 @@ def link_objects(entity, object, object_id, linked_entity, linked_objects_by_id)
             linked_object = linked_entity['store'][link_id]
 
         if linked_object:
-            link_object(entity['identifier'], linked_object, object_id)
+            link_object(entity['name'], linked_object, object_id)
         else:
             raise BrokenLink("{} object id {} not found in store while trying to link with {} object id {}"
                              .format(linked_entity['name'], link_id, entity['name'], object_id))
-        link_object(linked_entity['identifier'], object, link_id)
+        link_object(linked_entity['name'], object, link_id)
 
         if not was_in_store and linked_object:
             linked_entity['store'].store(linked_object)
@@ -53,7 +56,7 @@ def fetch_all_in_store(entities, fetch_function, arguments):
     """
     Run a fetch function with arguments in a pool worker and collect results in the entity MergeStore
     """
-    results = remove_null_and_empty(pool_worker(fetch_function, arguments, nb_thread=2))
+    results = remove_falsey(pool_worker(fetch_function, arguments, nb_thread=2))
     if not results:
         return
 
@@ -77,7 +80,8 @@ def fetch_details(options):
     if in_store and (skip_if_in_store or already_detailed):
         return
 
-    entity_id = entity['identifier']
+    entity_name = entity['name']
+    entity_id = entity_name + 'DbId'
     detail_call = get_implemented_call(source, detail_call_group, {entity_id: object_id})
 
     if not detail_call:
@@ -85,7 +89,7 @@ def fetch_details(options):
 
     details = BreedingAPIIterator.fetch_all(source['brapi:endpointUrl'], detail_call, thread_local.logger).__next__()
     details['etl:detailed'] = True
-    return entity['name'], [details]
+    return entity_name, [details]
 
 
 def fetch_all_details(source, entities):
@@ -94,7 +98,8 @@ def fetch_all_details(source, entities):
     """
     args = list()
     for (entity_name, entity) in entities.items():
-        for (object_id, object) in entity['store'].items():
+        for (_, object) in entity['store'].items():
+            object_id = get_identifier(entity_name, object)
             args.append((source, entity, object_id))
     fetch_all_in_store(entities, fetch_details, args)
 
@@ -141,29 +146,34 @@ def fetch_all_links(source, entities):
 
         for link in entity['links']:
             for (object_id, object) in entity['store'].items():
-                linked_entity = entities[link['entity']]
+                linked_entity_name = link['entity']
+                linked_entity = entities[linked_entity_name]
                 linked_objects_by_id = {}
 
                 if link['type'].startswith('internal'):
                     link_path = link['json-path']
+                    link_path_list = remove_falsey(link_path.split('.'))
 
-                    link_value = resolve_path(object, link_path.split('.'))
-                    if not link_value:
+                    link_values = remove_null(as_list(resolve_path(object, link_path_list)))
+                    if not link_values:
                         if link.get('required'):
-                            raise BrapiServerError("Could not find required field '{}' in {} object id '{}'"
-                                                   .format(link_path, entity_name, object_id))
+                            raise BrokenLink("Could not find required field '{}' in {} object id '{}'"
+                                             .format(link_path, entity_name, object_id))
                         continue
-
-                    link_values = [link_value] if not isinstance(link_value, list) else link_value
 
                     if link['type'] == 'internal-object':
                         for link_value in link_values:
-                            link_id = get_identifier(linked_entity, link_value)
+                            link_id = get_identifier(linked_entity_name, link_value)
                             linked_objects_by_id[link_id] = link_value
 
                     elif link['type'] == 'internal':
-                        for link_id in link_values:
-                            linked_objects_by_id[link_id] = None
+                        link_id_field = linked_entity['name'] + 'DbId'
+                        link_name_field = linked_entity['name'] + 'Name'
+                        for link_value in link_values:
+                            link_id = link_value.get(link_id_field)
+                            link_name = link_value.get(link_name_field)
+                            if link_id:
+                                linked_objects_by_id[link_id] = {link_id_field: link_id, link_name_field: link_name}
 
                 elif link['type'] == 'external-object':
                     call = get_implemented_call(source, link, context=object)
@@ -172,10 +182,29 @@ def fetch_all_links(source, entities):
 
                     link_values = list(BreedingAPIIterator.fetch_all(source['brapi:endpointUrl'], call, thread_local.logger))
                     for link_value in link_values:
-                        link_id = get_identifier(linked_entity, link_value)
+                        link_id = get_identifier(linked_entity_name, link_value)
                         linked_objects_by_id[link_id] = link_value
 
-                link_objects(entity, object, object_id, linked_entity, linked_objects_by_id)
+                link_objects(entity, object, linked_entity, linked_objects_by_id)
+
+
+def remove_internal_objects(entities):
+    """
+    Remove objects referenced inside others (example: trial.studies or study.location)
+    """
+    for (entity_name, entity) in entities.items():
+        for link in (entity.get('links') or []):
+            if link['type'] != 'internal-object':
+                continue
+
+            for (_, data) in entity['store'].items():
+                link_path = link['json-path']
+                link_path_list = remove_falsey(link_path.split('.'))
+
+                context_path, last = link_path_list[:-1], link_path_list[-1]
+                link_context = resolve_path(data, context_path)
+                if link_context and last in link_context:
+                    del link_context[last]
 
 
 def extract_source(source, entities, log_dir, output_dir):
@@ -206,8 +235,10 @@ def extract_source(source, entities, log_dir, output_dir):
         # Link entities (internal links, internal object links and external object links)
         fetch_all_links(source, entities)
 
-        # Detail entities
+        # Detail entities (for object that might have been discovered b links)
         fetch_all_details(source, entities)
+
+        remove_internal_objects(entities)
 
         print("SUCCEEDED Extracting BrAPI {}.".format(source_name))
     except:
@@ -241,8 +272,8 @@ def main(config):
         if os.path.exists(source_json_dir_failed):
             shutil.rmtree(source_json_dir_failed)
 
-        source = copy.deepcopy(sources[source_name])
-        entities_copy = copy.deepcopy(entities)
+        source = deepcopy(sources[source_name])
+        entities_copy = deepcopy(entities)
 
         thread = threading.Thread(target=extract_source,
                                   args=(source, entities_copy, log_dir, source_json_dir))

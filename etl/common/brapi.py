@@ -3,7 +3,7 @@ from itertools import chain
 
 import requests
 
-from etl.common.utils import join_url_path, remove_null_and_empty, replace_template
+from etl.common.utils import join_url_path, remove_falsey, replace_template
 
 
 class BreedingAPIIterator:
@@ -86,12 +86,12 @@ class BrapiServerError(Exception):
     pass
 
 
-def get_identifier(entity, object):
+def get_identifier(entity_name, object):
     """Get identifier from BrAPI object or generate one from hashed string json representation"""
-    entity_id = entity['identifier']
+    entity_id = entity_name + 'DbId'
     object_id = object.get(entity_id)
     if not object_id:
-        simplified_object = remove_null_and_empty(object, predicate=lambda x: x and not isinstance(x, set))
+        simplified_object = remove_falsey(object, predicate=lambda x: x and not isinstance(x, set))
         object_id = str(hash(json.dumps(simplified_object, sort_keys=True)))
         object[entity_id] = object_id
     return object_id

@@ -1,7 +1,7 @@
 {
   "@context": {
     "schema": "http://schema.org/",
-    "brapi": "https://brapi.org/"
+    "brapi": "https://brapi.org/rdf/"
   },
   "@type": "schema:DataCatalog",
   "@id": "http://pippa.psb.ugent.be",

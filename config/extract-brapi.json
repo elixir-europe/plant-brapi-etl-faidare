@@ -1,7 +1,6 @@
 {
   "entities": {
     "trial": {
-      "identifier": "trialDbId",
       "list": {
         "call": [
           {
@@ -21,17 +20,22 @@
         {
           "type": "internal-object",
           "entity": "study",
-          "json-path": "studies"
+          "json-path": ".studies"
         },
         {
           "type": "internal",
           "entity": "program",
-          "json-path": "programDbId"
+          "json-path": "."
+        },
+        {
+          "type": "internal-object",
+          "entity": "contact",
+          "json-path": ".contacts"
         }
       ]
     },
+
     "study": {
-      "identifier": "studyDbId",
       "list": {
         "required": true,
         "call": [
@@ -100,23 +104,33 @@
         },
         {
           "type": "internal-object",
+          "entity": "contact",
+          "json-path": ".contacts"
+        },
+        {
+          "type": "internal-object",
           "entity": "location",
-          "json-path": "location"
+          "json-path": ".location"
         },
         {
           "type": "internal",
           "entity": "location",
-          "json-path": "locationDbId"
+          "json-path": "."
+        },
+        {
+          "type": "internal",
+          "entity": "trial",
+          "json-path": "."
         },
         {
           "type": "internal",
           "entity": "program",
-          "json-path": "programDbId"
+          "json-path": "."
         }
       ]
     },
+
     "germplasm": {
-      "identifier": "germplasmDbId",
       "-list": {
         "call": [
           {
@@ -138,8 +152,8 @@
         }
       }
     },
+
     "location": {
-      "identifier": "locationDbId",
       "list": {
         "call": [
           {
@@ -157,8 +171,8 @@
         }
       }
     },
+
     "ontology": {
-      "identifier": "ontologyDbId",
       "list": {
         "call": [
           {
@@ -169,8 +183,8 @@
         ]
       }
     },
+
     "observationVariable": {
-      "identifier": "observationVariableDbId",
       "list": {
         "call": [
           {
@@ -189,12 +203,12 @@
         {
           "type": "internal",
           "entity": "ontology",
-          "json-path": "ontologyDbId"
+          "json-path": "."
         }
       ]
     },
+
     "program": {
-      "identifier": "programDbId",
       "list": {
         "call": [
           {
@@ -210,8 +224,8 @@
         ]
       }
     },
+
     "observationUnit": {
-      "identifier": "observationUnitDbId",
       "-list": {
         "call": [
           {
@@ -225,19 +239,21 @@
         {
           "type": "internal",
           "entity": "study",
-          "json-path": "studyDbId"
+          "json-path": "."
         },
         {
           "type": "internal",
           "entity": "germplasm",
-          "json-path": "germplasmDbId"
+          "json-path": "."
         },
         {
           "type": "internal",
           "entity": "observationVariable",
-          "json-path": "observations.observationVariableDbId"
+          "json-path": ".observations.observationVariableDbId"
         }
       ]
-    }
+    },
+
+    "contact": {}
   }
 }

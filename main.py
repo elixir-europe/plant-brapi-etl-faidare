@@ -157,11 +157,7 @@ def main():
     for conf_file in conf_files:
         config.update(load_config(config['conf-dir'], conf_file))
 
-    try:
-        launch_etl(options, config)
-    except KeyError as e:
-        print(e)
-        pass
+    launch_etl(options, config)
 
 
 # If used directly in command line
