@@ -146,15 +146,22 @@ class TestResolve(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def test_resolve_flatten1(self):
-        input = {"{flatten}": ["foo", "bar"]}
+        input = {"{flatten_distinct}": ["foo", "foo", "bar"]}
         actual = resolve(input, data_0, data_index)
         expected = ["foo", "bar"]
         self.assertEqual(actual, expected)
 
     def test_resolve_flatten2(self):
-        input = {"{flatten}": ["foo", "bar", ["foo", "bar"]]}
+        input = {"{flatten_distinct}": ["foo", "bar", ["baz", ["fizz", "foo", "buzz"], "bar"]]}
         actual = resolve(input, data_0, data_index)
-        expected = ["foo", "bar", "foo", "bar"]
+        expected = ["foo", "bar", "baz", "fizz", "buzz"]
+        self.assertEqual(actual, expected)
+
+    def test_resolve_flatten3(self):
+        input = {"{flatten_distinct}": ["foo", " foo bar", ["baz foo", "bar"]],
+                 "{split_ws}": True}
+        actual = resolve(input, data_0, data_index)
+        expected = ["foo", "bar", "baz"]
         self.assertEqual(actual, expected)
 
     def test_resolve_or1(self):

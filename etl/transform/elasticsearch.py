@@ -1,4 +1,5 @@
 import json
+import multiprocessing
 import os
 import pprint
 import re
@@ -7,26 +8,27 @@ import sys
 import threading
 import traceback
 import urllib
-from copy import deepcopy
 from functools import partial, reduce
+from multiprocessing.pool import Pool
 
 import jsonschema
 
 from etl.common.brapi import get_identifier, get_uri
 from etl.common.store import JSONSplitStore
 from etl.common.templating import resolve
-from etl.common.utils import get_file_path, get_folder_path, remove_null, as_list, create_logger
+from etl.common.utils import get_file_path, get_folder_path, remove_none, as_list, create_logger
 
 
-class InvalidDocument(Exception):
+class InvalidDocumentError(Exception):
     def __init__(self, short_message, long_message, cause):
         self.long_message = long_message
         super(Exception, self).__init__(short_message, cause)
 
 
-def create_bulk_index_header(doc_id, doc_type):
+def create_bulk_index_header(source, document_type, document_id):
     """Create an ElasticSearch bulk index header"""
-    return {'index': {'_type': doc_type, '_id': doc_id}}
+    index_name = "{}_{}".format(source["schema:identifier"], document_type).lower()
+    return {'index': {'_type': document_type, '_id': document_id, '_index': index_name}}
 
 
 def load_data_by_entity(source_json_dir, logger):
@@ -71,7 +73,7 @@ def index_by_uri(source, data_by_entity, logger):
                     (entity_name, plural) = match.groups()
                     return [key, entity_name, plural, value]
 
-            entity_links = list(remove_null(map(extract_entity_link, data.items())))
+            entity_links = list(remove_none(map(extract_entity_link, data.items())))
 
             for (linked_id_field, linked_entity, plural, linked_value) in entity_links:
                 link_uri_field = linked_entity + 'PUI'
@@ -103,39 +105,57 @@ def uri_to_db_id(data_by_uri, logger):
                     data[db_id_field] = urllib.parse.quote(uri_values, safe='')
 
 
+def generate_elasticsearch_document(options):
+    document_type, copy_fields_from_source, document_transform, data, data_by_uri = options
+    document = dict()
+    if copy_fields_from_source:
+        for (key, value) in data.items():
+            document[key] = value
+
+    if document_transform:
+        resolved = resolve(document_transform, data, data_by_uri)
+        document.update(resolved)
+
+    return (document_type, document)
+
+
 def generate_elasticsearch_documents(document_configs, data_by_entity, data_by_uri, logger):
     """
     Iterable generator function producing elasticsearch documents
     """
     logger.info("Generating documents...")
-    document_count = 0
+
+    args = list()
+    # Prepare list of args for the 'generate_elasticsearch_document' function to run in a thread pool
     for document_config in document_configs:
-        document_name = document_config.get('document-name')
+        document_type = document_config.get('document-type')
         source_entity = document_config.get('source-entity')
         document_transform = document_config.get('document-transform')
         copy_fields_from_source = document_config.get('copy-fields-from-source')
 
-        data_list = (data_by_entity.get(source_entity) or {}).values()
+        data_list = list((data_by_entity.get(source_entity) or {}).values())
         if not data_list:
             logger.info("No data for entity '{}'. Skipping document '{}' creation."
-                        .format(source_entity, document_name))
+                        .format(source_entity, document_type))
             continue
         for data in data_list:
-            if copy_fields_from_source:
-                document = deepcopy(data)
-            else:
-                document = dict()
+            args.append((
+                document_type, copy_fields_from_source, document_transform, data, data_by_uri
+            ))
 
-            if document_transform:
-                resolved = resolve(document_transform, data, data_by_uri)
-                document.update(resolved)
+    pool = Pool(multiprocessing.cpu_count())
+    documents = pool.imap_unordered(generate_elasticsearch_document, args)
 
-            document_count += 1
-            yield (document_name, document)
+    document_count = 0
+    for document in documents:
+        yield document
+        document_count += 1
+
+    pool.close()
     logger.info("Generated {} documents.".format(document_count))
 
 
-def dump_documents_in_bulk_files(documents, source_bulk_dir, logger):
+def dump_documents_in_bulk_files(source, documents, source_bulk_dir, logger):
     logger.info("Saving documents to bulk files...")
     # Max file size of around 10Mo
     max_file_byte_size = 10000000
@@ -144,9 +164,9 @@ def dump_documents_in_bulk_files(documents, source_bulk_dir, logger):
     json_store = JSONSplitStore(max_file_byte_size, source_bulk_dir, base_json_name)
 
     document_count = 0
-    for document_name, document in documents:
+    for document_type, document in documents:
         # Generate Elasticsearch bulk index header for each documents
-        bulk_header = create_bulk_index_header(document['@id'], document_name)
+        bulk_header = create_bulk_index_header(source, document_type, document['@id'])
         # Dump header and document in bulk file
         json_store.dump(bulk_header, document)
         document_count += 1
@@ -162,22 +182,22 @@ def validate(documents, validation_config, logger):
     """
     logger.info("Validating documents JSON schemas...")
     document_count = 0
-    schema_by_document_name = validation_config['documents']
-    for document_name, document in documents:
-        schema = schema_by_document_name.get(document_name)
+    schema_by_document_type = validation_config['documents']
+    for document_type, document in documents:
+        schema = schema_by_document_type.get(document_type)
         if not schema:
             continue
         try:
             jsonschema.validate(document, schema)
         except jsonschema.exceptions.SchemaError as schema_error:
             long_message = 'Invalid {} document\nFor schema: {}\nWith content: {}'\
-                           .format(document_name, pprint.pformat(schema), pprint.pformat(document))
-            raise InvalidDocument(
-                'Could not validate document {} JSON schema'.format(document_name),
+                           .format(document_type, pprint.pformat(schema), pprint.pformat(document))
+            raise InvalidDocumentError(
+                'Could not validate document {} JSON schema'.format(document_type),
                 long_message, cause=schema_error
             )
         document_count += 1
-        yield (document_name, document)
+        yield (document_type, document)
     logger.info("Validated {} documents.".format(document_count))
 
 
@@ -207,7 +227,7 @@ def transform_source(source, transform_config, source_json_dir, source_bulk_dir,
         # Index data by URI (generated if not present)
         data_by_uri = index_by_uri(source, data_by_entity, logger)
 
-        # Use encoded URI as database id
+        # Use encoded uris as database ids
         uri_to_db_id(data_by_uri, logger)
 
         # Generate the Elasticsearch documents
@@ -217,7 +237,7 @@ def transform_source(source, transform_config, source_json_dir, source_bulk_dir,
         validated_documents = validate(documents, validation_config, logger)
 
         # Write the documents in bulk files
-        dump_documents_in_bulk_files(validated_documents, source_bulk_dir, logger)
+        dump_documents_in_bulk_files(source, validated_documents, source_bulk_dir, logger)
 
         print("SUCCEEDED Transforming BrAPI {}.".format(source_name))
     except Exception as e:

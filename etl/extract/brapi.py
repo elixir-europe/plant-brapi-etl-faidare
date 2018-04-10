@@ -11,7 +11,7 @@ import urllib3
 from etl.common.brapi import BreedingAPIIterator, get_implemented_calls, get_implemented_call
 from etl.common.brapi import get_identifier
 from etl.common.store import MergeStore
-from etl.common.utils import get_folder_path, resolve_path, remove_falsey, create_logger, get_file_path, remove_null, \
+from etl.common.utils import get_folder_path, resolve_path, remove_falsey, create_logger, get_file_path, remove_none, \
     as_list
 from etl.common.utils import pool_worker
 
@@ -154,7 +154,7 @@ def fetch_all_links(source, entities):
                     link_path = link['json-path']
                     link_path_list = remove_falsey(link_path.split('.'))
 
-                    link_values = remove_null(as_list(resolve_path(object, link_path_list)))
+                    link_values = remove_none(as_list(resolve_path(object, link_path_list)))
                     if not link_values:
                         if link.get('required'):
                             raise BrokenLink("Could not find required field '{}' in {} object id '{}'"

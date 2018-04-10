@@ -6,10 +6,15 @@ from functools import reduce, partial
 import lark
 import re
 
-from etl.common.utils import remove_null, resolve_path, as_list, flatten, remove_falsey
+from etl.common.utils import remove_none, resolve_path, as_list, flatten, remove_falsey, distinct
 
 parser = lark.Lark('''
-FIELD: WORD 
+WS: /[ ]/+
+
+LCASE_LETTER: "a".."z"
+UCASE_LETTER: "A".."Z"
+
+FIELD: (UCASE_LETTER | LCASE_LETTER)+ 
 field_path: ("." FIELD?)+
 
 object_path: field_path WS* "=>" WS*
@@ -17,16 +22,13 @@ object_path: field_path WS* "=>" WS*
 value_path: field_path (WS* "+" WS* field_path)* 
 
 start: "{" WS* object_path* WS* value_path WS* "}"
-
-%import common.WS
-%import common.WORD
 ''')
 
 
 def get_path(field_path):
     if not field_path or not field_path.children:
         return []
-    return remove_null(list(map(lambda field: field.value, field_path.children)))
+    return remove_none(list(map(lambda field: field.value, field_path.children)))
 
 
 def remove_white_space_token(tree):
@@ -35,7 +37,7 @@ def remove_white_space_token(tree):
             if not (isinstance(child, lark.lexer.Token) and child.type == "WS"):
                 return child
         without_ws = filter(is_ws, tree.children)
-        new_children = remove_null(list(map(remove_white_space_token, without_ws)))
+        new_children = remove_none(list(map(remove_white_space_token, without_ws)))
         return lark.tree.Tree(tree.data, new_children)
     return tree
 
@@ -55,7 +57,7 @@ def resolve_value_template(tree, data, data_index):
             ids = resolve_path(data, path)
             if not ids:
                 return None
-            data = remove_null(list(map(lambda id: data_index.get(id), ids)))
+            data = remove_none(list(map(lambda id: data_index.get(id), ids)))
         elif child.data == "value_path":
             if len(child.children) == 1:
                 path = get_path(child.children[0])
@@ -78,7 +80,7 @@ def resolve_value_template(tree, data, data_index):
                     )
                     if joined:
                         new_value.extend(joined)
-                return list(collections.OrderedDict.fromkeys(remove_falsey(new_value)))
+                return list(distinct(remove_falsey(new_value)))
 
 
 def resolve_string_template(template_string, data, data_index):
@@ -112,25 +114,31 @@ def resolve_if_template(template, data, data_index):
 
 
 def resolve_join_template(template, data, data_index):
-    join_elements = template.get('{join}')
+    elements = template.get('{join}')
 
-    if not join_elements:
-        raise Exception("Empty '{{join}}' template '{}'".format(join_elements))
-    if not isinstance(join_elements, list):
-        raise Exception("'{{join}}' template is not a list '{}'".format(join_elements))
+    if not elements:
+        raise Exception("Empty '{{join}}' template '{}'".format(elements))
+    if not isinstance(elements, list):
+        raise Exception("'{{join}}' template is not a list '{}'".format(elements))
 
-    return coll_as_str(flatten(resolve(join_elements, data, data_index)))
+    return coll_as_str(flatten(resolve(elements, data, data_index)))
 
 
 def resolve_flatten_template(template, data, data_index):
-    flatten_elements = template.get('{flatten}')
+    elements = template.get('{flatten_distinct}')
+    split_ws = template.get('{split_ws}')
 
-    if not flatten_elements:
-        raise Exception("Empty '{{flatten}}' template '{}'".format(flatten_elements))
-    if not isinstance(flatten_elements, list):
-        raise Exception("'{{flatten}}' template is not a list '{}'".format(flatten_elements))
+    if not elements:
+        raise Exception("Empty '{{flatten_distinct}}' template '{}'".format(elements))
 
-    return flatten(resolve(flatten_elements, data, data_index))
+    resolved = resolve(as_list(elements), data, data_index)
+    if split_ws:
+        # Split each token by white space to have single flatten distinct token list
+        def split(x):
+            if isinstance(x, str):
+                return x.split(' ')
+        resolved = flatten(remove_falsey(map(split, flatten(resolved))))
+    return list(distinct(flatten(resolved)))
 
 
 def resolve_or_template(template, data, data_index):
@@ -151,7 +159,7 @@ def resolve(template, data, data_index):
     if isinstance(template, str):
         return resolve_string_template(template, data, data_index)
     elif isinstance(template, list):
-        return list(remove_null(map(partial(resolve, data=data, data_index=data_index), template)))
+        return list(remove_none(map(partial(resolve, data=data, data_index=data_index), template)))
     elif isinstance(template, dict):
         if '{if}' in template:
             return resolve_if_template(template, data, data_index)
@@ -159,7 +167,7 @@ def resolve(template, data, data_index):
             return resolve_or_template(template, data, data_index)
         elif '{join}' in template:
             return resolve_join_template(template, data, data_index)
-        elif '{flatten}' in template:
+        elif '{flatten_distinct}' in template:
             return resolve_flatten_template(template, data, data_index)
         else:
             new_dict = dict()

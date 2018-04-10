@@ -100,7 +100,7 @@ def launch_etl(options, config):
     if 'transform_elasticsearch' in options or 'etl_es' in options:
         validation_config = config['transform-elasticsearch']['validation']
         base_definitions = validation_config['base-definitions']
-        for (document_name, document_schema) in validation_config['documents'].items():
+        for (document_type, document_schema) in validation_config['documents'].items():
             document_schema['definitions'] = base_definitions
         etl.transform.elasticsearch.main(config)
 

@@ -101,7 +101,7 @@ def remove_falsey(value, predicate=bool):
     return value
 
 
-def remove_null(value):
+def remove_none(value):
     """Remove `None` values (and keys) from collections and dictionaries"""
     return remove_falsey(value, predicate=lambda x: x is not None)
 
@@ -131,17 +131,25 @@ def flatten(value):
     ))
 
 
+def distinct(values):
+    seen = set()
+    for value in values:
+        if value not in seen:
+            seen.add(value)
+            yield value
+
+
 def resolve_path(values, path):
     if not path:
         return values
     if isinstance(values, dict):
         first, rest = path[0], path[1:]
         if first in values:
-            return remove_null(resolve_path(values[first], rest)) or None
+            return remove_none(resolve_path(values[first], rest)) or None
         else:
             return None
     if isinstance(values, collections.Iterable):
-        return remove_null(flatten(map(lambda value: resolve_path(value, path), values))) or None
+        return remove_none(flatten(map(lambda value: resolve_path(value, path), values))) or None
     return None
 
 
