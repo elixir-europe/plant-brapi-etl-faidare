@@ -48,6 +48,8 @@ def parse_cli_arguments():
         transform_targets, 'elasticsearch',
         help='Transform BrAPI data for elasticsearch indexing')
     transform_elasticsearch.set_defaults(transform_elasticsearch=True)
+    transform_elasticsearch.add_argument('-d', '--document-types', type=str,
+                                         help='list of document types you want to generate')
 
     # Transform jsonld
     transform_jsonld = add_sub_parser(
@@ -98,10 +100,28 @@ def launch_etl(options, config):
         etl.extract.brapi.main(config)
 
     if 'transform_elasticsearch' in options or 'etl_es' in options:
-        validation_config = config['transform-elasticsearch']['validation']
+        transform_config = config['transform-elasticsearch']
+
+        # Restrict lis of generated document if requested
+        if 'document_types' in options:
+            selected_doc_types = set(options['document_types'].split(','))
+            all_docs = transform_config['documents']
+            all_doc_types = set([doc['document-type'] for doc in all_docs])
+            unknown_doc_types = selected_doc_types.difference(all_doc_types)
+            if unknown_doc_types:
+                raise Exception('Invalid document type(s) given: \'{}\''.format(options['document_types']))
+
+            transform_config['documents'] = [
+                document for document in all_docs if document['document-type'] in selected_doc_types
+            ]
+
+        # Copy base jsonschema definitions into each document jsonschema
+        validation_config = transform_config['validation']
         base_definitions = validation_config['base-definitions']
         for (document_type, document_schema) in validation_config['documents'].items():
             document_schema['definitions'] = base_definitions
+
+        # Run transform
         etl.transform.elasticsearch.main(config)
 
     if 'transform_jsonld' in options or 'transform_rdf' in options or 'etl_virtuoso' in options:

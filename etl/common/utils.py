@@ -1,4 +1,3 @@
-import itertools
 import logging
 import multiprocessing
 import os
@@ -7,7 +6,6 @@ import shutil
 import signal
 import sys
 from functools import partial
-from functools import reduce
 from multiprocessing import Pool
 
 import collections
@@ -120,15 +118,21 @@ def replace_template(template, value_dict):
     return value
 
 
+def is_list_like(element):
+    return isinstance(element, collections.Iterable) and not isinstance(element, str) and not isinstance(element, dict)
+
+
+def flatten_it(iterable):
+    for element in iterable:
+        if is_list_like(element):
+            for sub_element in flatten_it(element):
+                yield sub_element
+        else:
+            yield element
+
+
 def flatten(value):
-    return list(reduce(
-        lambda acc, x:
-            itertools.chain(acc, flatten(x))
-            if isinstance(x, collections.Iterable) and not isinstance(x, str)
-            else itertools.chain(acc, [x]),
-        value,
-        itertools.chain()
-    ))
+    return list(flatten_it(value))
 
 
 def distinct(values):

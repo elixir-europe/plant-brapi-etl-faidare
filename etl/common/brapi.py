@@ -3,6 +3,7 @@ from itertools import chain
 
 import requests
 import rfc3987
+import urllib
 
 from etl.common.utils import join_url_path, remove_falsey, replace_template
 
@@ -111,7 +112,8 @@ def get_uri(source, entity_name, object):
     object_id = get_identifier(entity_name, object)
     if not object_uri:
         # Generate URI from scratch
-        object_uri = 'urn:{}/{}/{}'.format(source_id, entity_name, object_id)
+        encoded_id = urllib.parse.quote(object_id, safe='')
+        object_uri = 'urn:{}/{}/{}'.format(source_id, entity_name, encoded_id)
     else:
         # Generate URI by prepending the original URI with the source identifier
         object_uri = 'urn:{}/{}'.format(source_id, object_uri)

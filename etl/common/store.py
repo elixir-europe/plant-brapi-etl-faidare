@@ -4,7 +4,7 @@ import json
 from six import itervalues
 
 from etl.common.brapi import get_identifier
-from etl.common.utils import get_file_path, remove_falsey
+from etl.common.utils import get_file_path, remove_falsey, is_list_like
 
 
 def dict_merge(into, merge_dct):
@@ -27,7 +27,7 @@ def dict_merge(into, merge_dct):
 class CustomJSONEncoder(json.JSONEncoder):
     """JSON encoder that encodes sets as list"""
     def default(self, obj):
-        if isinstance(obj, set):
+        if is_list_like(obj):
             return list(obj)
         return json.JSONEncoder.default(self, obj)
 
@@ -75,25 +75,37 @@ class JSONSplitStore(object):
     Store JSON in JSON files split by file size.
     """
 
-    def __init__(self, max_file_byte_size, output_dir, base_json_name):
+    def __init__(self, max_file_byte_size, output_dir, base_json_name, buffer_size=1000):
         self.file_index = 0
         self.json_file = None
         self.max_file_byte_size = max_file_byte_size
         self.output_dir = output_dir
         self.base_json_name = base_json_name
+        self.data_buffer = list()
+        self.buffer_size = buffer_size
 
     def __get_or_create_json_file_writer(self):
         if not self.json_file or self.json_file.tell() >= self.max_file_byte_size:
-            self.close()
+            if self.json_file:
+                self.json_file.close()
             self.file_index += 1
             json_path = get_file_path([self.output_dir, self.base_json_name], ext=str(self.file_index) + ".json")
             self.json_file = open(json_path, 'a')
         return self.json_file
 
+    def flush(self):
+        if self.data_buffer:
+            json_file = self.__get_or_create_json_file_writer()
+            for element in self.data_buffer:
+                json.dump(element, json_file, cls=CustomJSONEncoder)
+                json_file.write('\n')
+            self.data_buffer.clear()
+
     def close(self):
         """
         Close currently opened json file
         """
+        self.flush()
         if self.json_file:
             self.json_file.close()
 
@@ -101,7 +113,9 @@ class JSONSplitStore(object):
         """
         Dump JSON objects into a file one object per line
         """
-        json_file = self.__get_or_create_json_file_writer()
-        for data in data:
-            json.dump(data, json_file, cls=CustomJSONEncoder)
-            json_file.write('\n')
+        self.data_buffer.extend(data)
+        if len(self.data_buffer) >= self.buffer_size:
+            self.flush()
+
+
+

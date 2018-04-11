@@ -84,7 +84,7 @@ def resolve_value_template(tree, data, data_index):
 
 
 def resolve_string_template(template_string, data, data_index):
-    if re.match(r"^[^{}]+$", template_string):
+    if '{' not in template_string or '}' not in template_string:
         return template_string
     if re.match(r"^{[^{}]+}$", template_string):
         try:

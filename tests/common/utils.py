@@ -12,9 +12,9 @@ class TestFlatten(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     def test_flatten_with_values(self):
-        input_list = [[1, [2], 3], 4, [5]]
+        input_list = [[1, [2], 3], 4, [5, {'a': 'b'}]]
 
-        expected = [1, 2, 3, 4, 5]
+        expected = [1, 2, 3, 4, 5, {'a': 'b'}]
         actual = flatten(input_list)
         self.assertEqual(expected, actual)
 
