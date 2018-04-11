@@ -24,6 +24,7 @@ Vagrant.configure("2") do |config|
         CONFIGURE_OPTS=--enable-shared pyenv install -f 3.6.4
 
         pyenv shell 3.6.4
+        pip install --upgrade pip
         pip install -r /vagrant/requirements.txt
         pip install pyinstaller
   SHELL

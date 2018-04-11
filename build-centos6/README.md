@@ -22,11 +22,13 @@ This script will:
     - Install dependencies and `pyinstaller`
  - Run `pyinstaller` to build a binary distribution on `../etl/main.py`
 
-The binary distribution will be available in the `dist-etl` folder and
-can be executed as:
+The binary distribution will be available in the `dist-etl.tar.gz`
+archive containing the configuration folders (`config`, `sources`).
+
+Once un-packaged, you can run the ETL with:
 
 ```sh
-./dist-etl/main
+./etl/main
 ```
 
 You can use `vagrant destroy` to delete the Vagrant VM if you want to
