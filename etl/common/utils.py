@@ -1,4 +1,5 @@
 import logging
+import math
 import multiprocessing
 import os
 import re
@@ -6,6 +7,7 @@ import shutil
 import signal
 import sys
 from functools import partial
+from itertools import islice
 from multiprocessing import Pool
 
 import collections
@@ -80,9 +82,8 @@ def remove_falsey(value, predicate=bool):
         return None
     if not isinstance(value, str) and isinstance(value, collections.Iterable):
         original_type = type(value)
-        is_dict = isinstance(value, dict)
 
-        if is_dict:
+        if isinstance(value, dict):
             def filter_process(entry):
                 new_entry = remove_falsey(entry, predicate)
                 try:
@@ -185,3 +186,18 @@ def create_logger(name, log_file):
     # stdout_handler.setLevel(logging.INFO)
     # logger.addHandler(stdout_handler)
     return logger
+
+
+def split_every(n, iterable):
+    iterable = iter(iterable)
+    yield from iter(lambda: list(islice(iterable, n)), [])
+
+
+def split_parts(iterable, parts=2):
+    return split_every(math.ceil(len(iterable)/parts), iterable)
+
+
+def cat_it(*iterables):
+    for iterable in iterables:
+        for element in iterable:
+            yield element

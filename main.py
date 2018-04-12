@@ -21,8 +21,8 @@ def add_data_dir_argument(parser):
                              '(default is \'{}\')'.format(default_data_dir))
 
 
-def add_sub_parser(parser_actions, action, help):
-    sub_parser = parser_actions.add_parser(action, help=help)
+def add_sub_parser(parser_actions, action, help, aliases=[]):
+    sub_parser = parser_actions.add_parser(action, aliases=aliases, help=help)
     sub_parser.add_argument('sources', metavar='source-config.json', type=argparse.FileType('r'), nargs='+',
                             help='List of data source JSON configuration files')
     add_data_dir_argument(sub_parser)
@@ -40,12 +40,12 @@ def parse_cli_arguments():
     parser_extract.set_defaults(extract=True)
 
     # Transform
-    parser_transform = parser_actions.add_parser('transform', help='Transform BrAPI data')
+    parser_transform = parser_actions.add_parser('transform', aliases=['trans'], help='Transform BrAPI data')
     transform_targets = parser_transform.add_subparsers(help='transform targets')
 
     # Transform elasticsearch
     transform_elasticsearch = add_sub_parser(
-        transform_targets, 'elasticsearch',
+        transform_targets, 'elasticsearch', aliases=['es'],
         help='Transform BrAPI data for elasticsearch indexing')
     transform_elasticsearch.set_defaults(transform_elasticsearch=True)
     transform_elasticsearch.add_argument('-d', '--document-types', type=str,
@@ -70,7 +70,7 @@ def parse_cli_arguments():
 
     # Load Elasticsearch
     load_elasticsearch = add_sub_parser(
-        load_targets, 'elasticsearch',
+        load_targets, 'elasticsearch', aliases=['es'],
         help='Load JSON bulk file into ElasticSearch')
     load_elasticsearch.set_defaults(load_elasticsearch=True)
 
@@ -103,7 +103,8 @@ def launch_etl(options, config):
         transform_config = config['transform-elasticsearch']
 
         # Restrict lis of generated document if requested
-        if 'document_types' in options:
+        input_doc_types = options.get('document_types')
+        if input_doc_types:
             selected_doc_types = set(options['document_types'].split(','))
             all_docs = transform_config['documents']
             all_doc_types = set([doc['document-type'] for doc in all_docs])

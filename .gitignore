@@ -99,4 +99,4 @@ ENV/
 # Vagrant files
 .vagrant
 
-/build-centos6/dist-etl
+/build-centos6/*.tar.gz

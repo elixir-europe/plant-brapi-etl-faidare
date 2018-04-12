@@ -30,7 +30,7 @@ def load_data_by_entity(source_json_dir, logger):
     logger.info("Loading BrAPI JSON from {}...".format(source_json_dir))
     data_by_entity = dict()
     for file_name in os.listdir(source_json_dir):
-        matches = re.search('(\w+).json', file_name)
+        matches = re.search('^(\w+).json$', file_name)
         if matches:
             (entity_name,) = matches.groups()
             if entity_name not in data_by_entity:
@@ -138,9 +138,12 @@ def generate_elasticsearch_documents(document_configs, data_by_entity, data_by_u
             args_list.append((
                 document_type, copy_fields_from_source, document_transform, data, data_by_uri
             ))
+    random.shuffle(args_list)
 
-    pool = Pool(multiprocessing.cpu_count())
-    document_tuples = pool.imap_unordered(generate_elasticsearch_document, args_list)
+    nb_threads = min(int(multiprocessing.cpu_count()/2*1.75), 2)
+    chunk_size = 100
+    pool = Pool(nb_threads)
+    document_tuples = pool.imap_unordered(generate_elasticsearch_document, args_list, chunk_size)
 
     document_count = 0
     for document_tuple in document_tuples:
@@ -151,8 +154,8 @@ def generate_elasticsearch_documents(document_configs, data_by_entity, data_by_u
     logger.info("Generated {} documents.".format(document_count))
 
 
-def validate_document(document, document_type, schema_by_document_type):
-    schema = schema_by_document_type.get(document_type)
+def validate_document(validation_config, document_type, document):
+    schema = validation_config['documents'].get(document_type)
     try:
         schema and jsonschema.validate(document, schema)
     except jsonschema.exceptions.SchemaError as schema_error:
@@ -173,10 +176,9 @@ def validate_documents(document_tuples, validation_config, logger):
     """
     logger.info("Validating documents JSON schemas...")
     document_count = 0
-    schema_by_document_type = validation_config['documents']
     for document_type, document in document_tuples:
         document_count += 1
-        yield validate_document(document, document_type, schema_by_document_type)
+        yield validate_document(validation_config, document_type, document)
     logger.info("Validated {} documents.".format(document_count))
 
 

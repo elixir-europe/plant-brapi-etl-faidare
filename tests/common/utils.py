@@ -1,6 +1,22 @@
 import unittest
 
-from etl.common.utils import resolve_path, remove_falsey, flatten
+from etl.common.utils import resolve_path, remove_falsey, flatten, split_parts
+
+
+class Test(unittest.TestCase):
+    def test(self):
+        input_list = list(range(5))
+
+        expected = [[0, 1, 2], [3, 4]]
+        actual = list(split_parts(input_list))
+        self.assertEqual(expected, actual)
+
+    def test2(self):
+        input_list = list(range(11))
+
+        expected = [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10]]
+        actual = list(split_parts(input_list, parts=3))
+        self.assertEqual(expected, actual)
 
 
 class TestFlatten(unittest.TestCase):

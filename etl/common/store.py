@@ -75,7 +75,7 @@ class JSONSplitStore(object):
     Store JSON in JSON files split by file size.
     """
 
-    def __init__(self, max_file_byte_size, output_dir, base_json_name, buffer_size=1000):
+    def __init__(self, max_file_byte_size, output_dir, base_json_name, buffer_size=100):
         self.file_index = 0
         self.json_file = None
         self.max_file_byte_size = max_file_byte_size
