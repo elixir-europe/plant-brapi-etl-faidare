@@ -4,24 +4,28 @@ import json
 import os
 import sys
 
+import signal
+
 import etl.extract.brapi
 import etl.load.elasticsearch
 import etl.load.virtuoso
 import etl.transform.elasticsearch
 import etl.transform.jsonld
 import etl.transform.rdf
+from etl.common.store import list_entity_files
 from etl.common.utils import get_file_path, get_folder_path
 
-default_data_dir = 'data'
+default_data_dir = os.path.join(os.path.dirname(__file__), 'data')
+default_es_host = 'localhost'
+default_es_port = 9200
 
 
 def add_data_dir_argument(parser):
     parser.add_argument('--data-dir',
-                        help='set directory in which ETL data will be stored '
-                             '(default is \'{}\')'.format(default_data_dir))
+                        help='Working directory for ETL data (default is \'{}\')'.format(default_data_dir))
 
 
-def add_sub_parser(parser_actions, action, help, aliases=[]):
+def add_sub_parser(parser_actions, action, help, aliases=list()):
     sub_parser = parser_actions.add_parser(action, aliases=aliases, help=help)
     sub_parser.add_argument('sources', metavar='source-config.json', type=argparse.FileType('r'), nargs='+',
                             help='List of data source JSON configuration files')
@@ -72,6 +76,10 @@ def parse_cli_arguments():
     load_elasticsearch = add_sub_parser(
         load_targets, 'elasticsearch', aliases=['es'],
         help='Load JSON bulk file into ElasticSearch')
+    load_elasticsearch.add_argument('--host', default='localhost',
+                                    help='Elasticsearch HTTP server host (default is \'{}\')'.format(default_es_host))
+    load_elasticsearch.add_argument('--port', default='9200', type=int,
+                                    help='Elasticsearch HTTP server port (default is \'{}\')'.format(default_es_port))
     load_elasticsearch.set_defaults(load_elasticsearch=True)
 
     # Load Virtuoso
@@ -95,6 +103,10 @@ def load_config(directory, file_name):
 
 
 def launch_etl(options, config):
+    def handler(signum, frame):
+        sys.exit(0)
+    signal.signal(signal.SIGINT, handler)
+
     # Execute ETL actions based on CLI arguments:
     if 'extract' in options or 'etl_es' in options or 'etl_virtuoso' in options:
         etl.extract.brapi.main(config)
@@ -144,6 +156,13 @@ def launch_etl(options, config):
         etl.transform.rdf.main(config)
 
     if 'load_elasticsearch' in options or 'etl_es' in options:
+        mapping_files = list_entity_files(os.path.join(config['conf-dir'], 'elasticsearch'))
+        config['load-elasticsearch'] = {
+            'url': '{}:{}'.format(options['host'], options['port']),
+            'mappings': {
+                document_type: file_path for document_type, file_path in mapping_files
+            }
+        }
         etl.load.elasticsearch.main(config)
 
     if 'load_virtuoso' in options or 'etl_virtuoso' in options:
@@ -159,7 +178,7 @@ def main():
     config['root-dir'] = os.path.dirname(__file__)
     config['conf-dir'] = os.path.join(config['root-dir'], 'config')
     config['source-dir'] = os.path.join(config['conf-dir'], 'sources')
-    config['data-dir'] = os.path.join(config['root-dir'], default_data_dir)
+    config['data-dir'] = options.get('data_dir') or default_data_dir
     config['log-dir'] = get_folder_path([config['root-dir'], 'log'], create=True)
 
     # Sources config

@@ -7,6 +7,7 @@ import traceback
 from copy import deepcopy
 
 import urllib3
+from multiprocessing.pool import Pool
 
 from etl.common.brapi import BreedingAPIIterator, get_implemented_calls, get_implemented_call
 from etl.common.brapi import get_identifier
@@ -41,15 +42,16 @@ def link_objects(entity, object, linked_entity, linked_objects_by_id):
         if was_in_store:
             linked_object = linked_entity['store'][link_id]
 
+        linked_entity_name = linked_entity['name']
         if linked_object:
             link_object(entity['name'], linked_object, object_id)
         else:
             raise BrokenLink("{} object id {} not found in store while trying to link with {} object id {}"
-                             .format(linked_entity['name'], link_id, entity['name'], object_id))
-        link_object(linked_entity['name'], object, link_id)
+                             .format(linked_entity_name, link_id, entity['name'], object_id))
+        link_object(linked_entity_name, object, link_id)
 
         if not was_in_store and linked_object:
-            linked_entity['store'].store(linked_object)
+            linked_entity['store'].add(linked_object)
 
 
 def fetch_all_in_store(entities, fetch_function, arguments):
@@ -62,7 +64,7 @@ def fetch_all_in_store(entities, fetch_function, arguments):
 
     for (entity_name, data_list) in results:
         for data in data_list:
-            entities[entity_name]['store'].store(data)
+            entities[entity_name]['store'].add(data)
 
 
 def fetch_details(options):
@@ -214,17 +216,18 @@ def extract_source(source, entities, log_dir, output_dir):
     source_name = source['schema:identifier']
     action = 'extract-' + source_name
     log_file = get_file_path([log_dir, action], ext='.log', recreate=True)
-    thread_local.logger = create_logger(action, log_file)
+    logger = create_logger(action, log_file)
+    thread_local.logger = logger
 
-    print("Extracting BrAPI {}...".format(source_name))
+    logger.info("Extracting BrAPI {}...".format(source_name))
     try:
         # Initialize JSON merge stores
         for (entity_name, entity) in entities.items():
-            entity['store'] = MergeStore(source, entity)
+            entity['store'] = MergeStore(source['schema:identifier'], entity['name'])
 
         # Fetch server implemented calls
         if 'implemented-calls' not in source:
-            source['implemented-calls'] = get_implemented_calls(source, thread_local.logger)
+            source['implemented-calls'] = get_implemented_calls(source, logger)
 
         # Fetch entities lists
         fetch_all_list(source, entities)
@@ -235,22 +238,22 @@ def extract_source(source, entities, log_dir, output_dir):
         # Link entities (internal links, internal object links and external object links)
         fetch_all_links(source, entities)
 
-        # Detail entities (for object that might have been discovered b links)
+        # Detail entities (for object that might have been discovered by links)
         fetch_all_details(source, entities)
 
         remove_internal_objects(entities)
 
-        print("SUCCEEDED Extracting BrAPI {}.".format(source_name))
+        logger.info("SUCCEEDED Extracting BrAPI {}.".format(source_name))
     except:
-        thread_local.logger.error(traceback.format_exc())
+        logger.debug(traceback.format_exc())
         shutil.rmtree(output_dir)
         output_dir = output_dir + '-failed'
-        print("FAILED Extracting BrAPI {}.\n"
-              "=> Check the logs ({}) and data ({}) for more details."
-              .format(source_name, log_file, output_dir))
+        logger.info("FAILED Extracting BrAPI {}.\n"
+                    "=> Check the logs ({}) and data ({}) for more details."
+                    .format(source_name, log_file, output_dir))
 
     # Save to file
-    print("Saving BrAPI {} to '{}'...".format(source_name, output_dir))
+    logger.info("Saving BrAPI {} to '{}'...".format(source_name, output_dir))
     for (entity_name, entity) in entities.items():
         entity['store'].save(output_dir)
         entity['store'].clear()
@@ -282,9 +285,6 @@ def main(config):
         threads.append(thread)
 
     for thread in threads:
-        try:
-            while thread.isAlive():
-                thread.join(500)
-        except (KeyboardInterrupt, SystemExit):
-            print('Received keyboard interrupt, quitting threads.\n')
-            sys.exit()
+        while thread.isAlive():
+            thread.join(500)
+

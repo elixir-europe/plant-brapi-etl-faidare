@@ -76,11 +76,15 @@ def pool_worker(fn, array_of_args, nb_thread=default_nb_threads):
     return res
 
 
+def is_collection(value):
+    return not isinstance(value, str) and isinstance(value, collections.Iterable)
+
+
 def remove_falsey(value, predicate=bool):
     """Remove falsey values for collections and both keys and values for dictionaries"""
     if not predicate(value):
         return None
-    if not isinstance(value, str) and isinstance(value, collections.Iterable):
+    if is_collection(value):
         original_type = type(value)
 
         if isinstance(value, dict):
@@ -120,7 +124,7 @@ def replace_template(template, value_dict):
 
 
 def is_list_like(element):
-    return isinstance(element, collections.Iterable) and not isinstance(element, str) and not isinstance(element, dict)
+    return is_collection(element) and not isinstance(element, dict)
 
 
 def flatten_it(iterable):
@@ -138,14 +142,15 @@ def flatten(value):
 
 def distinct(values):
     seen = set()
-    for value in values:
-        if value not in seen:
-            seen.add(value)
-            yield value
+    if values:
+        for value in values:
+            if value not in seen:
+                seen.add(value)
+                yield value
 
 
 def resolve_path(values, path):
-    if not path:
+    if not path or not values:
         return values
     if isinstance(values, dict):
         first, rest = path[0], path[1:]
@@ -153,7 +158,7 @@ def resolve_path(values, path):
             return remove_none(resolve_path(values[first], rest)) or None
         else:
             return None
-    if isinstance(values, collections.Iterable):
+    if is_list_like(values):
         return remove_none(flatten(map(lambda value: resolve_path(value, path), values))) or None
     return None
 
@@ -182,15 +187,22 @@ def create_logger(name, log_file):
     logger.addHandler(file_handler)
 
     # Log stdout
-    # stdout_handler = logging.StreamHandler(sys.stdout)
-    # stdout_handler.setLevel(logging.INFO)
-    # logger.addHandler(stdout_handler)
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    stdout_handler.setFormatter(logging.Formatter('[{}] %(message)s'.format(name)))
+    stdout_handler.setLevel(logging.INFO)
+    logger.addHandler(stdout_handler)
     return logger
 
 
 def split_every(n, iterable):
-    iterable = iter(iterable)
-    yield from iter(lambda: list(islice(iterable, n)), [])
+    accumulator = list()
+    for element in iter(iterable):
+        accumulator.append(element)
+        if len(accumulator) >= n:
+            yield accumulator.copy()
+            accumulator.clear()
+    if accumulator:
+        yield accumulator
 
 
 def split_parts(iterable, parts=2):
@@ -201,3 +213,7 @@ def cat_it(*iterables):
     for iterable in iterables:
         for element in iterable:
             yield element
+
+
+def first(it):
+    return next(iter(it))

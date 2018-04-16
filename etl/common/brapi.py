@@ -1,11 +1,12 @@
 import json
+import re
 from itertools import chain
 
 import requests
 import rfc3987
 import urllib
 
-from etl.common.utils import join_url_path, remove_falsey, replace_template
+from etl.common.utils import join_url_path, remove_falsey, replace_template, remove_none
 
 
 class BreedingAPIIterator:
@@ -164,3 +165,14 @@ def get_implemented_call(source, call_group, context=None):
         raise NotImplementedError('{} does not implement required call in list:\n{}'
                                   .format(source['schema:name'], calls_description))
     return None
+
+
+def get_entity_links(data):
+    def extract_entity_link(entry):
+        key, value = entry
+        match = re.search("^(\w+)DbId(s?)$", key)
+        if match and value:
+            entity_name, plural = match.groups()
+            return [entity_name, key, plural, value]
+
+    return list(remove_none(map(extract_entity_link, data.items())))

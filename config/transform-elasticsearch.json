@@ -81,7 +81,7 @@
           "facet": {
             "observationVariableIds": {
               "{flatten_distinct}": [
-                "{.studyPUIs => .observationVariablePUIs}"
+                "{.studyDbIds => .observationVariablePUIs}"
               ]
             }
           }
@@ -90,13 +90,13 @@
           "facet": {
             "dataSet": {
               "{flatten_distinct}": [
-                "{.studyPUIs => .trialPUIs => .trialName}"
+                "{.studyDbIds => .trialDbIds => .trialName}"
               ]
             },
             "location": {
               "{flatten_distinct}": [
-                "{.studyPUIs => .locationPUIs => .locationName}",
-                "{.studyPUIs => .locationPUIs => .countryName}"
+                "{.studyDbIds => .locationDbIds => .locationName}",
+                "{.studyDbIds => .locationDbIds => .countryName}"
               ]
             }
           }
@@ -132,12 +132,12 @@
               "{or}": ["{.thematicType}", "study"]
             },
             {
-              "{if}": "{.locationPUIs => .locationName}",
+              "{if}": "{.locationDbIds => .locationName}",
               "{then}": [
-                " located in {locationPUIs => .locationName}",
+                " located in {.locationDbIds => .locationName}",
                 {
-                  "{if}": "{.locationPUIs => .countryName}",
-                  "{then}": " ({.locationPUIs => .countryName})"
+                  "{if}": "{.locationDbIds => .countryName}",
+                  "{then}": " ({.locationDbIds => .countryName})"
                 }
               ]
             },
@@ -148,61 +148,63 @@
         "germplasm": {
           "facet": {
             "commonCropName": {
-              "{flatten_distinct}": "{.germplasmPUIs => .commonCropName}"
+              "{flatten_distinct}": "{.germplasmDbIds => .commonCropName}"
             },
             "species": {
-              "{flatten_distinct}": "{.germplasmPUIs => .genus + .species}"
+              "{flatten_distinct}": "{.germplasmDbIds => .genus + .species}"
             }
           },
           "search": {
             "cropName": {
               "{flatten_distinct}": [
-                "{.germplasmPUIs => .commonCropName}",
-                "{.germplasmPUIs => .taxonCommonNames}",
-                "{.germplasmPUIs => .genus}",
-                "{.germplasmPUIs => .genus + .species}",
-                "{.germplasmPUIs => .genus + .species + .subtaxa}",
-                "{.germplasmPUIs => .taxonSynonyms}"
+                "{.germplasmDbIds => .commonCropName}",
+                "{.germplasmDbIds => .taxonCommonNames}",
+                "{.germplasmDbIds => .genus}",
+                "{.germplasmDbIds => .genus + .species}",
+                "{.germplasmDbIds => .genus + .species + .subtaxa}",
+                "{.germplasmDbIds => .taxonSynonyms}"
               ]
             },
             "germplasmList": {
               "{flatten_distinct}": [
-                "{.germplasmPUIs => .panel.name}",
-                "{.germplasmPUIs => .collection.name}",
-                "{.germplasmPUIs => .population.name}",
-                "{.germplasmPUIs => .holdingGenbank.instituteName}"
+                "{.germplasmDbIds => .panel.name}",
+                "{.germplasmDbIds => .collection.name}",
+                "{.germplasmDbIds => .population.name}",
+                "{.germplasmDbIds => .holdingGenbank.instituteName}"
               ]
             },
             "accession": {
               "{flatten_distinct}": [
-                "{.germplasmPUIs => .germplasmName}",
-                "{.germplasmPUIs => .defaultDisplayName}",
-                "{.germplasmPUIs => .accessionNumber}",
-                "{.germplasmPUIs => .synonyms}"
+                "{.germplasmDbIds => .germplasmName}",
+                "{.germplasmDbIds => .defaultDisplayName}",
+                "{.germplasmDbIds => .accessionNumber}",
+                "{.germplasmDbIds => .synonyms}"
               ]
             }
           }
         },
+
         "trait": {
           "facet": {
             "observationVariableIds": {
               "{flatten_distinct}": [
-                "{.studPUIs => .observationVariablePUIs}"
+                "{.observationVariablePUIs}"
               ]
             }
           }
         },
+
         "study": {
           "facet": {
             "dataSet": {
               "{flatten_distinct}": [
-                "{.trialPUIs => .trialName}"
+                "{.trialDbIds => .trialName}"
               ]
             },
             "location": {
               "{flatten_distinct}": [
-                "{.locationPUIs => .locationName}",
-                "{.locationPUIs => .countryName}"
+                "{.locationDbId => .locationName}",
+                "{.locationDbId => .countryName}"
               ]
             }
           }
@@ -243,7 +245,12 @@
             "{.name}"
           ]
         },
-        "contacts": "{.contactPUIs => .}"
+        "contacts": {
+          "{or}": [
+            "{.contacts}",
+            "{.contactDbIds => .}"
+          ]
+        }
       }
     },
     {
@@ -258,8 +265,18 @@
             "{.name}"
           ]
         },
-        "studies": "{.studyPUIs => .}",
-        "contacts": "{.contactPUIs => .}"
+        "studies": {
+          "{or}": [
+            "{.studies}",
+            "{.studyDbIds => .}"
+          ]
+        },
+        "contacts": {
+          "{or}": [
+            "{.contacts}",
+            "{.contactDbIds => .}"
+          ]
+        }
       }
     },
     {

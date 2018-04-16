@@ -1,9 +1,9 @@
 import unittest
 
-from etl.common.utils import resolve_path, remove_falsey, flatten, split_parts
+from etl.common.utils import resolve_path, remove_falsey, flatten, split_parts, split_every
 
 
-class Test(unittest.TestCase):
+class TestSplit(unittest.TestCase):
     def test(self):
         input_list = list(range(5))
 
@@ -16,6 +16,20 @@ class Test(unittest.TestCase):
 
         expected = [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10]]
         actual = list(split_parts(input_list, parts=3))
+        self.assertEqual(expected, actual)
+
+    def test3(self):
+        input_list = range(2)
+
+        expected = [[0, 1]]
+        actual = list(split_every(100, input_list))
+        self.assertEqual(expected, actual)
+
+    def test4(self):
+        input_list = list(range(5))
+
+        expected = [[0, 1, 2], [3, 4]]
+        actual = list(split_every(3, input_list))
         self.assertEqual(expected, actual)
 
 
