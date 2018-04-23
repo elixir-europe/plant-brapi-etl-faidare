@@ -1,12 +1,15 @@
 # Load json bulk files into elasticsearch
-
+import json
 import os
 import re
 import sys
+import time
+import traceback
 
 import elasticsearch
 
-from etl.common.utils import get_folder_path, get_file_path, replace_template
+from etl.common.store import list_entity_files
+from etl.common.utils import get_folder_path, get_file_path, replace_template, create_logger, first
 
 
 class BulkException(Exception):
@@ -14,102 +17,116 @@ class BulkException(Exception):
 
 
 # Init Elasticsearch and test connection
-def init_es_client(url):
+def init_es_client(url, logger):
     es_client = elasticsearch.Elasticsearch([url])
     indices_client = elasticsearch.client.IndicesClient(es_client)
     try:
         info = es_client.info()
-        print('Connected to node "{}" of cluster "{}" on "{}"'.format(info['name'], info['cluster_name'], url))
+        logger.debug('Connected to node "{}" of cluster "{}" on "{}"'.format(info['name'], info['cluster_name'], url))
     except elasticsearch.exceptions.ConnectionError as e:
-        print('Connection error: Elasticsearch unavailable on "{}".\nPlease check your configuration'.format(url))
+        logger.error('Connection error: Elasticsearch unavailable on "{}".\nPlease check your configuration'.format(url))
         raise e
     return es_client, indices_client
 
 
-def create_index(indices_client, index):
-    sys.stdout.write('Creating index "{}"'.format(index))
-    exists = indices_client.exists(index)
-    if exists:
-        print(': Ignored (already exists)')
-    else:
-        indices_client.create(index)
-        print(': Ok')
+def create_index(indices_client, index_name, logger):
+    logger.debug('Creating index "{}"...'.format(index_name))
+    indices_client.create(index_name)
+    logger.debug('Created index "{}".'.format(index_name))
 
 
-def delete_index(indices_client, index):
-    exists = indices_client.exists(index)
-    if exists:
-        sys.stdout.write('Deleting index "{}"'.format(index))
-        indices_client.delete(index)
-        print(': Ok')
+def delete_index(indices_client, index_name, logger):
+    logger.debug('Deleting index "{}"...'.format(index_name))
+    indices_client.delete(index_name)
+    logger.debug('Deleted index "{}".'.format(index_name))
 
 
-def load_bulk(es_clients, bulk_files, index_name):
-    es_client, indices_client = es_clients
-    base_print = 'Bulk processing on index "{}"'.format(index_name)
-    file_count = len(bulk_files)
-    file_index = [0]
-
-    def progress_reporter():
-        file_index[0] += 1
-        sys.stdout.write('\r{}: {}/{} files'.format(base_print, file_index[0], file_count))
-        sys.stdout.flush()
-
-    for bulk_file in bulk_files:
-        body = open(bulk_file).read().decode('utf-8')
-        try:
-            es_client.bulk(body=body, index=index_name, timeout='500ms')
-            progress_reporter()
-        except Exception as exception:
-            print(': Failed')
-            print('Error on file {}\n{}'.format(bulk_file, exception))
-            raise exception
-    print(': Ok')
+def get_base_index_name(source, document_type):
+    return "gnpis_{}_{}".format(source["schema:identifier"], document_type).lower()
 
 
-def load_folder(institution_name, institution_bulk_dir, es_clients, es_options):
-    print('Loading JSON bulk files from "{}" \n\t into elasticsearch "{}"'.format(
-        institution_bulk_dir, es_options['url']))
-    es_client, indices_client = es_clients
-    bulk_per_index = dict()
-    for file_name in os.listdir(institution_bulk_dir):
-        matches = re.search('(\D+)(\d+).json', file_name)
-        if matches:
-            (entity_name, index) = matches.groups()
-            bulk_path = get_file_path([institution_bulk_dir, file_name])
-            if not os.path.exists(bulk_path):
-                continue
-            index_name = replace_template(
-                es_options['index_name_template'],
-                {'institution': institution_name, 'document_type': entity_name}
-            ).lower()
+def create_template(indices_client, es_config, document_type, base_index_name, logger):
+    template_name = 'template_' + base_index_name
+    template_pattern = base_index_name + '-d*'
+    logger.debug("Creating template {}...".format(template_name))
 
-            if index_name not in bulk_per_index:
-                bulk_per_index[index_name] = list()
-            bulk_per_index[index_name].append(bulk_path)
+    mapping_file_path = es_config['mappings'].get(document_type)
+    if not mapping_file_path or not os.path.exists(mapping_file_path):
+        logger.debug("No mapping file '{}' for document type '{}'. Skipping template creation."
+                     .format(mapping_file_path, document_type))
+        return
 
-    for index_name in bulk_per_index:
-        bulk_paths = bulk_per_index[index_name]
-        delete_index(indices_client, index_name)
-        # create_index(indices_client, index_name)
-        load_bulk(es_clients, bulk_paths, index_name)
+    with open(mapping_file_path, 'r') as mapping_file:
+        mapping = json.load(mapping_file)
+
+    template_body = {"template": template_pattern, "mappings": mapping}
+    indices_client.put_template(name=template_name, body=template_body)
+    logger.debug("Created template {}.".format(template_name))
+
+
+def bulk_index(es_client, index_name, file_path, logger):
+    logger.debug('Bulk indexing file "{}" in index "{}"...'.format(file_path, index_name))
+    with open(file_path, 'r') as file:
+        es_client.bulk(index=index_name, body=file.read(), timeout='500ms')
+    logger.debug('Bulk indexed file "{}" in index "{}".'.format(file_path, index_name))
+
+
+def load_source(source, config, source_bulk_dir, log_dir):
+    """
+    Full Elasticsearch documents indexation
+    """
+    source_name = source['schema:identifier']
+    action = 'load-elasticsearch-' + source_name
+    log_file = get_file_path([log_dir, action], ext='.log', recreate=True)
+    logger = create_logger(source_name, log_file)
+
+    es_config = config['load-elasticsearch']
+    es_client, indices_client = init_es_client(es_config['url'], logger)
+
+    logger.info("Loading Elasticsearch documents into elasticsearch '{}'...".format(es_config['url']))
+    try:
+        if not os.path.exists(source_bulk_dir):
+            raise FileNotFoundError(
+                'No such file or directory: \'{}\'.\n'
+                'Please make sure you have run the BrAPI extraction and Elasticsearch document transformation'
+                ' before trying to launch the transformation process.'
+                .format(source_bulk_dir))
+
+        bulk_files = list(list_entity_files(source_bulk_dir))
+        document_types = set(map(first, bulk_files))
+        index_by_document = dict()
+
+        timestamp = int(time.time())
+        for document_type in document_types:
+            base_index_name = get_base_index_name(source, document_type)
+
+            create_template(indices_client, es_config, document_type, base_index_name, logger)
+
+            index_name = base_index_name + '-d' + str(timestamp)
+            create_index(indices_client, index_name, logger)
+
+            index_by_document[document_type] = base_index_name, index_name
+
+        for document_type, file_path in bulk_files:
+            base_index_name, index_name = index_by_document[document_type]
+            bulk_index(es_client, index_name, file_path, logger)
+
+        logger.info("SUCCEEDED Loading {}.".format(source_name))
+    except Exception as e:
+        logger.debug(traceback.format_exc())
+        logger.debug(getattr(e, 'long_message', ''))
+        logger.info("FAILED Loading {} Elasticsearch documents.\n"
+                    "=> Check the logs ({}) for more details."
+                    .format(source_name, log_file))
 
 
 def main(config):
-    print()
+    log_dir = config['log-dir']
     bulk_dir = os.path.join(config['data-dir'], 'json-bulk')
     if not os.path.exists(bulk_dir):
         raise Exception('No json bulk folder found in ' + bulk_dir)
-    es_options = config['elasticsearch']
-    es_clients = init_es_client(es_options['url'])
 
-    institutions = config['institutions']
-    for institution_name in institutions:
-        institution = institutions[institution_name]
-        if not institution['active']:
-            continue
-        institution_bulk_dir = get_folder_path([bulk_dir, institution_name])
-        if not os.path.exists(institution_bulk_dir):
-            continue
-
-        load_folder(institution_name, institution_bulk_dir, es_clients, es_options)
+    sources = config['sources']
+    for (source_name, source) in sources.items():
+        source_bulk_dir = get_folder_path([bulk_dir, source_name])
+        load_source(source, config, source_bulk_dir, log_dir)

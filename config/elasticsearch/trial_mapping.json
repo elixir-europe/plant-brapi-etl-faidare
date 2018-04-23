@@ -1,0 +1,94 @@
+{
+  "trial": {
+    "dynamic": false,
+    "properties": {
+      "trialDbId": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "trialName": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "trialType": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "startDate": {
+        "type": "date",
+        "format": "YYYY-MM-dd"
+      },
+      "endDate": {
+        "type": "date",
+        "format": "YYYY-MM-dd"
+      },
+      "active": {
+        "type": "boolean"
+      },
+      "contacts": {
+        "properties": {
+          "contactDbId": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "email": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "institutionName": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "name": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "orcid": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "type": {
+            "type": "string",
+            "index": "not_analyzed"
+          }
+        }
+      },
+      "datasetAuthorship": {
+        "properties": {
+          "license": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "datasetPUI": {
+            "type": "string",
+            "index": "not_analyzed"
+          }
+        }
+      },
+      "studies": {
+        "properties": {
+          "locationName": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "locationDbId": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "studyDbId": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "studyName": {
+            "type": "string",
+            "index": "not_analyzed"
+          }
+        }
+      },
+      "additionalInfo": {
+        "dynamic": "true",
+        "properties": {}
+      }
+    }
+  }
+}

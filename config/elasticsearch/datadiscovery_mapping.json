@@ -1,0 +1,105 @@
+{
+  "datadiscovery": {
+    "dynamic": false,
+    "properties": {
+      "@type": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "@id": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "schema:includedInDataCatalog": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "schema:identifier": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "schema:name": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "schema:url": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "schema:description": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+
+      "germplasm": {
+        "type": "object",
+        "properties": {
+          "facet": {
+            "type": "object",
+            "properties": {
+              "commonCropName": {
+                "type": "string",
+                "index": "not_analyzed"
+              },
+              "species": {
+                "type": "string",
+                "index": "not_analyzed"
+              }
+            }
+          },
+          "search": {
+            "type": "object",
+            "properties": {
+              "cropName": {
+                "type": "string",
+                "index": "not_analyzed"
+              },
+              "germplasmList": {
+                "type": "string",
+                "index": "not_analyzed"
+              },
+              "accession": {
+                "type": "string",
+                "index": "not_analyzed"
+              }
+            }
+          }
+        }
+      },
+
+      "trait": {
+        "type": "object",
+        "properties": {
+          "facet": {
+            "type": "object",
+            "properties": {
+              "observationVariableIds": {
+                "type": "string",
+                "index": "not_analyzed"
+              }
+            }
+          }
+        }
+      },
+
+      "study": {
+        "type": "object",
+        "properties": {
+          "facet": {
+            "type": "object",
+            "properties": {
+              "dataSet": {
+                "type": "string",
+                "index": "not_analyzed"
+              },
+              "location": {
+                "type": "string",
+                "index": "not_analyzed"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
