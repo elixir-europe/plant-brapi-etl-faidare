@@ -1,1 +1,0 @@
-curl 'localhost:9200/urgi_*' | jq 'to_entries | map(.value.mappings | to_entries | map({template: "*_\(.key)*", mappings: {"\(.key)": .value}})) | flatten | .[]'

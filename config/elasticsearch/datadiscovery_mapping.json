@@ -1,6 +1,9 @@
 {
   "datadiscovery": {
     "dynamic": false,
+    "_source": {
+      "includes": ["@id", "@type", "schema:*"]
+    },
     "properties": {
       "@type": {
         "type": "string",

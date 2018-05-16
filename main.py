@@ -18,25 +18,27 @@ from etl.common.utils import get_file_path, get_folder_path
 default_data_dir = os.path.join(os.path.dirname(__file__), 'data')
 default_es_host = 'localhost'
 default_es_port = 9200
+default_index_template='gnpis_{source}_{documentType}'
 
 
-def add_data_dir_argument(parser):
-    parser.add_argument('--data-dir',
-                        help='Working directory for ETL data (default is \'{}\')'.format(default_data_dir))
+def add_common_args(parser):
+    parser.add_argument('--data-dir', help='Working directory for ETL data (default is \'{}\')'
+                                           .format(default_data_dir))
+    parser.add_argument('--verbose', '-v', action='store_true', help='Verbose mode'.format(default_data_dir))
 
 
 def add_sub_parser(parser_actions, action, help, aliases=list()):
     sub_parser = parser_actions.add_parser(action, aliases=aliases, help=help)
     sub_parser.add_argument('sources', metavar='source-config.json', type=argparse.FileType('r'), nargs='+',
                             help='List of data source JSON configuration files')
-    add_data_dir_argument(sub_parser)
+    add_common_args(sub_parser)
     return sub_parser
 
 
 # Parse command line interface arguments
 def parse_cli_arguments():
     parser = argparse.ArgumentParser(description='ETL: BrAPI to Elasticsearch. BrAPI to RDF.')
-    add_data_dir_argument(parser)
+    add_common_args(parser)
     parser_actions = parser.add_subparsers(help='Actions')
 
     # Extract
@@ -76,6 +78,10 @@ def parse_cli_arguments():
     load_elasticsearch = add_sub_parser(
         load_targets, 'elasticsearch', aliases=['es'],
         help='Load JSON bulk file into ElasticSearch')
+    load_elasticsearch.add_argument('--index-template', default=default_index_template,
+                                    help='Elasticsearch index name template (default is \'{}\')'.format(default_es_host))
+    load_elasticsearch.add_argument('-d', '--document-types', type=str,
+                                    help='list of document types you want to index')
     load_elasticsearch.add_argument('--host', default='localhost',
                                     help='Elasticsearch HTTP server host (default is \'{}\')'.format(default_es_host))
     load_elasticsearch.add_argument('--port', default='9200', type=int,
@@ -103,7 +109,7 @@ def load_config(directory, file_name):
 
 
 def launch_etl(options, config):
-    def handler(signum, frame):
+    def handler(*_):
         sys.exit(0)
     signal.signal(signal.SIGINT, handler)
 
@@ -117,16 +123,7 @@ def launch_etl(options, config):
         # Restrict lis of generated document if requested
         input_doc_types = options.get('document_types')
         if input_doc_types:
-            selected_doc_types = set(options['document_types'].split(','))
-            all_docs = transform_config['documents']
-            all_doc_types = set([doc['document-type'] for doc in all_docs])
-            unknown_doc_types = selected_doc_types.difference(all_doc_types)
-            if unknown_doc_types:
-                raise Exception('Invalid document type(s) given: \'{}\''.format(options['document_types']))
-
-            transform_config['documents'] = [
-                document for document in all_docs if document['document-type'] in selected_doc_types
-            ]
+            transform_config['restricted-documents'] = set(input_doc_types.split(','))
 
         # Copy base jsonschema definitions into each document jsonschema
         validation_config = transform_config['validation']
@@ -157,11 +154,17 @@ def launch_etl(options, config):
 
     if 'load_elasticsearch' in options or 'etl_es' in options:
         mapping_files = list_entity_files(os.path.join(config['conf-dir'], 'elasticsearch'))
+
+        selected_document_types = None
+        if 'document_types' in options:
+            selected_document_types = set(options['document_types'].split(','))
         config['load-elasticsearch'] = {
             'url': '{}:{}'.format(options['host'], options['port']),
             'mappings': {
                 document_type: file_path for document_type, file_path in mapping_files
-            }
+            },
+            'index-template': options.get('index_template') or default_index_template,
+            'document-types': selected_document_types
         }
         etl.load.elasticsearch.main(config)
 
@@ -169,16 +172,13 @@ def launch_etl(options, config):
         etl.load.virtuoso.main(config)
 
 
-def main():
-    # Parse command line arguments
-    options = parse_cli_arguments()
-
-    # Load configs
+def prepare_config(options):
     config = dict()
+    config['verbose'] = options['verbose']
     config['root-dir'] = os.path.dirname(__file__)
     config['conf-dir'] = os.path.join(config['root-dir'], 'config')
     config['source-dir'] = os.path.join(config['conf-dir'], 'sources')
-    config['data-dir'] = options.get('data_dir') or default_data_dir
+    config['data-dir'] = get_folder_path([options.get('data_dir') or default_data_dir], create=True)
     config['log-dir'] = get_folder_path([config['root-dir'], 'log'], create=True)
 
     # Sources config
@@ -200,6 +200,16 @@ def main():
     conf_files = filter(lambda s: s.endswith('.json'), os.listdir(config['conf-dir']))
     for conf_file in conf_files:
         config.update(load_config(config['conf-dir'], conf_file))
+
+    return config
+
+
+def main():
+    # Parse command line arguments
+    options = parse_cli_arguments()
+
+    # Load configs
+    config = prepare_config(options)
 
     launch_etl(options, config)
 

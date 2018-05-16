@@ -44,7 +44,7 @@
         "index": "not_analyzed"
       },
       "additionalInfo": {
-        "dynamic": "true",
+        "type": "object",
         "properties": {}
       },
       "studyPUIs": {

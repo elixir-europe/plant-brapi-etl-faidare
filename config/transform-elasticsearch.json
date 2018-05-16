@@ -3,7 +3,6 @@
     {
       "document-type": "datadiscovery",
       "source-entity": "germplasm",
-      "copy-fields-from-source": false,
 
       "document-transform": {
         "@type": "Germplasm",
@@ -106,7 +105,6 @@
     {
       "document-type": "datadiscovery",
       "source-entity": "study",
-      "copy-fields-from-source": false,
 
       "document-transform": {
         "@type": [
@@ -132,12 +130,12 @@
               "{or}": ["{.thematicType}", "study"]
             },
             {
-              "{if}": "{.locationDbIds => .locationName}",
+              "{if}": "{.locationDbId => .locationName}",
               "{then}": [
-                " located in {.locationDbIds => .locationName}",
+                " located in {.locationDbId => .locationName}",
                 {
-                  "{if}": "{.locationDbIds => .countryName}",
-                  "{then}": " ({.locationDbIds => .countryName})"
+                  "{if}": "{.locationDbId => .countryName}",
+                  "{then}": " ({.locationDbId => .countryName})"
                 }
               ]
             },
@@ -214,7 +212,6 @@
     {
       "document-type": "germplasm",
       "source-entity": "germplasm",
-      "copy-fields-from-source": true,
 
       "document-transform": {
         "germplasmName": {
@@ -236,7 +233,6 @@
     {
       "document-type": "study",
       "source-entity": "study",
-      "copy-fields-from-source": true,
 
       "document-transform": {
         "studyName": {
@@ -256,7 +252,6 @@
     {
       "document-type": "trial",
       "source-entity": "trial",
-      "copy-fields-from-source": true,
 
       "document-transform": {
         "trialName": {
@@ -282,7 +277,6 @@
     {
       "document-type": "location",
       "source-entity": "location",
-      "copy-fields-from-source": true,
 
       "document-transform": {
         "locationName": {
@@ -308,7 +302,6 @@
     {
       "document-type": "program",
       "source-entity": "program",
-      "copy-fields-from-source": true,
 
       "document-transform": {
         "programName": {

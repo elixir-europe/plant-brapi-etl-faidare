@@ -86,7 +86,7 @@
         }
       },
       "additionalInfo": {
-        "dynamic": "true",
+        "type": "object",
         "properties": {}
       }
     }

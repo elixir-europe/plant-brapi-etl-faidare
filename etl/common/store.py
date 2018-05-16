@@ -35,7 +35,7 @@ def list_entity_files(json_dir):
         yield entity_name, json_path
 
 
-def load_lines(options):
+def load_entity_lines(options):
     entity_name, file_path = options
     with open(file_path, 'r') as json_data_file:
         for line in json_data_file:
@@ -203,10 +203,11 @@ class IndexStore(object):
         for json_store in self.json_stores.values():
             json_store.close()
         self.json_stores.clear()
-        data_location_by_id = dict()
-        for location_by_id in self.data_location_by_entity.values():
-            data_location_by_id.update(location_by_id)
-        return DataIdIndex(data_location_by_id)
+        return DataIdIndex({
+            data_id: data
+            for by_id in self.data_location_by_entity.values()
+            for data_id, data in by_id.items()
+        })
 
 
 class DataIdIndex(collections.Mapping):
@@ -219,6 +220,11 @@ class DataIdIndex(collections.Mapping):
         for data_id in self.data_location_by_id:
             yield data_id, self.get_from_file(data_id)
 
+    def iter_id_and_type(self):
+        for data_id in self.data_location_by_id:
+            location = self.data_location_by_id[data_id]
+            yield data_id, location['brapi:type']
+
     def __len__(self):
         return len(self.data_location_by_id)
 
@@ -229,8 +235,9 @@ class DataIdIndex(collections.Mapping):
         self.data_by_id[data_id] = data
         return data
 
-    def merge(self, index2):
-        id_index = self.data_location_by_id.copy()
+    @staticmethod
+    def merge(index1, index2):
+        id_index = index1.data_location_by_id.copy()
         dict_merge(id_index, index2.data_location_by_id)
         return DataIdIndex(id_index)
 

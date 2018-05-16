@@ -12,6 +12,8 @@ from multiprocessing import Pool
 
 import collections
 
+import functools
+
 default_nb_threads = multiprocessing.cpu_count() + 2
 
 
@@ -165,6 +167,8 @@ def resolve_path(values, path):
 
 def as_collection_type(type, value):
     if type in [dict, list, set, tuple]:
+        if not value:
+            return type()
         return type(value)
     return value
 
@@ -174,10 +178,12 @@ def as_list(x):
         return []
     if isinstance(x, list):
         return x
+    if is_list_like(x):
+        return list(x)
     return [x]
 
 
-def create_logger(name, log_file):
+def create_logger(name, log_file, verbose):
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
 
@@ -189,7 +195,8 @@ def create_logger(name, log_file):
     # Log stdout
     stdout_handler = logging.StreamHandler(sys.stdout)
     stdout_handler.setFormatter(logging.Formatter('[{}] %(message)s'.format(name)))
-    stdout_handler.setLevel(logging.INFO)
+    level = logging.DEBUG if verbose else logging.INFO
+    stdout_handler.setLevel(level)
     logger.addHandler(stdout_handler)
     return logger
 
@@ -217,3 +224,7 @@ def cat_it(*iterables):
 
 def first(it):
     return next(iter(it))
+
+
+def compose(*functions):
+    return functools.reduce(lambda f, g: lambda x: f(g(x)), functions, lambda x: x)

@@ -1,3 +1,4 @@
+import itertools
 import json
 import re
 from itertools import chain
@@ -167,12 +168,14 @@ def get_implemented_call(source, call_group, context=None):
     return None
 
 
-def get_entity_links(data):
-    def extract_entity_link(entry):
-        key, value = entry
-        match = re.search("^(\w+)DbId(s?)$", key)
-        if match and value:
-            entity_name, plural = match.groups()
-            return [entity_name, key, plural, value]
+def get_entity_links(data, *id_fields):
+    def extract_links(id_field):
+        def extract_link(entry):
+            key, value = entry
+            match = re.search("^(\w+)"+id_field+"(s?)$", key)
+            if match and value:
+                entity_name, plural = match.groups()
+                return [entity_name, key, plural, value]
+        return remove_none(map(extract_link, data.items()))
+    return list(itertools.chain.from_iterable(map(extract_links, id_fields)))
 
-    return list(remove_none(map(extract_entity_link, data.items())))

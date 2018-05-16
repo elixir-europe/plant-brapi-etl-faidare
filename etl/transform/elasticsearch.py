@@ -1,28 +1,19 @@
 import itertools
 import json
-import multiprocessing
-import os
-import pprint
 import random
-import re
-import shutil
 import threading
-import time
 import traceback
-import urllib
-from functools import partial
-from multiprocessing import Pool as ThreadPool
+import base64
+from functools import reduce
 
 import jsonschema
 
 from etl.common.brapi import get_identifier, get_uri, get_entity_links
-from etl.common.store import JSONSplitStore, IndexStore, list_entity_files, load_lines
+from etl.common.store import JSONSplitStore, IndexStore, list_entity_files, DataIdIndex, load_entity_lines
 from etl.common.templating import resolve, parse_template
-from etl.common.utils import get_file_path, get_folder_path, remove_none, as_list, create_logger, remove_falsey, \
-    is_list_like, resolve_path, flatten_it, split_every, first
+from etl.common.utils import *
 
-
-NB_THREADS = max(int(multiprocessing.cpu_count()*0.75), 6)
+NB_THREADS = max(int(multiprocessing.cpu_count() * 0.75), 6)
 CHUNK_SIZE = 500
 
 
@@ -30,15 +21,9 @@ def is_checkpoint(n):
     return n > 0 and n % 5000 == 0
 
 
-class InvalidDocumentError(Exception):
-    def __init__(self, short_message, long_message, cause):
-        self.long_message = long_message
-        super(Exception, self).__init__(short_message, cause)
-
-
 def uri_encode(uri):
     if uri:
-        return urllib.parse.quote(uri, safe='')
+        return base64.b64encode(uri.encode()).decode()
 
 
 def parse_data(options):
@@ -53,6 +38,7 @@ def generate_uri_global_id(source, entity_name, data):
     data_global_id = uri_encode(data_uri)
 
     data['brapi:type'] = entity_name
+    data['source'] = source['@id']
     data['@type'] = entity_name
     data['@id'] = data_uri
     data[entity_name + 'PUI'] = data_uri
@@ -62,34 +48,45 @@ def generate_uri_global_id(source, entity_name, data):
 
 
 def generate_global_id_links(uri_map, data):
-    entity_links = get_entity_links(data)
-    for (linked_entity, linked_id_field, plural, linked_value) in entity_links:
-        link_uri_field = linked_entity + 'PUI'
-        linked_uris = set()
-        for linked_id in as_list(linked_value):
-            linked_uri = uri_map.get((linked_entity, linked_id))
-            if linked_uri:
-                linked_uris.add(linked_uri)
+    entity_id_links = get_entity_links(data, 'DbId')
+    for (linked_entity, linked_id_field, plural, linked_ids) in entity_id_links:
+        link_uri_field = linked_entity + 'PUI' + plural
+        linked_uris = set(remove_none(
+            map(lambda linked_id: uri_map.get((linked_entity, linked_id)), as_list(linked_ids))))
         if linked_uris:
-            if plural:
-                data[link_uri_field + plural] = linked_uris
-                data[linked_id_field] = set(map(uri_encode, linked_uris))
-            else:
-                linked_uri = first(linked_uris)
-                data[link_uri_field] = linked_uri
-                data[linked_id_field] = uri_encode(linked_uri)
+            if not plural:
+                linked_uris = first(linked_uris)
+            data[link_uri_field] = linked_uris
+
+    entity_uri_links = get_entity_links(data, 'PUI')
+    for (linked_entity, linked_uri_field, plural, linked_uris) in entity_uri_links:
+        linked_id_field = linked_entity + 'DbId' + plural
+        linked_ids = set(map(uri_encode, as_list(linked_uris)))
+        if linked_ids:
+            if not plural:
+                linked_ids = first(linked_ids)
+            data[linked_id_field] = linked_ids
+
     return data
 
 
-def load_all_data_with_uri(source, source_json_dir, required_entities, pool, logger):
+def load_all_data_with_uri(source, source_json_dir, transform_config, pool, logger):
     logger.debug("Loading BrAPI JSON from {}...".format(source_json_dir))
 
-    all_files = list_entity_files(source_json_dir)
-    filtered_files = list(filter(lambda x: x[0] in required_entities, all_files))
-    logger.debug("Loading entities: {}".format(', '.join(list(map(first, filtered_files)))))
-    all_lines = map(load_lines, filtered_files)
-    all_data = pool.imap_unordered(parse_data, itertools.chain.from_iterable(all_lines), CHUNK_SIZE)
+    entity_files = list(list_entity_files(source_json_dir))
+    if transform_config.get('restricted-documents'):
+        document_configs = transform_config['documents']
+        required_entities = get_required_entities(document_configs, source_json_dir)
+        entity_files = list(filter(compose(required_entities.__contains__, first), entity_files))
+    logger.debug("Loading entities: {}".format(', '.join(list(map(first, entity_files)))))
 
+    # Load stream of file lines
+    all_lines = itertools.chain.from_iterable(map(load_entity_lines, entity_files))
+
+    # Parse JSON to python objects
+    all_data = pool.imap_unordered(parse_data, all_lines, CHUNK_SIZE)
+
+    # Generate URIs (and create dict from entity/id to URI)
     uri_map = dict()
     data_list = list()
     for entity_name, data in all_data:
@@ -102,12 +99,12 @@ def load_all_data_with_uri(source, source_json_dir, required_entities, pool, log
 
     # Replace all entity links using global ids (ex: studyDbId: 1 => studyDbId: urn:source%2Fstudy%2F1)
     generate_links = partial(generate_global_id_links, uri_map)
-    return map(generate_links, data_list)
+    return pool.imap_unordered(generate_links, data_list, CHUNK_SIZE)
 
 
 def index_batch(tmp_index_dir, batch):
-    path = get_folder_path([tmp_index_dir, str(time.time())], recreate=True)
-    store = IndexStore(path)
+    # path = get_folder_path([tmp_index_dir, str(random.random())], recreate=True)
+    store = IndexStore(tmp_index_dir)
     for data in batch:
         store.dump(data)
     return store.get_index_by_id()
@@ -118,34 +115,23 @@ def index_on_disk(tmp_index_dir, data_list, pool, logger):
 
     index = partial(index_batch, tmp_index_dir)
 
-    batches = split_every(CHUNK_SIZE, data_list)
-    index_list = pool.map(index, batches)
+    batches = split_every(1000, data_list)
+    index_list = pool.imap_unordered(index, batches)
 
-    global_index = None
-    for index in index_list:
-        global_index = global_index.merge(index) if global_index else index
-    logger.debug("Indexed {} objects on disk.".format(len(global_index)))
+    global_index = reduce(DataIdIndex.merge, index_list)
     return global_index
 
 
 def generate_elasticsearch_document(options):
-    document_type, copy_fields_from_source, document_transform, data_id, data_index = options
-    data = data_index[data_id]
-    if not data:
-        return
-    document = dict()
-    if copy_fields_from_source:
-        for (key, value) in data.items():
-            document[key] = value
-
+    document_type, document_transform, data_id, data_index = options
+    document = data_index[data_id]
     if document_transform:
-        resolved = resolve(document_transform, data, data_index)
+        resolved = resolve(document_transform, document, data_index)
         document.update(resolved)
-
     return document_type, document
 
 
-def generate_elasticsearch_documents(document_configs_by_entity, data_index, pool, logger):
+def generate_elasticsearch_documents(restricted_documents, document_configs_by_entity, data_index, pool, logger):
     """
     Produces and iterable of tuples (of document type and document) generated using the
     document templates in configuration.
@@ -154,19 +140,19 @@ def generate_elasticsearch_documents(document_configs_by_entity, data_index, poo
 
     # Prepare list of args for the 'generate_elasticsearch_document' function to run in a thread pool
     def prepare_generate():
-        for data_id, data in data_index:
-            entity_name = data['brapi:type']
-            for document_config in as_list(document_configs_by_entity.get(entity_name)):
-                document_type = document_config.get('document-type')
+        for data_id, entity_name in data_index.iter_id_and_type():
+            document_configs = document_configs_by_entity.get(entity_name) or [{}]
+            for document_config in document_configs:
+                document_type = document_config.get('document-type') or entity_name
+                if restricted_documents and document_type not in restricted_documents:
+                    continue
                 document_transform = document_config.get('document-transform')
-                copy_fields_from_source = document_config.get('copy-fields-from-source')
-
-                yield document_type, copy_fields_from_source, document_transform, data_id, data_index
+                yield document_type, document_transform, data_id, data_index
     arg_list = list(prepare_generate())
     random.shuffle(arg_list)
 
     logger.debug("Generating documents...")
-    document_tuples = pool.imap_unordered(generate_elasticsearch_document, arg_list, CHUNK_SIZE*3)
+    document_tuples = pool.imap_unordered(generate_elasticsearch_document, arg_list, CHUNK_SIZE)
 
     document_count = 0
     for document_tuple in document_tuples:
@@ -174,20 +160,6 @@ def generate_elasticsearch_documents(document_configs_by_entity, data_index, poo
         yield document_tuple
 
     logger.debug("Generated {} documents.".format(document_count))
-
-
-def validate_document(validation_config, document_type, document):
-    schema = validation_config['documents'].get(document_type)
-    try:
-        schema and jsonschema.validate(document, schema)
-    except jsonschema.exceptions.SchemaError as schema_error:
-        short_message = 'Could not validate document {} JSON schema'.format(document_type)
-        long_message = 'Invalid {} document\nFor schema: {}\nWith content: {}' \
-                       .format(document_type, pprint.pformat(schema), pprint.pformat(document))
-        raise InvalidDocumentError(
-            short_message, long_message, cause=schema_error
-        )
-    return document_type, document
 
 
 def validate_documents(document_tuples, validation_config, logger):
@@ -200,7 +172,9 @@ def validate_documents(document_tuples, validation_config, logger):
     document_count = 0
     for document_type, document in document_tuples:
         document_count += 1
-        yield validate_document(validation_config, document_type, document)
+        schema = validation_config['documents'].get(document_type)
+        schema and jsonschema.validate(document, schema)
+        yield document_type, document
     logger.debug("Validated {} documents.".format(document_count))
 
 
@@ -212,7 +186,6 @@ def generate_bulk_headers(document_tuples):
     for document_type, document in document_tuples:
         document_id = document['@id']
         bulk_header = {'index': {'_type': document_type, '_id': document_id}}
-
         yield bulk_header, document
 
 
@@ -257,8 +230,7 @@ def get_required_entities(document_configs, source_json_dir):
     """
     Returns set of required entities for all documents in configuration
     """
-    source_entities = map(lambda d: d.get('source-entity'), document_configs)
-    entities = set(remove_none(source_entities))
+    source_entities = set(remove_none(map(lambda d: d.get('source-entity'), document_configs)))
 
     def walk_templates(parsed_template):
         if is_list_like(parsed_template):
@@ -276,35 +248,46 @@ def get_required_entities(document_configs, source_json_dir):
         return set()
 
     document_transforms = remove_none(map(lambda d: d.get('document-transform'), document_configs))
-    required_entities = entities.union(flatten_it(map(walk_templates, document_transforms)))
+    required_entities = source_entities.union(flatten_it(map(walk_templates, document_transforms)))
 
     if source_json_dir:
         all_files = list_entity_files(source_json_dir)
-        filtered_files = list(filter(lambda x: x[0] in entities, all_files))
+        filtered_files = list(filter(lambda x: x[0] in source_entities, all_files))
         for entity_name, file_path in filtered_files:
             with open(file_path, 'r') as file:
                 data = json.loads(file.readline())
-                links = get_entity_links(data)
+                links = get_entity_links(data, 'DbId', 'PUI')
                 required_entities.update(set(map(first, links)))
+
     return required_entities
 
 
-def transform_source(source, transform_config, source_json_dir, source_bulk_dir, log_dir):
+def transform_source(source, transform_config, source_json_dir, source_bulk_dir, config):
     """
     Full JSON BrAPI transformation process to Elasticsearch documents
     """
     failed_dir = source_bulk_dir + '-failed'
     if os.path.exists(failed_dir):
         shutil.rmtree(failed_dir, ignore_errors=True)
-    document_configs = transform_config['documents']
     validation_config = transform_config['validation']
     source_name = source['schema:identifier']
-    action = 'transform-elasticsearch-' + source_name
-    log_file = get_file_path([log_dir, action], ext='.log', recreate=True)
-    logger = create_logger(source_name, log_file)
-    pool = ThreadPool(NB_THREADS)
+    action = 'transform-es-' + source_name
+    log_file = get_file_path([config['log-dir'], action], ext='.log', recreate=True)
+    logger = create_logger(action, log_file, config['verbose'])
+    pool = Pool(NB_THREADS)
 
+    document_configs = transform_config['documents']
     document_configs_by_entity = get_document_configs_by_entity(document_configs)
+    restricted_documents = transform_config.get('restricted-documents')
+    if restricted_documents:
+        document_types = set([doc['document-type'] for doc in document_configs])
+        unknown_doc_types = restricted_documents.difference(document_types)
+        if unknown_doc_types:
+            raise Exception('Invalid document type(s) given: \'{}\''.format(', '.join(restricted_documents)))
+
+        transform_config['documents'] = [
+            document for document in document_configs if document['document-type'] in restricted_documents
+        ]
 
     logger.info("Transforming BrAPI to Elasticsearch documents...")
     try:
@@ -314,16 +297,16 @@ def transform_source(source, transform_config, source_json_dir, source_bulk_dir,
                 'Please make sure you have run the BrAPI extraction before trying to launch the transformation process.'
                 .format(source_json_dir)
             )
-        required_entities = get_required_entities(document_configs, source_json_dir)
 
         logger.info('Loading data, generating URIs and global identifiers...')
-        data_list = load_all_data_with_uri(source, source_json_dir, required_entities, pool, logger)
+        data_list = load_all_data_with_uri(source, source_json_dir, transform_config, pool, logger)
 
         tmp_index_dir = get_folder_path([source_bulk_dir, 'tmp'], recreate=True)
         data_index = index_on_disk(tmp_index_dir, data_list, pool, logger)
 
         logger.info('Generating documents...')
-        documents = generate_elasticsearch_documents(document_configs_by_entity, data_index, pool, logger)
+        documents = generate_elasticsearch_documents(
+            restricted_documents, document_configs_by_entity, data_index, pool, logger)
 
         # Validate the document schemas
         validated_documents = validate_documents(documents, validation_config, logger)
@@ -333,12 +316,11 @@ def transform_source(source, transform_config, source_json_dir, source_bulk_dir,
 
         # Write the documents in bulk files
         dump_in_bulk_files(source_bulk_dir, logger, documents_with_headers)
-        shutil.rmtree(tmp_index_dir, ignore_errors=True)
+        #shutil.rmtree(tmp_index_dir, ignore_errors=True)
 
         logger.info("SUCCEEDED Transforming BrAPI {}.".format(source_name))
     except Exception as e:
         logger.debug(traceback.format_exc())
-        logger.debug(getattr(e, 'long_message', ''))
         shutil.move(source_bulk_dir, failed_dir)
         logger.info("FAILED Transforming BrAPI {}.\n"
                     "=> Check the logs ({}) and data ({}) for more details."
@@ -348,7 +330,6 @@ def transform_source(source, transform_config, source_json_dir, source_bulk_dir,
 
 
 def main(config):
-    log_dir = config['log-dir']
     json_dir = get_folder_path([config['data-dir'], 'json'])
     if not os.path.exists(json_dir):
         raise Exception('No json folder found in {}'.format(json_dir))
@@ -366,7 +347,7 @@ def main(config):
         source_bulk_dir = get_folder_path([bulk_dir, source_name], recreate=True)
 
         thread = threading.Thread(target=transform_source,
-                                  args=(source, transform_config, source_json_dir, source_bulk_dir, log_dir))
+                                  args=(source, transform_config, source_json_dir, source_bulk_dir, config))
         thread.daemon = True
         thread.start()
         threads.append(thread)

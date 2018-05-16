@@ -131,7 +131,7 @@
     },
 
     "germplasm": {
-      "-list": {
+      "list": {
         "call": [
           {
             "method": "GET",

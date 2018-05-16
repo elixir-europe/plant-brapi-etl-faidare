@@ -1,22 +1,18 @@
 
 import os
 import shutil
-import sys
 import threading
 import traceback
 from copy import deepcopy
 
 import urllib3
-from multiprocessing.pool import Pool
+from multiprocessing.pool import ThreadPool
 
 from etl.common.brapi import BreedingAPIIterator, get_implemented_calls, get_implemented_call
 from etl.common.brapi import get_identifier
 from etl.common.store import MergeStore
 from etl.common.utils import get_folder_path, resolve_path, remove_falsey, create_logger, get_file_path, remove_none, \
     as_list
-from etl.common.utils import pool_worker
-
-thread_local = threading.local()
 
 urllib3.disable_warnings()
 
@@ -54,11 +50,11 @@ def link_objects(entity, object, linked_entity, linked_objects_by_id):
             linked_entity['store'].add(linked_object)
 
 
-def fetch_all_in_store(entities, fetch_function, arguments):
+def fetch_all_in_store(entities, fetch_function, arguments, pool):
     """
     Run a fetch function with arguments in a pool worker and collect results in the entity MergeStore
     """
-    results = remove_falsey(pool_worker(fetch_function, arguments, nb_thread=2))
+    results = remove_falsey(pool.imap_unordered(fetch_function, arguments, 4))
     if not results:
         return
 
@@ -71,7 +67,7 @@ def fetch_details(options):
     """
     Fetch details call for a BrAPI object (ex: /brapi/v1/studies/{id})
     """
-    source, entity, object_id = options
+    source, logger, entity, object_id = options
     if 'detail' not in entity:
         return
     detail_call_group = entity['detail']
@@ -89,12 +85,12 @@ def fetch_details(options):
     if not detail_call:
         return
 
-    details = BreedingAPIIterator.fetch_all(source['brapi:endpointUrl'], detail_call, thread_local.logger).__next__()
+    details = BreedingAPIIterator.fetch_all(source['brapi:endpointUrl'], detail_call, logger).__next__()
     details['etl:detailed'] = True
     return entity_name, [details]
 
 
-def fetch_all_details(source, entities):
+def fetch_all_details(source, logger, entities, pool):
     """
     Fetch all details for each object of each entity
     """
@@ -102,15 +98,15 @@ def fetch_all_details(source, entities):
     for (entity_name, entity) in entities.items():
         for (_, object) in entity['store'].items():
             object_id = get_identifier(entity_name, object)
-            args.append((source, entity, object_id))
-    fetch_all_in_store(entities, fetch_details, args)
+            args.append((source, logger, entity, object_id))
+    fetch_all_in_store(entities, fetch_details, args, pool)
 
 
 def list_object(options):
     """
     Fetch list for one entity (studies-search, germplasm-search, etc.)
     """
-    source, entity = options
+    source, logger, entity = options
     if 'list' not in entity:
         return
 
@@ -118,21 +114,21 @@ def list_object(options):
     if call is None:
         return
 
-    data_list = list(BreedingAPIIterator.fetch_all(source['brapi:endpointUrl'], call, thread_local.logger))
+    data_list = list(BreedingAPIIterator.fetch_all(source['brapi:endpointUrl'], call, logger))
     return entity['name'], data_list
 
 
-def fetch_all_list(source, entities):
+def fetch_all_list(source, logger, entities, pool):
     """
     Fetch entities list for all entities
     """
     args = list()
     for (entity_name, entity) in entities.items():
-        args.append((source, entity))
-    fetch_all_in_store(entities, list_object, args)
+        args.append((source, logger, entity))
+    fetch_all_in_store(entities, list_object, args, pool)
 
 
-def fetch_all_links(source, entities):
+def fetch_all_links(source, logger, entities):
     """
     Link objects across entities.
      - Internal: link an object (ex: study) to another using an identifier inside the JSON object
@@ -182,7 +178,7 @@ def fetch_all_links(source, entities):
                     if not call:
                         continue
 
-                    link_values = list(BreedingAPIIterator.fetch_all(source['brapi:endpointUrl'], call, thread_local.logger))
+                    link_values = list(BreedingAPIIterator.fetch_all(source['brapi:endpointUrl'], call, logger))
                     for link_value in link_values:
                         link_id = get_identifier(linked_entity_name, link_value)
                         linked_objects_by_id[link_id] = link_value
@@ -209,15 +205,15 @@ def remove_internal_objects(entities):
                     del link_context[last]
 
 
-def extract_source(source, entities, log_dir, output_dir):
+def extract_source(source, entities, config, output_dir):
     """
     Full JSON BrAPI source extraction process
     """
     source_name = source['schema:identifier']
     action = 'extract-' + source_name
-    log_file = get_file_path([log_dir, action], ext='.log', recreate=True)
-    logger = create_logger(action, log_file)
-    thread_local.logger = logger
+    log_file = get_file_path([config['log-dir'], action], ext='.log', recreate=True)
+    logger = create_logger(action, log_file, config['verbose'])
+    pool = ThreadPool(10)
 
     logger.info("Extracting BrAPI {}...".format(source_name))
     try:
@@ -230,16 +226,16 @@ def extract_source(source, entities, log_dir, output_dir):
             source['implemented-calls'] = get_implemented_calls(source, logger)
 
         # Fetch entities lists
-        fetch_all_list(source, entities)
+        fetch_all_list(source, logger, entities, pool)
 
         # Detail entities
-        fetch_all_details(source, entities)
+        fetch_all_details(source, logger, entities, pool)
 
         # Link entities (internal links, internal object links and external object links)
-        fetch_all_links(source, entities)
+        fetch_all_links(source, logger, entities)
 
         # Detail entities (for object that might have been discovered by links)
-        fetch_all_details(source, entities)
+        fetch_all_details(source, logger, entities, pool)
 
         remove_internal_objects(entities)
 
@@ -251,6 +247,7 @@ def extract_source(source, entities, log_dir, output_dir):
         logger.info("FAILED Extracting BrAPI {}.\n"
                     "=> Check the logs ({}) and data ({}) for more details."
                     .format(source_name, log_file, output_dir))
+    pool.close()
 
     # Save to file
     logger.info("Saving BrAPI {} to '{}'...".format(source_name, output_dir))
@@ -266,7 +263,6 @@ def main(config):
 
     json_dir = get_folder_path([config['data-dir'], 'json'], create=True)
     sources = config['sources']
-    log_dir = config['log-dir']
 
     threads = list()
     for source_name in sources:
@@ -279,7 +275,7 @@ def main(config):
         entities_copy = deepcopy(entities)
 
         thread = threading.Thread(target=extract_source,
-                                  args=(source, entities_copy, log_dir, source_json_dir))
+                                  args=(source, entities_copy, config, source_json_dir))
         thread.daemon = True
         thread.start()
         threads.append(thread)
