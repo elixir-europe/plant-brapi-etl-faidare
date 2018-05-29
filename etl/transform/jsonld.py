@@ -115,20 +115,20 @@ def transform_folder(institution_add_jsonld, json_dir, jsonld_dir):
     # Run transform_to_jsonld on a thread pool
     pool_worker(transform_to_jsonld, options)
     # Run synchronously
-    #map(transform_to_jsonld, options)
+    # map(transform_to_jsonld, options)
 
 
 def main(config):
-    print
+    print()
     entities = config['jsonld_entities']
     for entity_name in entities:
         entities[entity_name]['id'] = entity_name + 'DbId'
         entities[entity_name]['pui'] = entity_name + 'PUI'
 
-    json_dir = get_folder_path([config['working_dir'], 'json'])
+    json_dir = get_folder_path([config['data-dir'], 'json'])
     if not os.path.exists(json_dir):
         raise Exception('No json folder found in {}'.format(json_dir))
-    jsonld_dir = get_folder_path([config['working_dir'], 'json-ld'], create=True)
+    jsonld_dir = get_folder_path([config['data-dir'], 'json-ld'], create=True)
 
     institutions = config['institutions']
     for institution_name in institutions:

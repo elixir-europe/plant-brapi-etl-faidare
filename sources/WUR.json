@@ -1,0 +1,33 @@
+{
+  "@context": {
+    "schema": "http://schema.org/",
+    "brapi": "https://brapi.org/"
+  },
+  "@type": "schema:DataCatalog",
+  "@id": "https://www.eu-sol.wur.nl/",
+  "schema:name": "WUR EU-SOL BreeDB",
+  "schema:identifier": "WUR",
+  "brapi:endpointUrl": "https://www.eu-sol.wur.nl/webapi/tomato/brapi/v1/",
+
+  "-comment": "The following list is to be removed once WUR correctly implements the calls call",
+  "implemented-calls": [
+    "GET calls",
+    "GET crops",
+    "GET germplasm/{germplasmDbId}",
+    "GET germplasm/{germplasmDbId}/pedigree",
+    "GET germplasm/{germplasmDbId}/markerprofiles",
+    "GET germplasm-search",
+    "GET markerprofiles",
+    "GET trials",
+    "GET trials/{trialDbId}",
+    "GET traits",
+    "GET traits/{traitDbId}",
+    "GET programs",
+    "GET programs-search",
+    "GET studies-search",
+    "GET maps",
+    "GET maps/{mapDbId}",
+    "GET maps/{mapDbId}/positions/{linkageGroupName}",
+    "GET variables-search"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "program": {
+    "dynamic": false,
+    "properties": {
+      "programDbId": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "programName": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "abbreviation": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "objective": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "leadPerson": {
+        "type": "string",
+        "index": "not_analyzed"
+      }
+    }
+  }
+}

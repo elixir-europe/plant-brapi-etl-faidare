@@ -1,139 +1,219 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
+import argparse
 import json
 import os
 import sys
 
+import signal
+
 import etl.extract.brapi
-import etl.transform.es
+import etl.load.elasticsearch
+import etl.load.virtuoso
+import etl.transform.elasticsearch
 import etl.transform.jsonld
 import etl.transform.rdf
-import etl.load.es
-import etl.load.virtuoso
-import logging
-
+from etl.common.store import list_entity_files
 from etl.common.utils import get_file_path, get_folder_path
 
-sys.path.append(os.path.dirname(__file__))
-logging.basicConfig()
+default_data_dir = os.path.join(os.path.dirname(__file__), 'data')
+default_es_host = 'localhost'
+default_es_port = 9200
+default_index_template='gnpis_{source}_{documentType}'
+
+
+def add_common_args(parser):
+    parser.add_argument('--data-dir', help='Working directory for ETL data (default is \'{}\')'
+                                           .format(default_data_dir))
+    parser.add_argument('--verbose', '-v', action='store_true', help='Verbose mode'.format(default_data_dir))
+
+
+def add_sub_parser(parser_actions, action, help, aliases=list()):
+    sub_parser = parser_actions.add_parser(action, aliases=aliases, help=help)
+    sub_parser.add_argument('sources', metavar='source-config.json', type=argparse.FileType('r'), nargs='+',
+                            help='List of data source JSON configuration files')
+    add_common_args(sub_parser)
+    return sub_parser
 
 
 # Parse command line interface arguments
 def parse_cli_arguments():
-    import argparse
-
     parser = argparse.ArgumentParser(description='ETL: BrAPI to Elasticsearch. BrAPI to RDF.')
-    parser.add_argument('--institution', help='Restrict ETL to a specific institution from config.json')
+    add_common_args(parser)
     parser_actions = parser.add_subparsers(help='Actions')
 
-    # ETL
-    parser_etl = parser_actions.add_parser('etl', help='Extract, Transform, Load')
-    parser_etl.set_defaults(etl=True)
-    etl_targets = parser_etl.add_subparsers(help='etl targets')
-
-    ## ETL Elasticsearch
-    etl_es = etl_targets.add_parser('elasticsearch', help="Extract BrAPI, Transform to ES bulk, Load in ES")
-    etl_es.set_defaults(etl_es=True)
-
-    ## ETL Virtuoso
-    etl_virtuoso = etl_targets.add_parser('virtuoso', help="Extract BrAPI, Transform to JSON-LD/RDF, Load in virtuoso")
-    etl_virtuoso.set_defaults(etl_virtuoso=True)
-
-    ## Extract
-    parser_extract = parser_actions.add_parser('extract', help='Extract data from BrAPI endpoints')
-    # TODO: add --trialDbId arg
+    # Extract
+    parser_extract = add_sub_parser(parser_actions, 'extract', help='Extract data from BrAPI endpoints')
     parser_extract.set_defaults(extract=True)
 
     # Transform
-    parser_transform = parser_actions.add_parser('transform', help='Transform BrAPI data')
+    parser_transform = parser_actions.add_parser('transform', aliases=['trans'], help='Transform BrAPI data')
     transform_targets = parser_transform.add_subparsers(help='transform targets')
 
-    ## Transform elasticsearch
-    transform_elasticsearch = transform_targets.add_parser('elasticsearch', help='Transform BrAPI data for elasticsearch indexing')
+    # Transform elasticsearch
+    transform_elasticsearch = add_sub_parser(
+        transform_targets, 'elasticsearch', aliases=['es'],
+        help='Transform BrAPI data for elasticsearch indexing')
     transform_elasticsearch.set_defaults(transform_elasticsearch=True)
+    transform_elasticsearch.add_argument('-d', '--document-types', type=str,
+                                         help='list of document types you want to generate')
 
     ## Transform jsonld
-    transform_jsonld = transform_targets.add_parser('jsonld', help='Transform BrAPI data into JSON-LD')
-    transform_jsonld.set_defaults(transform_jsonld=True)
-
+    #transform_jsonld = add_sub_parser(
+    #    transform_targets, 'jsonld',
+    #    help='Transform BrAPI data into JSON-LD')
+    #transform_jsonld.set_defaults(transform_jsonld=True)
+    #
     ## Transform rdf
-    transform_rdf = transform_targets.add_parser(
-        'rdf', help='Transform BrAPI data into RDF (requires JSON-LD transformation beforehand)')
-    transform_rdf.set_defaults(transform_rdf=True)
+    #transform_rdf = add_sub_parser(
+    #    transform_targets, 'rdf',
+    #    help='Transform BrAPI data into RDF (requires JSON-LD transformation beforehand)')
+    #transform_rdf.set_defaults(transform_rdf=True)
 
     # Load
     parser_load = parser_actions.add_parser('load', help='Load data')
     parser_load.set_defaults(load=True)
     load_targets = parser_load.add_subparsers(help='load targets')
 
-    ## Load Elasticsearch
-    load_elasticsearch = load_targets.add_parser('elasticsearch', help='Load JSON bulk file into ElasticSearch')
+    # Load Elasticsearch
+    load_elasticsearch = add_sub_parser(
+        load_targets, 'elasticsearch', aliases=['es'],
+        help='Load JSON bulk file into ElasticSearch')
+    load_elasticsearch.add_argument('--index-template', default=default_index_template,
+                                    help='Elasticsearch index name template (default is \'{}\')'.format(default_es_host))
+    load_elasticsearch.add_argument('-d', '--document-types', type=str,
+                                    help='list of document types you want to index')
+    load_elasticsearch.add_argument('--host', default='localhost',
+                                    help='Elasticsearch HTTP server host (default is \'{}\')'.format(default_es_host))
+    load_elasticsearch.add_argument('--port', default='9200', type=int,
+                                    help='Elasticsearch HTTP server port (default is \'{}\')'.format(default_es_port))
     load_elasticsearch.set_defaults(load_elasticsearch=True)
 
     ## Load Virtuoso
-    load_virtuoso = load_targets.add_parser('virtuoso', help='Load RDF into virtuoso')
-    load_virtuoso.set_defaults(load_virtuoso=True)
+    #load_virtuoso = add_sub_parser(
+    #    load_targets, 'virtuoso',
+    #    help='Load RDF into virtuoso')
+    #load_virtuoso.set_defaults(load_virtuoso=True)
 
-    if len(sys.argv[1:]) == 0:
+    if len(sys.argv) == 1:
         parser.print_help()
-    return parser.parse_args()
+    return vars(parser.parse_args())
+
+
+def load_config(directory, file_name):
+    config = dict()
+    base_name = os.path.splitext(os.path.basename(file_name))[0]
+    file_path = os.path.join(directory, file_name)
+    with open(file_path) as config_file:
+        config[base_name] = json.loads(config_file.read())
+    return config
+
+
+def launch_etl(options, config):
+    def handler(*_):
+        sys.exit(0)
+    signal.signal(signal.SIGINT, handler)
+
+    # Execute ETL actions based on CLI arguments:
+    if 'extract' in options or 'etl_es' in options or 'etl_virtuoso' in options:
+        etl.extract.brapi.main(config)
+
+    if 'transform_elasticsearch' in options or 'etl_es' in options:
+        transform_config = config['transform-elasticsearch']
+
+        # Restrict lis of generated document if requested
+        input_doc_types = options.get('document_types')
+        if input_doc_types:
+            transform_config['restricted-documents'] = set(input_doc_types.split(','))
+
+        # Copy base jsonschema definitions into each document jsonschema
+        validation_config = transform_config['validation']
+        base_definitions = validation_config['base-definitions']
+        for (document_type, document_schema) in validation_config['documents'].items():
+            document_schema['definitions'] = base_definitions
+
+        # Run transform
+        etl.transform.elasticsearch.main(config)
+
+    if 'transform_jsonld' in options or 'transform_rdf' in options or 'etl_virtuoso' in options:
+        # Replace JSON-LD context path with absolute path
+        for (entity_name, entity) in config['transform-jsonld']['entities'].items():
+            if '@context' in entity:
+                entity['@context'] = get_file_path([config['conf-dir'], entity['@context']])
+                if not os.path.exists(entity['@context']):
+                    raise Exception('JSON-LD context file "{}" defined in "{}" does not exist'.format(
+                        entity['@context'], os.path.join(config['conf-dir'], 'transform-jsonld.json')
+                    ))
+
+        # Replace JSON-LD model path with an absolute path
+        config['transform-jsonld']['model'] = get_file_path([config['conf-dir'], config['transform-jsonld']['model']])
+
+        etl.transform.jsonld.main(config)
+
+    if 'transform_rdf' in options or 'etl_virtuoso' in options:
+        etl.transform.rdf.main(config)
+
+    if 'load_elasticsearch' in options or 'etl_es' in options:
+        mapping_files = list_entity_files(os.path.join(config['conf-dir'], 'elasticsearch'))
+
+        selected_document_types = None
+        if 'document_types' in options:
+            selected_document_types = set(options['document_types'].split(','))
+        config['load-elasticsearch']['url'] = '{}:{}'.format(options['host'], options['port'])
+        config['load-elasticsearch']['mappings'] = {
+            document_type: file_path for document_type, file_path in mapping_files
+        }
+        config['load-elasticsearch']['index-template'] = options.get('index_template') or default_index_template
+        config['load-elasticsearch']['document-types'] = selected_document_types
+        etl.load.elasticsearch.main(config)
+
+    if 'load_virtuoso' in options or 'etl_virtuoso' in options:
+        etl.load.virtuoso.main(config)
+
+
+def prepare_config(options):
+    config = dict()
+    config['verbose'] = options['verbose']
+    config['root-dir'] = os.path.dirname(__file__)
+    config['conf-dir'] = os.path.join(config['root-dir'], 'config')
+    config['source-dir'] = os.path.join(config['conf-dir'], 'sources')
+    config['data-dir'] = get_folder_path([options.get('data_dir') or default_data_dir], create=True)
+    config['log-dir'] = get_folder_path([config['root-dir'], 'log'], create=True)
+
+    # Sources config
+    config['sources'] = dict()
+    source_id_field = 'schema:identifier'
+    for source_file in (options.get('sources') or list()):
+        source_config = json.loads(source_file.read())
+        if source_id_field not in source_config:
+            raise Exception("No field '{}' in data source JSON configuration file '{}'"
+                            .format(source_id_field, source_file.name))
+        identifier = source_config[source_id_field]
+        if identifier in config['sources']:
+            raise Exception("Source id '{}' found twice in source list: {}\n"
+                            "Please verify the '{}' field in your files."
+                            .format(identifier, options['sources'], source_id_field))
+        config['sources'][identifier] = source_config
+
+    # Other configs
+    conf_files = filter(lambda s: s.endswith('.json'), os.listdir(config['conf-dir']))
+    for conf_file in conf_files:
+        config.update(load_config(config['conf-dir'], conf_file))
+
+    return config
+
+
+def main():
+    # Parse command line arguments
+    options = parse_cli_arguments()
+
+    # Load configs
+    config = prepare_config(options)
+
+    launch_etl(options, config)
 
 
 # If used directly in command line
 if __name__ == "__main__":
-    args = parse_cli_arguments()
+    main()
 
-    # ETL config
-    base_dir = os.path.dirname(__file__)
-    config_file_name = 'config.json'
-    with open(os.path.join(base_dir, config_file_name)) as configFile:
-        config = json.load(configFile)
-
-    # Restrict institutions list
-    if hasattr(args, 'institution') and args.institution:
-        if args.institution not in config['institutions']:
-            raise Exception('Institution "{}" is not specified in the configuration file "{}"'.format(
-                args.institution, config_file_name
-            ))
-        config['institutions'] = {args.institution: config['institutions'][args.institution]}
-
-    # Replace working dir path with an absolute path
-    if not os.path.exists(config['working_dir']):
-        working_dir = get_folder_path([base_dir, config['working_dir']], create=True)
-        if not os.path.exists(config['working_dir']):
-            raise Exception('Could not find working dir "{}" defined in "{}"'.format(
-                config['working_dir'], config_file_name
-            ))
-        config['working_dir'] = working_dir
-
-    # Replace JSON-LD context path with absolute path
-    for entity_name in config['jsonld_entities']:
-        entity = config['jsonld_entities'][entity_name]
-        if '@context' in entity:
-            entity['@context'] = get_file_path([base_dir, entity['@context']])
-            if not os.path.exists(entity['@context']):
-                raise Exception('JSON-LD context file "{}" defined in "{}" does not exist'.format(
-                    entity['@context'], config_file_name
-                ))
-
-    # Replace JSON-LD model path with an absolute path
-    config['jsonld_model'] = get_file_path([base_dir, config['jsonld_model']], create=True)
-
-    # Execute ETL actions based on CLI arguments:
-    if hasattr(args, 'extract') or hasattr(args, 'etl_es') or hasattr(args, 'etl_virtuoso'):
-        etl.extract.brapi.main(config)
-
-    if hasattr(args, 'transform_elasticsearch') or hasattr(args, 'etl_es'):
-        etl.transform.es.main(config)
-
-    if hasattr(args, 'transform_jsonld') or hasattr(args, 'transform_rdf') or hasattr(args, 'etl_virtuoso'):
-        etl.transform.jsonld.main(config)
-
-    if hasattr(args, 'transform_rdf') or hasattr(args, 'etl_virtuoso'):
-        etl.transform.rdf.main(config)
-
-    if hasattr(args, 'load_elasticsearch') or hasattr(args, 'etl_es'):
-        etl.load.es.main(config)
-
-    if hasattr(args, 'load_virtuoso') or hasattr(args, 'etl_virtuoso'):
-        etl.load.virtuoso.main(config)
 

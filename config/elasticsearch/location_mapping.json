@@ -1,0 +1,56 @@
+{
+  "location": {
+    "dynamic": false,
+    "properties": {
+      "locationDbId": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "locationType": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "locationName": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "abbreviation": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "countryCode": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "countryName": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "latitude": {
+        "type": "long"
+      },
+      "longitude": {
+        "type": "long"
+      },
+      "altitude": {
+        "type": "long"
+      },
+      "institutionName": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "institutionAddress": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "additionalInfo": {
+        "type": "object",
+        "properties": {}
+      },
+      "studyPUIs": {
+        "type": "string",
+        "index": "not_analyzed"
+      }
+    }
+  }
+}

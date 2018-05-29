@@ -1,0 +1,11 @@
+{
+  "@context": {
+    "schema": "http://schema.org/",
+    "brapi": "https://brapi.org/"
+  },
+  "@type": "schema:DataCatalog",
+  "@id": "https://test-server.brapi.org",
+  "schema:identifier": "BRAPI_TEST",
+  "schema:name": "BRAPI TEST",
+  "brapi:endpointUrl": "https://test-server.brapi.org/brapi/v1/"
+}

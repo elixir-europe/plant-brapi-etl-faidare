@@ -1,0 +1,35 @@
+{
+  "index-settings": {
+    "analysis": {
+      "analyzer": {
+        "search_suggester": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": [
+            "standard",
+            "lowercase",
+            "asciifolding"
+          ]
+        },
+        "index_suggester": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": [
+            "standard",
+            "lowercase",
+            "asciifolding",
+            "1-20-edgeNGram"
+          ]
+        }
+      },
+      "filter": {
+        "1-20-edgeNGram": {
+          "type": "edgeNGram",
+          "side": "front",
+          "min_gram": 1,
+          "max_gram": 20
+        }
+      }
+    }
+  }
+}

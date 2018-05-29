@@ -1,0 +1,11 @@
+{
+  "@context": {
+    "schema": "http://schema.org/",
+    "brapi": "https://brapi.org/"
+  },
+  "@type": "schema:DataCatalog",
+  "@id": "https://urgi.versailles.inra.fr/gnpis",
+  "schema:identifier": "URGI",
+  "schema:name": "URGI GnpIS",
+  "brapi:endpointUrl": "https://urgi.versailles.inra.fr/gnpis-core-srv/brapi/v1/"
+}

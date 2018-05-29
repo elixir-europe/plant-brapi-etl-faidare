@@ -1,0 +1,11 @@
+{
+  "@context": {
+    "schema": "http://schema.org/",
+    "brapi": "https://brapi.org/rdf/"
+  },
+  "@type": "schema:DataCatalog",
+  "@id": "http://pippa.psb.ugent.be",
+  "schema:identifier": "VIB",
+  "schema:name": "VIB PIPPA",
+  "brapi:endpointUrl": "https://pippa.psb.ugent.be/pippa_experiments/brapi/v1/"
+}

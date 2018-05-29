@@ -95,3 +95,8 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# Vagrant files
+.vagrant
+
+/build-centos6/*.tar.gz

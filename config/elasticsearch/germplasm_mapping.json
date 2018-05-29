@@ -1,0 +1,115 @@
+{
+  "germplasm": {
+    "dynamic": false,
+    "properties": {
+      "germplasmDbId": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "defaultDisplayName": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "accessionNumber": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "germplasmName": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "germplasmPUI": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "pedigree": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "seedSource": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "synonyms": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "commonCropName": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "instituteCode": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "instituteName": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "biologicalStatusOfAccessionCode": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "countryOfOriginCode": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "typeOfGermplasmStorageCode": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "taxonIds": {
+        "properties": {
+          "sourceName": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "taxonId": {
+            "type": "string",
+            "index": "not_analyzed"
+          }
+        }
+      },
+      "genus": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "species": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "speciesAuthority": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "subtaxa": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "subtaxaAuthority": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "donors": {
+        "properties": {
+          "donorAccessionNumber": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "donorInstituteCode": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "donorGermplasmPUI": {
+            "type": "string",
+            "index": "not_analyzed"
+          }
+        }
+      },
+      "acquisitionDate": {
+        "type": "string",
+        "index": "not_analyzed"
+      }
+    }
+  }
+}

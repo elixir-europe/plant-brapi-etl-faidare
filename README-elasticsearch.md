@@ -7,10 +7,7 @@ Software requirements:
 - Same requirements as in [README.md](README.md)
 - Elasticsearch 2.3.x
 
-BrAPI endpoint requirements:
-
-- Provide BrAPI calls listed in the `config.json` file under `"brapi_calls"`
-- (Optionally) provide `"url"` field on each BrAPI entity
+For the BrAPI server requirements, please consult [the Elixir EXCELERATE BrAPI recommendations](https://wiki.brapi.org/index.php/Elixir_Excelerate_phenotyping_data_discovery).
 
 Before indexing into Elasticsearch, you can load the index template from the `elasticsearch-templates` folder in order to validate .
 The index template is used to validate data during indexing. If you do not create the index templates, the data will be indexed without validation, without warning or errors.
@@ -70,7 +67,7 @@ python2 main.py etl elasticsearch
 ```
 
 If no parameters are specified, the script will fetch all data, for each specified and `active` institution and each specified calls.
-The extracted BrAPI data will be stored in `{working_dir}/json/{institution}/{entity}.json`
+The extracted BrAPI data will be stored in `{data-dir}/json/{institution}/{entity}.json`
 
 For a more fined grain execution step-by-step execution:
 

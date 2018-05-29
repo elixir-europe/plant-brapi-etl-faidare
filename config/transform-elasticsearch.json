@@ -1,0 +1,411 @@
+{
+  "documents": [
+    {
+      "document-type": "datadiscovery",
+      "source-entity": "germplasm",
+
+      "document-transform": {
+        "@type": [ "Germplasm" ],
+        "@id": "{.germplasmPUI}",
+
+        "schema:includedInDataCatalog": "{.source}",
+        "schema:identifier": "{.germplasmDbId}",
+        "schema:name": {
+          "{or}": [
+            "{.defaultDisplayName}",
+            "{.germplasmName}",
+            "{.accessionNumber}"
+          ]
+        },
+        "schema:url": "{.url}",
+        "schema:description": {
+          "{join}": [
+            "'{.germplasmName}' is a",
+            {
+              "{if}": "{.commonCropName}",
+              "{then}": " {.commonCropName} accession",
+              "{else}": "n accession"
+            },
+            {
+              "{if}": "{.genus + .species + .subtaxa}",
+              "{then}": " ({.genus + .species + .subtaxa})"
+            },
+            {
+              "{if}": "{.accessionNumber}",
+              "{then}": " with number: '{.accessionNumber}'"
+            },
+            ". {.comment}"
+          ]
+        },
+
+        "germplasm": {
+          "facet": {
+            "commonCropName": {
+              "{flatten_distinct}": "{.commonCropName}"
+            },
+            "species": {
+              "{flatten_distinct}": "{.genus + .species}"
+            }
+          },
+          "search": {
+            "cropName": {
+              "{flatten_distinct}": [
+                "{.commonCropName}",
+                "{.taxonCommonNames}",
+                "{.genus}",
+                "{.genus + .species}",
+                "{.genus + .species + .subtaxa}",
+                "{.taxonSynonyms}"
+              ]
+            },
+            "germplasmList": {
+              "{flatten_distinct}": [
+                "{.panel.name}",
+                "{.collection.name}",
+                "{.population.name}",
+                "{.holdingGenbank.instituteName}"
+              ]
+            },
+            "accession": {
+              "{flatten_distinct}": [
+                "{.germplasmName}",
+                "{.defaultDisplayName}",
+                "{.accessionNumber}",
+                "{.synonyms}"
+              ]
+            }
+          }
+        },
+        "trait": {
+          "facet": {
+            "observationVariableIds": {
+              "{flatten_distinct}": [
+                "{.studyDbIds => .observationVariablePUIs}"
+              ]
+            }
+          }
+        },
+        "study": {
+          "facet": {
+            "dataSet": {
+              "{flatten_distinct}": [
+                "{.studyDbIds => .trialDbIds => .trialName}"
+              ]
+            },
+            "location": {
+              "{flatten_distinct}": [
+                "{.studyDbIds => .locationDbIds => .locationName}",
+                "{.studyDbIds => .locationDbIds => .countryName}"
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "document-type": "datadiscovery",
+      "source-entity": "study",
+
+      "document-transform": {
+        "@type": [
+          "Study",
+          "{.thematicType}"
+        ],
+        "@id": "{.studyPUI}",
+
+        "schema:includedInDataCatalog": "{.source}",
+        "schema:identifier": "{.studyDbId}",
+        "schema:name": {
+          "{or}": ["{.studyName}", "{.name}"]
+        },
+        "schema:url": "{.url}",
+        "schema:description": {
+          "{join}": [
+            "'",
+            {
+              "{or}": ["{.studyName}", "{.name}"]
+            },
+            "' is a ",
+            {
+              "{or}": ["{.thematicType}", "study"]
+            },
+            {
+              "{if}": "{.locationDbId => .locationName}",
+              "{then}": [
+                " located in {.locationDbId => .locationName}",
+                {
+                  "{if}": "{.locationDbId => .countryName}",
+                  "{then}": " ({.locationDbId => .countryName})"
+                }
+              ]
+            },
+            ". {.studyDescription}"
+          ]
+        },
+
+        "germplasm": {
+          "facet": {
+            "commonCropName": {
+              "{flatten_distinct}": "{.germplasmDbIds => .commonCropName}"
+            },
+            "species": {
+              "{flatten_distinct}": "{.germplasmDbIds => .genus + .species}"
+            }
+          },
+          "search": {
+            "cropName": {
+              "{flatten_distinct}": [
+                "{.germplasmDbIds => .commonCropName}",
+                "{.germplasmDbIds => .taxonCommonNames}",
+                "{.germplasmDbIds => .genus}",
+                "{.germplasmDbIds => .genus + .species}",
+                "{.germplasmDbIds => .genus + .species + .subtaxa}",
+                "{.germplasmDbIds => .taxonSynonyms}"
+              ]
+            },
+            "germplasmList": {
+              "{flatten_distinct}": [
+                "{.germplasmDbIds => .panel.name}",
+                "{.germplasmDbIds => .collection.name}",
+                "{.germplasmDbIds => .population.name}",
+                "{.germplasmDbIds => .holdingGenbank.instituteName}"
+              ]
+            },
+            "accession": {
+              "{flatten_distinct}": [
+                "{.germplasmDbIds => .germplasmName}",
+                "{.germplasmDbIds => .defaultDisplayName}",
+                "{.germplasmDbIds => .accessionNumber}",
+                "{.germplasmDbIds => .synonyms}"
+              ]
+            }
+          }
+        },
+
+        "trait": {
+          "facet": {
+            "observationVariableIds": {
+              "{flatten_distinct}": [
+                "{.observationVariablePUIs}"
+              ]
+            }
+          }
+        },
+
+        "study": {
+          "facet": {
+            "dataSet": {
+              "{flatten_distinct}": [
+                "{.trialDbIds => .trialName}"
+              ]
+            },
+            "location": {
+              "{flatten_distinct}": [
+                "{.locationDbId => .locationName}",
+                "{.locationDbId => .countryName}"
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "document-type": "germplasm",
+      "source-entity": "germplasm",
+
+      "document-transform": {
+        "germplasmName": {
+          "{or}": [
+            "{.germplasmName}",
+            "{.defaultDisplayName}",
+            "{.accessionNumber}"
+          ]
+        },
+        "defaultDisplayName": {
+          "{or}": [
+            "{.defaultDisplayName}",
+            "{.germplasmName}",
+            "{.accessionNumber}"
+          ]
+        }
+      }
+    },
+    {
+      "document-type": "study",
+      "source-entity": "study",
+
+      "document-transform": {
+        "studyName": {
+          "{or}": [
+            "{.studyName}",
+            "{.name}"
+          ]
+        },
+        "contacts": {
+          "{or}": [
+            "{.contacts}",
+            "{.contactDbIds => .}"
+          ]
+        }
+      }
+    },
+    {
+      "document-type": "trial",
+      "source-entity": "trial",
+
+      "document-transform": {
+        "trialName": {
+          "{or}": [
+            "{.trialName}",
+            "{.name}"
+          ]
+        },
+        "studies": {
+          "{or}": [
+            "{.studies}",
+            "{.studyDbIds => .}"
+          ]
+        },
+        "contacts": {
+          "{or}": [
+            "{.contacts}",
+            "{.contactDbIds => .}"
+          ]
+        }
+      }
+    },
+    {
+      "document-type": "location",
+      "source-entity": "location",
+
+      "document-transform": {
+        "locationName": {
+          "{or}": [
+            "{.locationName}",
+            "{.name}"
+          ]
+        },
+        "instituteAddress": {
+          "{or}": [
+            "{.instituteAddress}",
+            "{.instituteAdress}"
+          ]
+        },
+        "abbreviation": {
+          "{or}": [
+            "{.abbreviation}",
+            "{.abreviation}"
+          ]
+        }
+      }
+    },
+    {
+      "document-type": "program",
+      "source-entity": "program",
+
+      "document-transform": {
+        "programName": {
+          "{or}": [
+            "{.programName}",
+            "{.name}"
+          ]
+        }
+      }
+    }
+  ],
+
+  "validation": {
+    "documents": {
+
+      "datadiscovery": {
+        "type": "object",
+        "properties": {
+          "@id": {
+            "type": "string",
+            "format": "uri"
+          },
+          "@type": {"$ref": "#/definitions/es-strings"},
+          "schema:name": {
+            "type": "string"
+          },
+          "schema:url": {
+            "type": "string",
+            "format": "url"
+          },
+          "schema:includedInDataCatalog": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "@id",
+          "@type",
+          "schema:name",
+          "schema:includedInDataCatalog"
+        ]
+      },
+
+      "trial": {
+        "type": "object",
+        "properties": {
+          "trialDbId": {"$ref": "#/definitions/es-string"},
+          "trialName": {"$ref": "#/definitions/es-string"}
+        },
+        "required": ["trialDbId", "trialName"]
+      },
+
+      "study": {
+        "type": "object",
+        "properties": {
+          "studyDbId": {"$ref": "#/definitions/es-string"},
+          "studyName": {"$ref": "#/definitions/es-string"}
+        },
+        "required": ["studyDbId", "studyName"]
+      },
+
+      "germplasm": {
+        "type": "object",
+        "properties": {
+          "germplasmDbId": {"$ref": "#/definitions/es-string"},
+          "germplasmName": {"$ref": "#/definitions/es-string"}
+        },
+        "required": ["germplasmDbId", "germplasmName"]
+      },
+
+      "location": {
+        "type": "object",
+        "properties": {
+          "locationDbId": {"$ref": "#/definitions/es-string"},
+          "locationName": {"$ref": "#/definitions/es-string"}
+        },
+        "required": ["locationDbId", "locationName"]
+      },
+
+      "program": {
+        "type": "object",
+        "properties": {
+          "programDbId": {"$ref": "#/definitions/es-string"},
+          "programName": {"$ref": "#/definitions/es-string"}
+        },
+        "required": ["programDbId", "programName"]
+      }
+    },
+
+    "base-definitions": {
+        "es-string": {
+            "comment": "Elasticsearch accepts numbers as string with automatic conversion",
+            "type": ["number", "string"]
+        },
+        "es-strings": {
+            "comment": "Elasticsearch does not discriminate between a single string or an array of strings",
+            "anyOf": [
+                {
+                    "type": "array",
+                    "items": {"$ref": "#/definitions/es-string"}
+                },
+                {"$ref": "#/definitions/es-string"}
+            ]
+        }
+    }
+  }
+}

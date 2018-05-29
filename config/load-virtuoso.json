@@ -1,0 +1,6 @@
+{
+  "user": "dba",
+  "password": "dba",
+  "url": "http://127.0.0.1:8890/sparql-graph-crud-auth",
+  "graph-uri-template": "urn:{institution}:pheno-brapi"
+}

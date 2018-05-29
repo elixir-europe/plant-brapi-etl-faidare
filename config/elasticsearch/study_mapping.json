@@ -1,0 +1,140 @@
+{
+  "study": {
+    "dynamic": false,
+    "properties": {
+      "studyDbId": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "name": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "studyType": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "studyDescription": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "seasons": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+
+      "trialDbIds": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+
+      "startDate": {
+        "type": "date",
+        "format": "YYYY-MM-dd"
+      },
+      "endDate": {
+        "type": "date",
+        "format": "YYYY-MM-dd"
+      },
+      "active": {
+        "type": "boolean"
+      },
+
+      "license": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+
+      "locationDbId": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "locationName": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+
+      "programDbId": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "programName": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+
+      "contacts": {
+        "properties": {
+          "contactDbId": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "email": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "institutionName": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "name": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "orcid": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "type": {
+            "type": "string",
+            "index": "not_analyzed"
+          }
+        }
+      },
+
+      "dataLinks": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "type": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "url": {
+            "type": "string",
+            "index": "not_analyzed"
+          }
+        }
+      },
+
+      "lastUpdate": {
+        "properties": {
+          "version": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "timestamp": {
+            "type": "date",
+            "format": "yyyy-MM-dd'T'HH:mm:ss'Z'"
+          }
+        }
+      },
+
+      "additionalInfo": {
+        "type": "object",
+        "properties": {}
+      },
+
+      "germplasmPUIs": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "observationVariablePUIs": {
+        "type": "string",
+        "index": "not_analyzed"
+      }
+    }
+  }
+}

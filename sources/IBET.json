@@ -1,0 +1,11 @@
+{
+  "@context": {
+    "schema": "http://schema.org/",
+    "brapi": "https://brapi.org/rdf/"
+  },
+  "@type": "schema:DataCatalog",
+  "@id": "https://biodata.pt",
+  "schema:identifier": "IBET",
+  "schema:name": "IBET BioData",
+  "brapi:endpointUrl": "https://brapi.biodata.pt/brapi/v1/"
+}
