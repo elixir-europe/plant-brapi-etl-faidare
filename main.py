@@ -57,17 +57,17 @@ def parse_cli_arguments():
     transform_elasticsearch.add_argument('-d', '--document-types', type=str,
                                          help='list of document types you want to generate')
 
-    # Transform jsonld
-    transform_jsonld = add_sub_parser(
-        transform_targets, 'jsonld',
-        help='Transform BrAPI data into JSON-LD')
-    transform_jsonld.set_defaults(transform_jsonld=True)
-
-    # Transform rdf
-    transform_rdf = add_sub_parser(
-        transform_targets, 'rdf',
-        help='Transform BrAPI data into RDF (requires JSON-LD transformation beforehand)')
-    transform_rdf.set_defaults(transform_rdf=True)
+    ## Transform jsonld
+    #transform_jsonld = add_sub_parser(
+    #    transform_targets, 'jsonld',
+    #    help='Transform BrAPI data into JSON-LD')
+    #transform_jsonld.set_defaults(transform_jsonld=True)
+    #
+    ## Transform rdf
+    #transform_rdf = add_sub_parser(
+    #    transform_targets, 'rdf',
+    #    help='Transform BrAPI data into RDF (requires JSON-LD transformation beforehand)')
+    #transform_rdf.set_defaults(transform_rdf=True)
 
     # Load
     parser_load = parser_actions.add_parser('load', help='Load data')
@@ -88,11 +88,11 @@ def parse_cli_arguments():
                                     help='Elasticsearch HTTP server port (default is \'{}\')'.format(default_es_port))
     load_elasticsearch.set_defaults(load_elasticsearch=True)
 
-    # Load Virtuoso
-    load_virtuoso = add_sub_parser(
-        load_targets, 'virtuoso',
-        help='Load RDF into virtuoso')
-    load_virtuoso.set_defaults(load_virtuoso=True)
+    ## Load Virtuoso
+    #load_virtuoso = add_sub_parser(
+    #    load_targets, 'virtuoso',
+    #    help='Load RDF into virtuoso')
+    #load_virtuoso.set_defaults(load_virtuoso=True)
 
     if len(sys.argv) == 1:
         parser.print_help()
