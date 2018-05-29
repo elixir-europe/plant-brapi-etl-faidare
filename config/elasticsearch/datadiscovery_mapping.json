@@ -55,15 +55,39 @@
             "properties": {
               "cropName": {
                 "type": "string",
-                "index": "not_analyzed"
+                "index": "not_analyzed",
+                "fields": {
+                  "suggest": {
+                    "type": "string",
+                    "index": "analyzed",
+                    "search_analyzer": "search_suggester",
+                    "analyzer": "index_suggester"
+                  }
+                }
               },
               "germplasmList": {
                 "type": "string",
-                "index": "not_analyzed"
+                "index": "not_analyzed",
+                "fields": {
+                  "suggest": {
+                    "type": "string",
+                    "index": "analyzed",
+                    "search_analyzer": "search_suggester",
+                    "analyzer": "index_suggester"
+                  }
+                }
               },
               "accession": {
                 "type": "string",
-                "index": "not_analyzed"
+                "index": "not_analyzed",
+                "fields": {
+                  "suggest": {
+                    "type": "string",
+                    "index": "analyzed",
+                    "search_analyzer": "search_suggester",
+                    "analyzer": "index_suggester"
+                  }
+                }
               }
             }
           }

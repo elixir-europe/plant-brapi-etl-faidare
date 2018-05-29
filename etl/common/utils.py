@@ -206,8 +206,8 @@ def split_every(n, iterable):
     for element in iter(iterable):
         accumulator.append(element)
         if len(accumulator) >= n:
-            yield accumulator.copy()
-            accumulator.clear()
+            yield accumulator
+            accumulator = list()
     if accumulator:
         yield accumulator
 

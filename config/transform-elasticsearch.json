@@ -5,7 +5,7 @@
       "source-entity": "germplasm",
 
       "document-transform": {
-        "@type": "Germplasm",
+        "@type": [ "Germplasm" ],
         "@id": "{.germplasmPUI}",
 
         "schema:includedInDataCatalog": "{.source}",

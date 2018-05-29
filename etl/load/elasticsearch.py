@@ -37,22 +37,26 @@ def delete_index(es_client, index_name, logger):
 
 
 def create_template(es_client, es_config, document_type, base_index_name, logger):
-    template_name = 'template_' + base_index_name
+    template_name = 'template_elixir_' + base_index_name
     template_pattern = base_index_name + '-d*'
 
     mapping_file_path = es_config['mappings'].get(document_type)
     if not mapping_file_path:
         return
     if not os.path.exists(mapping_file_path):
-        logger.debug("No mapping file '{}' for document type '{}'. Skipping template creation."
+        logger.debug('No mapping file "{}" for document type "{}". Skipping template creation.'
                      .format(mapping_file_path, document_type))
         return
-    logger.debug("Creating template {}...".format(template_name))
+    logger.debug('Creating template "{}" on pattern "{}"...'.format(template_name, template_pattern))
 
     with open(mapping_file_path, 'r') as mapping_file:
         mapping = json.load(mapping_file)
 
-    template_body = {"template": template_pattern, "mappings": mapping}
+    template_body = {'template': template_pattern, 'mappings': mapping}
+
+    if 'index-settings' in es_config:
+        template_body['settings'] = es_config['index-settings']
+
     es_client.indices.put_template(name=template_name, body=template_body)
 
 
@@ -64,13 +68,13 @@ def bulk_index(es_client, index_name, file_path, logger):
 
 
 def create_alias(es_client, alias_name, base_index_name, logger):
-    logger.debug("Creating alias '{}' for index '{}'".format(alias_name, base_index_name))
+    logger.debug('Creating alias "{}" for index "{}"'.format(alias_name, base_index_name))
     es_client.indices.put_alias(alias_name, base_index_name)
 
 
 def get_indices(es_client, base_index_name):
-    indices = es_client.cat.indices(base_index_name + '-d*', params={"h": "index"})
-    index_names = list(map(lambda i: i["index"], indices))
+    indices = es_client.cat.indices(base_index_name + '-d*', params={'h': 'index'})
+    index_names = list(map(lambda i: i['index'], indices))
     index_names.sort(reverse=True)
     return index_names
 
@@ -108,7 +112,7 @@ def load_source(source, config, source_bulk_dir, log_dir):
         for document_type in document_types:
             base_index_name = replace_template(
                 load_config['index-template'],
-                {'source': source["schema:identifier"], 'documentType': document_type}
+                {'source': source['schema:identifier'], 'documentType': document_type}
             ).lower()
             create_template(es_client, load_config, document_type, base_index_name, logger)
 
@@ -126,7 +130,7 @@ def load_source(source, config, source_bulk_dir, log_dir):
         for document_type, (base_index_name, index_name) in index_by_document.items():
             create_alias(es_client, index_name, base_index_name, logger)
             new_index, *old_indices = get_indices(es_client, base_index_name)
-            for old_index in old_indices:
+            for old_index in old_indices[1:]:
                 delete_index(es_client, old_index, logger)
 
         logger.info("SUCCEEDED Loading {}.".format(source_name))

@@ -158,14 +158,12 @@ def launch_etl(options, config):
         selected_document_types = None
         if 'document_types' in options:
             selected_document_types = set(options['document_types'].split(','))
-        config['load-elasticsearch'] = {
-            'url': '{}:{}'.format(options['host'], options['port']),
-            'mappings': {
-                document_type: file_path for document_type, file_path in mapping_files
-            },
-            'index-template': options.get('index_template') or default_index_template,
-            'document-types': selected_document_types
+        config['load-elasticsearch']['url'] = '{}:{}'.format(options['host'], options['port'])
+        config['load-elasticsearch']['mappings'] = {
+            document_type: file_path for document_type, file_path in mapping_files
         }
+        config['load-elasticsearch']['index-template'] = options.get('index_template') or default_index_template
+        config['load-elasticsearch']['document-types'] = selected_document_types
         etl.load.elasticsearch.main(config)
 
     if 'load_virtuoso' in options or 'etl_virtuoso' in options:

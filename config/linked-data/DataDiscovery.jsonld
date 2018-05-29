@@ -1,0 +1,11 @@
+{
+  "@context": {
+    "schema": "http://schema.org/",
+    "brapi": "https://brapi.org/rdf/",
+    "gnpis": "https://urgi.versailles.inra.fr/gnpis/rdf/",
+
+    "Germplasm": "brapi:Study",
+    "Study": "brapi:Study",
+    "Phenotyping Study": "gnpis:PhenotypingStudy"
+  }
+}

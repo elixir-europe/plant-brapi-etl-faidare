@@ -232,9 +232,9 @@ def get_required_entities(document_configs, source_json_dir):
     """
     source_entities = set(remove_none(map(lambda d: d.get('source-entity'), document_configs)))
 
-    def walk_templates(parsed_template):
+    def collect_entities(parsed_template):
         if is_list_like(parsed_template):
-            return set(flatten_it(map(walk_templates, parsed_template)))
+            return set(flatten_it(map(collect_entities, parsed_template)))
         if isinstance(parsed_template, dict):
             if '{lark}' in parsed_template:
                 entities = set()
@@ -244,11 +244,11 @@ def get_required_entities(document_configs, source_json_dir):
                     if match:
                         entities.add(match.groups()[0])
                 return entities
-            return set(flatten_it(map(walk_templates, parsed_template.values())))
+            return set(flatten_it(map(collect_entities, parsed_template.values())))
         return set()
 
     document_transforms = remove_none(map(lambda d: d.get('document-transform'), document_configs))
-    required_entities = source_entities.union(flatten_it(map(walk_templates, document_transforms)))
+    required_entities = source_entities.union(flatten_it(map(collect_entities, document_transforms)))
 
     if source_json_dir:
         all_files = list_entity_files(source_json_dir)
