@@ -20,21 +20,16 @@
         "schema:url": "{.url}",
         "schema:description": {
           "{join}": [
-            "'{.germplasmName}' is a",
-            {
-              "{if}": "{.commonCropName}",
-              "{then}": " {.commonCropName} accession",
-              "{else}": "n accession"
-            },
-            {
-              "{if}": "{.genus + .species + .subtaxa}",
-              "{then}": " ({.genus + .species + .subtaxa})"
-            },
-            {
-              "{if}": "{.accessionNumber}",
-              "{then}": " with number: '{.accessionNumber}'"
-            },
-            ". {.comment}"
+            "'",
+            {"{or}": ["{.germplasmName}", "{.defaultDisplayName}"]},
+            "' is a",
+            " {.genus + .species + .subtaxa}",
+            " ({.commonCropName})",
+            " accession",
+            " (number: '{.accessionNumber})'",
+            " managed by {.holdingInstitute.instituteName}",
+            ".",
+            " {.comment}"
           ]
         },
 
@@ -108,8 +103,7 @@
 
       "document-transform": {
         "@type": [
-          "Study",
-          "{.thematicType}"
+          "Phenotyping Study"
         ],
         "@id": "{.studyPUI}",
 
@@ -122,24 +116,15 @@
         "schema:description": {
           "{join}": [
             "'",
-            {
-              "{or}": ["{.studyName}", "{.name}"]
-            },
-            "' is a ",
-            {
-              "{or}": ["{.thematicType}", "study"]
-            },
-            {
-              "{if}": "{.locationDbId => .locationName}",
-              "{then}": [
-                " located in {.locationDbId => .locationName}",
-                {
-                  "{if}": "{.locationDbId => .countryName}",
-                  "{then}": " ({.locationDbId => .countryName})"
-                }
-              ]
-            },
-            ". {.studyDescription}"
+            {"{or}": ["{.studyName}", "{.name}"]},
+            "' is a phenotyping study",
+	    {"{or}": [" conducted from {.startDate} to {.endDate}", " running since {.startDate}"]},
+            {"{join}": [ " (seasons: ", {"{join}": "{.seasons}", "{separator}": ", "}, ")"], "{accept_none}": false},
+            " in {.locationDbId => .locationName}",
+            " ({.locationDbId => .countryName})",
+            ". this study is part of the {.programName} program",
+            ".",
+            " {.studyDescription}"
           ]
         },
 

@@ -101,6 +101,13 @@ def get_identifier(entity_name, object):
     return object_id
 
 
+def get_uri_by_id(source, entity_name, object_id):
+    """Generate URI from source ID, entity name and object id"""
+    source_id = source['schema:identifier']
+    encoded_id = urllib.parse.quote(object_id, safe='')
+    return 'urn:{}/{}/{}'.format(source_id, entity_name, encoded_id)
+
+
 def get_uri(source, entity_name, object):
     """Get URI from BrAPI object or generate one"""
     pui_field = entity_name + 'PUI'
@@ -113,9 +120,7 @@ def get_uri(source, entity_name, object):
     source_id = source['schema:identifier']
     object_id = get_identifier(entity_name, object)
     if not object_uri:
-        # Generate URI from scratch
-        encoded_id = urllib.parse.quote(object_id, safe='')
-        object_uri = 'urn:{}/{}/{}'.format(source_id, entity_name, encoded_id)
+        object_uri = get_uri_by_id(source, entity_name, object_id)
     else:
         # Generate URI by prepending the original URI with the source identifier
         object_uri = 'urn:{}/{}'.format(source_id, object_uri)

@@ -1,9 +1,10 @@
-import collections
 import itertools
-import re
-from functools import reduce, partial
 
+import collections
 import lark
+import re
+from copy import deepcopy
+from functools import reduce, partial
 
 from etl.common.utils import remove_none, resolve_path, as_list, flatten, remove_falsey, distinct
 
@@ -48,11 +49,11 @@ def remove_white_space_token(tree):
     return tree
 
 
-def coll_as_str(value):
+def coll_as_str(value, separator=''):
     if isinstance(value, str):
         return value
     if isinstance(value, collections.Iterable):
-        return ''.join(map(coll_as_str, value))
+        return separator.join(map(lambda s: coll_as_str(s, separator), value))
     return str(value)
 
 
@@ -96,8 +97,16 @@ def resolve_if_template(template, data, data_index):
 
 
 def resolve_join_template(template, data, data_index):
+    accept_none = False if template.get('{accept_none}') == False else True
+    separator = template.get('{separator}') or ''
     elements = template.get('{join}')
-    return coll_as_str(flatten(resolve(elements, data, data_index)))
+    flattened_elements = flatten(resolve(elements, data, data_index))
+    if not accept_none:
+        for elem in as_list(flattened_elements):
+            if not elem:
+                return None
+    filtered_elements = remove_none(flattened_elements)
+    return coll_as_str(filtered_elements, separator)
 
 
 def resolve_flatten_template(template, data, data_index):
@@ -129,7 +138,7 @@ def resolve(parsed_template, data, data_index):
     if isinstance(parsed_template, str):
         return parsed_template
     elif isinstance(parsed_template, list):
-        return list(remove_none(map(partial(resolve, data=data, data_index=data_index), parsed_template)))
+        return list(map(partial(resolve, data=data, data_index=data_index), parsed_template))
     elif isinstance(parsed_template, dict):
         evaluable_templates = {
             '{if}': resolve_if_template,
@@ -165,15 +174,19 @@ def parse_if_template(template):
             '{else}': parse_template(else_branch)}
 
 
+def merge_dict(dict1, dict2):
+    merged = deepcopy(dict1)
+    merged.update(dict2)
+    return merged
+
+
 def parse_join_template(template):
-    elements = template.get('{join}')
+    elements = as_list(template.get('{join}'))
 
     if not elements:
         raise Exception("Empty '{{join}}' template '{}'".format(elements))
-    if not isinstance(elements, list):
-        raise Exception("'{{join}}' template is not a list '{}'".format(elements))
 
-    return {'{join}': parse_template(elements)}
+    return merge_dict(template, {'{join}': parse_template(elements)})
 
 
 def parse_flatten_template(template):
@@ -211,7 +224,7 @@ def parse_string_template(template_string):
             raise Exception("Could not parse template '{}'".format(template_string), e)
     else:
         tokens = re.findall(r"({[^}]*}|[^{}]+)", template_string)
-        return {'{join}': parse_template(tokens)}
+        return {'{join}': parse_template(tokens), '{accept_none}': False}
 
 
 def parse_template(template):

@@ -182,6 +182,24 @@ class TestResolve(unittest.TestCase):
         expected = "baz"
         self.assertEqual(actual, expected)
 
+    def test_resolve_non_existing_field_in_join_without_none_template(self):
+        input = parse_template({"{join}": ["The species is ", "{.nonExisitngField}"], "{accept_none}": False})
+        actual = resolve(input, data_0, data_index)
+        expected = None
+        self.assertEqual(actual, expected)
+
+    def test_resolve_non_existing_field_in_string_template(self):
+        input = parse_template("The species is {.nonExisitngField}")
+        actual = resolve(input, data_0, data_index)
+        expected = None
+        self.assertEqual(actual, expected)
+
+    def test_resolve_join_with_separator(self):
+        input = parse_template({"{join}": ["foo", "{.foo}"], "{separator}": ", "})
+        actual = resolve(input, data_0, data_index)
+        expected = "foo, 1, 2, 3"
+        self.assertEqual(actual, expected)
+
 
 # print(parser.parse("{.toto}").pretty())
 # print(parser.parse("{ .toto.tata }").pretty())

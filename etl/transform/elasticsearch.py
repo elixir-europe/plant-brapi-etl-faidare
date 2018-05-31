@@ -8,7 +8,7 @@ from functools import reduce
 
 import jsonschema
 
-from etl.common.brapi import get_identifier, get_uri, get_entity_links
+from etl.common.brapi import get_identifier, get_uri, get_entity_links, get_uri_by_id
 from etl.common.store import JSONSplitStore, IndexStore, list_entity_files, DataIdIndex, load_entity_lines
 from etl.common.templating import resolve, parse_template
 from etl.common.utils import *
@@ -47,12 +47,30 @@ def generate_uri_global_id(source, entity_name, data):
     return data_id, data_uri
 
 
-def generate_global_id_links(uri_map, data):
+def get_dict_or_generate(dictionary, key, generator):
+    """Get value from dict or generate one using a function on the key"""
+    if key in dictionary:
+        return dictionary[key]
+    value = generator(key)
+    dictionary[key] = value
+    return value
+
+
+def generate_global_id_links(source, uri_map, data):
+    def generate_uri(tuple):
+        (entity_name, object_id) = tuple
+        return get_uri_by_id(source, entity_name, object_id)
+
+    def get_or_generate_uri(entity_name, object_id):
+        return get_dict_or_generate(uri_map, (entity_name, object_id), generate_uri)
+
     entity_id_links = get_entity_links(data, 'DbId')
     for (linked_entity, linked_id_field, plural, linked_ids) in entity_id_links:
         link_uri_field = linked_entity + 'PUI' + plural
+        if link_uri_field in data:
+            continue
         linked_uris = set(remove_none(
-            map(lambda linked_id: uri_map.get((linked_entity, linked_id)), as_list(linked_ids))))
+            map(partial(get_or_generate_uri, linked_entity), as_list(linked_ids))))
         if linked_uris:
             if not plural:
                 linked_uris = first(linked_uris)
@@ -92,13 +110,14 @@ def load_all_data_with_uri(source, source_json_dir, transform_config, pool, logg
     for entity_name, data in all_data:
         data_id, data_uri = generate_uri_global_id(source, entity_name, data)
         uri_map[(entity_name, data_id)] = data_uri
+        uri_map[(entity_name, get_identifier(entity_name, data))] = data_uri
         if is_checkpoint(len(data_list)):
             logger.debug("checkpoint: {} BrAPI objects loaded".format(len(data_list)))
         data_list.append(data)
     logger.debug("Loaded total of {} BrAPI objects.".format(len(data_list)))
 
     # Replace all entity links using global ids (ex: studyDbId: 1 => studyDbId: urn:source%2Fstudy%2F1)
-    generate_links = partial(generate_global_id_links, uri_map)
+    generate_links = partial(generate_global_id_links, source, uri_map)
     return pool.imap_unordered(generate_links, data_list, CHUNK_SIZE)
 
 
