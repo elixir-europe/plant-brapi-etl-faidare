@@ -300,9 +300,10 @@ def transform_source(source, transform_config, source_json_dir, source_bulk_dir,
     restricted_documents = transform_config.get('restricted-documents')
     if restricted_documents:
         document_types = set([doc['document-type'] for doc in document_configs])
-        unknown_doc_types = restricted_documents.difference(document_types)
-        if unknown_doc_types:
-            raise Exception('Invalid document type(s) given: \'{}\''.format(', '.join(restricted_documents)))
+        # unknown_doc_types = restricted_documents.difference(document_types)
+        # if unknown_doc_types:
+        #     raise Exception('Invalid document type(s) given: \'{}\''.format(', '.join(restricted_documents)))
+        restricted_documents = restricted_documents.intersection(document_types)
 
         transform_config['documents'] = [
             document for document in document_configs if document['document-type'] in restricted_documents
