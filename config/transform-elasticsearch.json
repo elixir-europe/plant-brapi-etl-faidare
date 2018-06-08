@@ -20,13 +20,13 @@
         "schema:url": "{.url}",
         "schema:description": {
           "{join}": [
-            "'",
-            {"{or}": ["{.germplasmName}", "{.defaultDisplayName}"]},
-            "' is a",
+            "\"",
+            { "{or}": ["{.germplasmName}", "{.defaultDisplayName}"] },
+            "\" is a",
             " {.genus + .species + .subtaxa}",
             " ({.commonCropName})",
             " accession",
-            " (number: '{.accessionNumber})'",
+            " (number: \"{.accessionNumber}\")",
             " managed by {.holdingInstitute.instituteName}",
             ".",
             " {.comment}"
@@ -44,14 +44,14 @@
           },
           "search": {
             "cropName": {
-              "{flatten_distinct}": [
+              "{list}": [
                 "{.commonCropName}",
                 "{.taxonCommonNames}",
                 "{.genus}",
                 "{.genus + .species}",
                 "{.genus + .species + .subtaxa}",
                 "{.taxonSynonyms}"
-              ]
+              ], "{transform}": ["capitalize", "flatten", "distinct"]
             },
             "germplasmList": {
               "{flatten_distinct}": [
@@ -89,8 +89,8 @@
             },
             "location": {
               "{flatten_distinct}": [
-                "{.studyDbIds => .locationDbIds => .locationName}",
-                "{.studyDbIds => .locationDbIds => .countryName}"
+                "{.studyDbIds => .locationDbId => .locationName}",
+                "{.studyDbIds => .locationDbId => .countryName}"
               ]
             }
           }
@@ -115,11 +115,11 @@
         "schema:url": "{.url}",
         "schema:description": {
           "{join}": [
-            "'",
-            {"{or}": ["{.studyName}", "{.name}"]},
-            "' is a phenotyping study",
-	    {"{or}": [" conducted from {.startDate} to {.endDate}", " running since {.startDate}"]},
-            {"{join}": [ " (seasons: ", {"{join}": "{.seasons}", "{separator}": ", "}, ")"], "{accept_none}": false},
+            "\"",
+            { "{or}": ["{.studyName}", "{.name}"] },
+            "\" is a phenotyping study",
+	        { "{or}": [" conducted from {.startDate} to {.endDate}", " running since {.startDate}"] },
+            { "{join}": [" (seasons: ", {"{join}": "{.seasons}", "{separator}": ", "}, ")"], "{accept_none}": false },
             " in {.locationDbId => .locationName}",
             " ({.locationDbId => .countryName})",
             ". this study is part of the {.programName} program",
@@ -139,14 +139,14 @@
           },
           "search": {
             "cropName": {
-              "{flatten_distinct}": [
+              "{list}": [
                 "{.germplasmDbIds => .commonCropName}",
                 "{.germplasmDbIds => .taxonCommonNames}",
                 "{.germplasmDbIds => .genus}",
                 "{.germplasmDbIds => .genus + .species}",
                 "{.germplasmDbIds => .genus + .species + .subtaxa}",
                 "{.germplasmDbIds => .taxonSynonyms}"
-              ]
+              ], "{transform}": ["capitalize", "flatten", "distinct"]
             },
             "germplasmList": {
               "{flatten_distinct}": [
@@ -226,6 +226,12 @@
             "{.name}"
           ]
         },
+        "name": {
+          "{or}": [
+            "{.studyName}",
+            "{.name}"
+          ]
+        },
         "contacts": {
           "{or}": [
             "{.contacts}",
@@ -240,6 +246,12 @@
 
       "document-transform": {
         "trialName": {
+          "{or}": [
+            "{.trialName}",
+            "{.name}"
+          ]
+        },
+        "name": {
           "{or}": [
             "{.trialName}",
             "{.name}"
@@ -265,6 +277,12 @@
 
       "document-transform": {
         "locationName": {
+          "{or}": [
+            "{.locationName}",
+            "{.name}"
+          ]
+        },
+        "name": {
           "{or}": [
             "{.locationName}",
             "{.name}"

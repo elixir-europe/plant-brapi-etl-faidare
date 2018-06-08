@@ -6,7 +6,8 @@ Vagrant.configure("2") do |config|
   config.vm.box = "centos/6"
 
   # https://www.vagrantup.com/docs/synced-folders/rsync.html
-  config.vm.synced_folder "../", "/vagrant", type: "rsync"
+  config.vm.synced_folder "../", "/vagrant", type: "rsync",
+    rsync__exclude: "data/"
 
   config.vm.provision "shell", privileged: false, inline: <<-SHELL
         sudo yum -y install git gcc glibc zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel xz xz-devel

@@ -12,7 +12,7 @@ from etl.common.brapi import BreedingAPIIterator, get_implemented_calls, get_imp
 from etl.common.brapi import get_identifier
 from etl.common.store import MergeStore
 from etl.common.utils import get_folder_path, resolve_path, remove_falsey, create_logger, get_file_path, remove_none, \
-    as_list
+    as_list, remove_empty
 
 urllib3.disable_warnings()
 
@@ -27,7 +27,7 @@ def link_object(dest_entity_name, dest_object, src_object_id):
     if not isinstance(dest_object_ids, set):
         dest_object_ids = set(dest_object_ids)
     dest_object_ids.add(src_object_id)
-    dest_object[dest_object_ref] = remove_falsey(dest_object_ids)
+    dest_object[dest_object_ref] = remove_empty(dest_object_ids)
 
 
 def link_objects(entity, object, linked_entity, linked_objects_by_id):
@@ -54,7 +54,7 @@ def fetch_all_in_store(entities, fetch_function, arguments, pool):
     """
     Run a fetch function with arguments in a pool worker and collect results in the entity MergeStore
     """
-    results = remove_falsey(pool.imap_unordered(fetch_function, arguments, 4))
+    results = remove_empty(pool.imap_unordered(fetch_function, arguments, 4))
     if not results:
         return
 
@@ -150,7 +150,7 @@ def fetch_all_links(source, logger, entities):
 
                 if link['type'].startswith('internal'):
                     link_path = link['json-path']
-                    link_path_list = remove_falsey(link_path.split('.'))
+                    link_path_list = remove_empty(link_path.split('.'))
 
                     link_values = remove_none(as_list(resolve_path(object, link_path_list)))
                     if not link_values:
@@ -197,7 +197,7 @@ def remove_internal_objects(entities):
 
             for (_, data) in entity['store'].items():
                 link_path = link['json-path']
-                link_path_list = remove_falsey(link_path.split('.'))
+                link_path_list = remove_empty(link_path.split('.'))
 
                 context_path, last = link_path_list[:-1], link_path_list[-1]
                 link_context = resolve_path(data, context_path)

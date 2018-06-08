@@ -1,6 +1,6 @@
 import unittest
 
-from etl.common.utils import resolve_path, remove_falsey, flatten, split_parts, split_every
+from etl.common.utils import resolve_path, remove_falsey, flatten, split_parts, split_every, remove_empty
 
 
 class TestSplit(unittest.TestCase):
@@ -49,7 +49,7 @@ class TestFlatten(unittest.TestCase):
         self.assertEqual(expected, actual)
 
 
-class TestRemoveNull(unittest.TestCase):
+class TestRemove(unittest.TestCase):
     def test_remove_empty(self):
         input_value = []
         expected = None
@@ -72,6 +72,12 @@ class TestRemoveNull(unittest.TestCase):
         input_value = [None,  {"a": None, "b": 2, "c": [{"a": None, "b": "", "c": 1}, ""]}]
         expected = [{'b': 2, 'c': [{'c': 1}]}]
         actual = remove_falsey(input_value)
+        self.assertEqual(expected, actual)
+
+    def test_remove_empty(self):
+        input_value = [None, [], "", {1, 2, None}, 0, {"a": {"b": {}}}]
+        expected = [{1, 2}, 0]
+        actual = remove_empty(input_value)
         self.assertEqual(expected, actual)
 
 

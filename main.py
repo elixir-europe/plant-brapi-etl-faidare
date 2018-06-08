@@ -13,12 +13,9 @@ import etl.transform.elasticsearch
 import etl.transform.jsonld
 import etl.transform.rdf
 from etl.common.store import list_entity_files
-from etl.common.utils import get_file_path, get_folder_path
+from etl.common.utils import get_file_path, get_folder_path, remove_empty
 
 default_data_dir = os.path.join(os.path.dirname(__file__), 'data')
-default_es_host = 'localhost'
-default_es_port = 9200
-default_index_template='gnpis_{source}_{documentType}'
 
 
 def add_common_args(parser):
@@ -36,7 +33,7 @@ def add_sub_parser(parser_actions, action, help, aliases=list()):
 
 
 # Parse command line interface arguments
-def parse_cli_arguments():
+def parse_cli_arguments(config):
     parser = argparse.ArgumentParser(description='ETL: BrAPI to Elasticsearch. BrAPI to RDF.')
     add_common_args(parser)
     parser_actions = parser.add_subparsers(help='Actions')
@@ -78,6 +75,9 @@ def parse_cli_arguments():
     load_elasticsearch = add_sub_parser(
         load_targets, 'elasticsearch', aliases=['es'],
         help='Load JSON bulk file into ElasticSearch')
+    default_index_template = config['load-elasticsearch']['index-template']
+    default_es_host = config['load-elasticsearch']['host']
+    default_es_port = config['load-elasticsearch']['port']
     load_elasticsearch.add_argument('--index-template', default=default_index_template,
                                     help='Elasticsearch index name template (default is \'{}\')'.format(default_es_host))
     load_elasticsearch.add_argument('-d', '--document-types', type=str,
@@ -112,6 +112,7 @@ def launch_etl(options, config):
     def handler(*_):
         sys.exit(0)
     signal.signal(signal.SIGINT, handler)
+    default_index_template = config['load-elasticsearch']['index-template']
 
     # Execute ETL actions based on CLI arguments:
     if 'extract' in options or 'etl_es' in options or 'etl_virtuoso' in options:
@@ -123,7 +124,7 @@ def launch_etl(options, config):
         # Restrict lis of generated document if requested
         input_doc_types = options.get('document_types')
         if input_doc_types:
-            transform_config['restricted-documents'] = set(input_doc_types.split(','))
+            transform_config['restricted-documents'] = set(remove_empty(input_doc_types.split(',')))
 
         # Copy base jsonschema definitions into each document jsonschema
         validation_config = transform_config['validation']
@@ -170,29 +171,12 @@ def launch_etl(options, config):
         etl.load.virtuoso.main(config)
 
 
-def prepare_config(options):
+def load_file_config():
     config = dict()
-    config['verbose'] = options['verbose']
     config['root-dir'] = os.path.dirname(__file__)
     config['conf-dir'] = os.path.join(config['root-dir'], 'config')
     config['source-dir'] = os.path.join(config['conf-dir'], 'sources')
-    config['data-dir'] = get_folder_path([options.get('data_dir') or default_data_dir], create=True)
     config['log-dir'] = get_folder_path([config['root-dir'], 'log'], create=True)
-
-    # Sources config
-    config['sources'] = dict()
-    source_id_field = 'schema:identifier'
-    for source_file in (options.get('sources') or list()):
-        source_config = json.loads(source_file.read())
-        if source_id_field not in source_config:
-            raise Exception("No field '{}' in data source JSON configuration file '{}'"
-                            .format(source_id_field, source_file.name))
-        identifier = source_config[source_id_field]
-        if identifier in config['sources']:
-            raise Exception("Source id '{}' found twice in source list: {}\n"
-                            "Please verify the '{}' field in your files."
-                            .format(identifier, options['sources'], source_id_field))
-        config['sources'][identifier] = source_config
 
     # Other configs
     conf_files = filter(lambda s: s.endswith('.json'), os.listdir(config['conf-dir']))
@@ -202,14 +186,39 @@ def prepare_config(options):
     return config
 
 
+def extend_config(config, arguments):
+    config['verbose'] = arguments['verbose']
+    config['data-dir'] = get_folder_path([arguments.get('data_dir') or default_data_dir], create=True)
+
+    # Sources config
+    config['sources'] = dict()
+    source_id_field = 'schema:identifier'
+    for source_file in (arguments.get('sources') or list()):
+        source_config = json.loads(source_file.read())
+        if source_id_field not in source_config:
+            raise Exception("No field '{}' in data source JSON configuration file '{}'"
+                            .format(source_id_field, source_file.name))
+        identifier = source_config[source_id_field]
+        if identifier in config['sources']:
+            raise Exception("Source id '{}' found twice in source list: {}\n"
+                            "Please verify the '{}' field in your files."
+                            .format(identifier, arguments['sources'], source_id_field))
+        config['sources'][identifier] = source_config
+
+    return config
+
+
 def main():
+    # Load file configs
+    config = load_file_config()
+
     # Parse command line arguments
-    options = parse_cli_arguments()
+    arguments = parse_cli_arguments(config)
 
-    # Load configs
-    config = prepare_config(options)
+    # Extend config with CLI arguments
+    config = extend_config(config, arguments)
 
-    launch_etl(options, config)
+    launch_etl(arguments, config)
 
 
 # If used directly in command line

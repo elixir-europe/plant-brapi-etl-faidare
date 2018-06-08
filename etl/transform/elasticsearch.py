@@ -13,7 +13,7 @@ from etl.common.store import JSONSplitStore, IndexStore, list_entity_files, Data
 from etl.common.templating import resolve, parse_template
 from etl.common.utils import *
 
-NB_THREADS = max(int(multiprocessing.cpu_count() * 0.75), 6)
+NB_THREADS = max(int(multiprocessing.cpu_count() * 0.75), 2)
 CHUNK_SIZE = 500
 
 
@@ -28,7 +28,7 @@ def uri_encode(uri):
 
 def parse_data(options):
     entity_name, line = options
-    return entity_name, remove_falsey(json.loads(line))
+    return entity_name, remove_empty(json.loads(line))
 
 
 def generate_uri_global_id(source, entity_name, data):
@@ -145,7 +145,7 @@ def generate_elasticsearch_document(options):
     document_type, document_transform, data_id, data_index = options
     document = data_index[data_id]
     if document_transform:
-        resolved = resolve(document_transform, document, data_index)
+        resolved = remove_empty(resolve(document_transform, document, data_index))
         document.update(resolved)
     return document_type, document
 
@@ -335,7 +335,7 @@ def transform_source(source, transform_config, source_json_dir, source_bulk_dir,
 
         # Write the documents in bulk files
         dump_in_bulk_files(source_bulk_dir, logger, documents_with_headers)
-        #shutil.rmtree(tmp_index_dir, ignore_errors=True)
+        shutil.rmtree(tmp_index_dir, ignore_errors=True)
 
         logger.info("SUCCEEDED Transforming BrAPI {}.".format(source_name))
     except Exception as e:

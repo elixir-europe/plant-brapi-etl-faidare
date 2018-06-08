@@ -9,123 +9,138 @@ Software requirements:
 
 For the BrAPI server requirements, please consult [the Elixir EXCELERATE BrAPI recommendations](https://wiki.brapi.org/index.php/Elixir_Excelerate_phenotyping_data_discovery).
 
-Before indexing into Elasticsearch, you can load the index template from the `elasticsearch-templates` folder in order to validate .
-The index template is used to validate data during indexing. If you do not create the index templates, the data will be indexed without validation, without warning or errors.
-
-To create the index templates:
-
-```sh
-python2 create-index-template.py
-```
-
-
-**TODO: Update this README with latest ETL modifications**
-
 ## II. Configuration
 
-The **ElasticSearch** server details are specified in the `config.json` file as:
+The `config` folder contains general configuration about the whole ETL process:
+
+- `config/extract-brapi.json`: BrAPI extraction configuration describing all the BrAPI entities, entity links and the REST calls to perform in order to extract all BrAPI data from an endpoint.
+- `config/transform-elasticsearch.json`: Elasticsearch document transform configuration describing how documents can be generated from BrAPI entities and how the ETL process should validate the documents data.
+- `config/elasticsearch/*.json`: Elasticsearch document mappings describing how Elasticsearch should index the JSON documents.
+- `config/load-elasticsearch.json`: Elasticsearch indexing configuration containing the default HTTP gateway access and how the document index should be configured at creation.
+
+The `sources` folder contains source-specific configurations.
+
+Here is an example of configuration for the VIB endpoint:
 
 ```json
-"elasticSearch": {
-    "host": "127.0.0.1",
-    "port": 9200
+{
+  "@context": {
+    "schema": "http://schema.org/",
+    "brapi": "https://brapi.org/rdf/"
+  },
+  "@type": "schema:DataCatalog",
+  "@id": "http://pippa.psb.ugent.be",
+  "schema:identifier": "VIB",
+  "schema:name": "VIB PIPPA",
+  "brapi:endpointUrl": "https://pippa.psb.ugent.be/pippa_experiments/brapi/v1/"
 }
 ```
 
-The calls to be made to *all* BrAPI endpoints marked as `active` are listed under `calls`:
+This configuration file uses the JSON-LD format with the schema.org and brapi.org properties.
+The following properties should be modified for each data source:
 
-```json
-"calls": [
-  {
-    "id": "germplasm-search",
-    "idField": "germplasmDbId",
-    "doctype": "germplasm",
-    "pageSize": 1000
-  }
-]
-```
-
-The call `id` must be the part of the BrAPI URL defining it, according to the BrAPI specifications.
-The `idField` and `doctype` concern the ElasticSearch indexing configuration. The `pageSize` for calls with large response items (and hence higher response data volume) should be low - for example, 10 response items composing a page worth 500KB of data.
-
-Finally, the path for the fetched data files must be set. This is done as:
-
-```json
-"file_paths": {
-  "institute_files": "."
-}
-```
-
-The path can be absolute or relative.
+- `"@id"`: The URI identifying this data source (we use the institute/information system web page most of the time)
+- `"schema:identifier"`: A short text identifier for the data source
+- `"schema:name"`: The full display name for this data source
+- `"brapi:endpointUrl"`: The URL of the BrAPI endpoint to harvest
 
 ## III. Execution
 
-The full ETL process can be launched with the command:
+To get help on the usage of the command line interface, you can run the following:
 
 ```sh
-python2 main.py etl elasticsearch
+$ python3 main.py --help
+
+usage: main.py [-h] [--data-dir DATA_DIR] [--verbose]
+               {extract,transform,trans,load} ...
+
+ETL: BrAPI to Elasticsearch. BrAPI to RDF.
+
+positional arguments:
+  {extract,transform,trans,load}
+                        Actions
+    extract             Extract data from BrAPI endpoints
+    transform (trans)   Transform BrAPI data
+    load                Load data
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --data-dir DATA_DIR   Working directory for ETL data (default is './data')
+  --verbose, -v         Verbose mode
+
 ```
 
-If no parameters are specified, the script will fetch all data, for each specified and `active` institution and each specified calls.
-The extracted BrAPI data will be stored in `{data-dir}/json/{institution}/{entity}.json`
 
-For a more fined grain execution step-by-step execution:
+### III.1. Extract BrAPI
+
+To extract BrAPI data for a data source, simply run:
 
 ```sh
-# Extract brapi data
-python2 main.py extract brapi
-
-# Tansform brapi data to ES bulk files
-python2 main.py transform elasticsearch
-
-# Index data in ES:
-python2 main.py load elasticsearch
+python3 main.py extract --data-dir {datadir} {datasource.json}
 ```
 
+Where `{datasource.json}` is the path to the data source configuration file (ex: `sources/VIB.json`).
+The harvested BrAPI data will then be available in the data directory `{datadir}/json/{datasource}/*.json`.
 
-
-* If no parameters are specified, the script will fetch all data, for each specified and `active` institution and each specified calls.
-
-```sh
-python ./reindex.py
-```
-To the same effect, the `--task reindex` might be specified without any parameters.
-
-* A single institution's data can be fetched with:
+Some example command run:
 
 ```sh
-python ./reindex.py --task fetch --institution [institution]
-```
-
-* The data for all active institutions can be fetched by omitting the `--institution` parameter:
-
-```sh
-python ./reindex.py --task fetch
-```
-
-The data is stored in a folder by the name of the institution, and in one json file per call, under the `institute_files` path.
-
-
-* To bulk index the data, the files or folders with files to be indexed must be provided as script parameters.
-
-For example:
-
-```sh
-python ./reindex.py --task bulkindex WUR
+# Extracting VIB to ./data/json/NIB
+$ python3 main.py extract sources/VIB.json
 ```
 
 
 ```sh
-python ./reindex.py --task bulkindex WUR PIPPA
+# Extracting VIB and NIB to /tmp/data/json/VIB and /tmp/data/json/NIB
+$ python3 main.py extract --data-dir /tmp/data sources/VIB.json sources/NIB.json
 ```
+
+
+### III.2. Transform to Elasticsearch documents
+
+To transform BrAPI data to Elasticsearch documents, simply run:
 
 ```sh
-python ./reindex.py --task bulkindex germplasm-search.json
+python3 main.py transform elasticsearch --data-dir {datadir} --document-types {documenttypes} {datasource.json}
 ```
+
+Where `{datasource.json}` is the path to the data source configuration file (ex: `sources/VIB.json`) and `{documenttypes}` the list of document type to generate (ex: `study,datadiscovery`).
+The generated Elasicsearch documents will then be available in the data directory `{datadir}/json-bulk/{datasource}/*.json`.
+
+Some example command run:
 
 ```sh
-python ./reindex.py --task bulkindex WUR\germplasm-search_data.json PIPPA\studies-search_data.json
+# Transform BrAPI VIB to Elasticsearch documents in ./data/json-bulk/NIB
+$ python3 main.py transform elasticsearch sources/VIB.json
 ```
 
-If the files exist with at least a (very low) minimum size, the indices will be deleted and the file data will be indexed by ElasticSearch.
-The index name is retrieved from the respective file, and for the time being each file is expected to only refer to one ElasticSearch index.
+
+```sh
+# Transform BrAPI VIB and NIB to Elasticsearch documents in /tmp/data/json-bulk/VIB and /tmp/data/json-bulk/NIB
+$ python3 main.py trans es --data-dir /tmp/data sources/VIB.json sources/NIB.json
+```
+
+
+### III.3. Load/index into Elasticsearch
+
+To load/index Elasticsearch documents, simply run:
+
+```sh
+python3 main.py load elasticsearch --data-dir {datadir} --document-types {documenttypes} {datasource.json}
+```
+
+Where `{datasource.json}` is the path to the data source configuration file (ex: `sources/VIB.json`) and `{documenttypes}` the list of document type to index (ex: `study,datadiscovery`).
+
+Some example command run:
+
+```sh
+# Load BrAPI VIB to Elasticsearch documents
+$ python3 main.py load elasticsearch sources/VIB.json
+```
+
+
+```sh
+# Load BrAPI VIB and NIB to Elasticsearch documents (from /tmp/data)
+$ python3 main.py load es --data-dir /tmp/data sources/VIB.json sources/NIB.json
+```
+

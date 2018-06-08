@@ -6,7 +6,8 @@ import re
 from copy import deepcopy
 from functools import reduce, partial
 
-from etl.common.utils import remove_none, resolve_path, as_list, flatten, remove_falsey, distinct
+from etl.common.utils import remove_none, resolve_path, as_list, flatten, distinct, is_list_like, \
+    remove_empty
 
 field_template_string_parser = lark.Lark('''
 WS: /[ ]/+
@@ -57,10 +58,21 @@ def coll_as_str(value, separator=''):
     return str(value)
 
 
+def capitalize(value):
+    if is_list_like(value):
+        return list(map(capitalize, value))
+    if isinstance(value, str):
+        return value.capitalize()
+    return value
+
+
+list_transforms = {"flatten": flatten, "distinct": distinct, "capitalize": capitalize}
+
+
 def resolve_field_value_template(tree, data, data_index):
     object_paths = as_list(resolve_path(tree, ['start', 'object_path']))
     for object_path in object_paths:
-        ids = resolve_path(data, get_field_path(object_path))
+        ids = as_list(resolve_path(data, get_field_path(object_path)))
         if not ids:
             return None
         data = remove_none(list(map(lambda id: data_index.get(id), ids)))
@@ -70,7 +82,7 @@ def resolve_field_value_template(tree, data, data_index):
     else:
         new_value = []
         for data in as_list(data):
-            field_values = remove_falsey(map(
+            field_values = remove_empty(map(
                 lambda value_path: as_list(resolve_path(data, get_field_path(value_path))) or None,
                 value_paths
             ))
@@ -85,7 +97,7 @@ def resolve_field_value_template(tree, data, data_index):
             )
             if joined:
                 new_value.extend(joined)
-        return list(distinct(remove_falsey(new_value)))
+        return list(distinct(remove_empty(new_value)))
 
 
 def resolve_if_template(template, data, data_index):
@@ -109,19 +121,16 @@ def resolve_join_template(template, data, data_index):
     return coll_as_str(filtered_elements, separator)
 
 
-def resolve_flatten_template(template, data, data_index):
-    elements = template.get('{flatten_distinct}')
-    split_ws = template.get('{split_ws}')
+def resolve_list_template(template, data, data_index):
+    elements = template.get('{list}')
+    transform_keys = template.get('{transform}')
 
     resolved = resolve(as_list(elements), data, data_index)
-    if split_ws:
-        # Split each token by white space to have single flatten distinct token list
-        def split(x):
-            if isinstance(x, str):
-                return x.split(' ')
-            return x
-        resolved = remove_falsey(map(split, flatten(resolved)))
-    return list(distinct(flatten(resolved)))
+    if transform_keys:
+        for transform_key in transform_keys:
+            list_transform = list_transforms[transform_key]
+            resolved = list_transform(resolved)
+    return list(resolved)
 
 
 def resolve_or_template(template, data, data_index):
@@ -144,7 +153,7 @@ def resolve(parsed_template, data, data_index):
             '{if}': resolve_if_template,
             '{or}': resolve_or_template,
             '{join}': resolve_join_template,
-            '{flatten_distinct}': resolve_flatten_template,
+            '{list}': resolve_list_template,
             '{lark}': resolve_field_value_template
         }
         for key, evaluator in evaluable_templates.items():
@@ -191,13 +200,11 @@ def parse_join_template(template):
 
 def parse_flatten_template(template):
     elements = template.get('{flatten_distinct}')
-    split_ws = template.get('{split_ws}')
 
     if not elements:
         raise Exception("Empty '{{flatten_distinct}}' template '{}'".format(elements))
 
-    return {'{flatten_distinct}': parse_template(elements),
-            '{split_ws}': split_ws}
+    return {'{list}': parse_template(elements), '{transform}': ['flatten', 'distinct']}
 
 
 def parse_or_template(template):
@@ -227,6 +234,22 @@ def parse_string_template(template_string):
         return {'{join}': parse_template(tokens), '{accept_none}': False}
 
 
+def parse_list_template(template):
+    elements = template.get('{list}')
+    transforms = template.get('{transform}')
+
+    if not elements:
+        raise Exception("Empty '{{list}}' template '{}'".format(elements))
+    if transforms:
+        if not isinstance(transforms, list):
+            raise Exception("'{{transform}}' template is not a list '{}'".format(elements))
+        for transform in transforms:
+            if transform not in list_transforms:
+                raise Exception("'{}' is not a valid '{{transform}}' template value".format(transform))
+
+    return {'{list}': parse_template(elements), '{transform}': transforms}
+
+
 def parse_template(template):
     if isinstance(template, str):
         return parse_string_template(template)
@@ -238,6 +261,7 @@ def parse_template(template):
             '{or}': parse_or_template,
             '{join}': parse_join_template,
             '{flatten_distinct}': parse_flatten_template,
+            '{list}': parse_list_template,
         }
         for key, parser in template_parsers.items():
             if key in template:

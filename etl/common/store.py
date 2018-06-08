@@ -1,11 +1,12 @@
-import collections
 import itertools
+
+import collections
 import json
 import os
 import re
 
 from etl.common.brapi import get_identifier
-from etl.common.utils import get_file_path, remove_falsey, is_list_like
+from etl.common.utils import get_file_path, is_list_like, remove_empty
 
 
 def dict_merge(into, merge_dct):
@@ -62,7 +63,7 @@ class MergeStore(dict):
 
     def add(self, data):
         # Compact object by removing nulls and empty
-        data = remove_falsey(data)
+        data = remove_empty(data)
         if data:
             data['source'] = self.source_id
             data_id = get_identifier(self.entity_name, data)

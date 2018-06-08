@@ -10,7 +10,7 @@ from etl.common.store import list_entity_files
 from etl.common.utils import get_folder_path, get_file_path, create_logger, first, replace_template
 
 
-class BulkException(Exception):
+class ElasticSearchException(Exception):
     pass
 
 
@@ -26,14 +26,19 @@ def init_es_client(url, logger):
     return es_client
 
 
+def check_error(response):
+    if response.get('errors'):
+        raise ElasticSearchException(response)
+
+
 def create_index(es_client, index_name, logger):
     logger.debug('Creating index "{}"...'.format(index_name))
-    es_client.indices.create(index_name)
+    check_error(es_client.indices.create(index_name))
 
 
 def delete_index(es_client, index_name, logger):
     logger.debug('Deleting index "{}"...'.format(index_name))
-    es_client.indices.delete(index_name)
+    check_error(es_client.indices.delete(index_name))
 
 
 def create_template(es_client, es_config, document_type, base_index_name, logger):
@@ -57,19 +62,19 @@ def create_template(es_client, es_config, document_type, base_index_name, logger
     if 'index-settings' in es_config:
         template_body['settings'] = es_config['index-settings']
 
-    es_client.indices.put_template(name=template_name, body=template_body)
+    check_error(es_client.indices.put_template(name=template_name, body=template_body))
 
 
 def bulk_index(es_client, index_name, file_path, logger):
     file_name = os.path.basename(file_path)
     logger.debug('Bulk indexing file "{}" in index "{}"...'.format(file_name, index_name))
     with open(file_path, 'r') as file:
-        es_client.bulk(index=index_name, body=file.read(), timeout='2000ms')
+        check_error(es_client.bulk(index=index_name, body=file.read(), timeout='2000ms'))
 
 
 def create_alias(es_client, alias_name, base_index_name, logger):
     logger.debug('Creating alias "{}" for index "{}"'.format(alias_name, base_index_name))
-    es_client.indices.put_alias(alias_name, base_index_name)
+    check_error(es_client.indices.put_alias(alias_name, base_index_name))
 
 
 def get_indices(es_client, base_index_name):

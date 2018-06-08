@@ -94,7 +94,8 @@ def remove_falsey(value, predicate=bool):
                 new_entry = remove_falsey(entry, predicate)
                 try:
                     key, value = new_entry
-                    return [key, value]
+                    if predicate(value):
+                        return [key, value]
                 except ValueError:
                     return None
             value = value.items()
@@ -102,13 +103,22 @@ def remove_falsey(value, predicate=bool):
             filter_process = partial(remove_falsey, predicate=predicate)
         filter_none = partial(filter, lambda x: x is not None)
         filtered_values = filter_none(map(filter_process, value))
-        return as_collection_type(original_type, filtered_values)
+        result = as_collection_type(original_type, filtered_values)
+        if predicate(result):
+            return result
+        return None
     return value
 
 
 def remove_none(value):
     """Remove `None` values (and keys) from collections and dictionaries"""
     return remove_falsey(value, predicate=lambda x: x is not None)
+
+
+def remove_empty(value):
+    """Remove `None` values and empty collections and strings"""
+    return remove_falsey(
+        value, predicate=lambda x: x is not None and ((not isinstance(x, collections.Sized)) or len(x) > 0))
 
 
 # Replace variables in template strings (ex: "{id}/") by its value in "value_dict" dict (ex: value_dict['id'])

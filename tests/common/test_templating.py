@@ -163,13 +163,6 @@ class TestResolve(unittest.TestCase):
         expected = ["foo", "bar", "baz", "fizz", "buzz"]
         self.assertEqual(actual, expected)
 
-    def test_resolve_flatten3(self):
-        input = parse_template({"{flatten_distinct}": ["foo", " foo bar", ["baz foo", "bar"]],
-                                "{split_ws}": True})
-        actual = resolve(input, data_0, data_index)
-        expected = ["foo", "bar", "baz"]
-        self.assertEqual(actual, expected)
-
     def test_resolve_or1(self):
         input = parse_template({"{or}": ["foo", "bar", "baz"]})
         actual = resolve(input, data_0, data_index)
@@ -198,6 +191,24 @@ class TestResolve(unittest.TestCase):
         input = parse_template({"{join}": ["foo", "{.foo}"], "{separator}": ", "})
         actual = resolve(input, data_0, data_index)
         expected = "foo, 1, 2, 3"
+        self.assertEqual(actual, expected)
+
+    def test_resolve_capitalize(self):
+        input = parse_template({"{list}": ["foo", "foo", "bar"], "{transform}": ["capitalize"]})
+        actual = resolve(input, data_0, data_index)
+        expected = ["Foo", "Foo", "Bar"]
+        self.assertEqual(actual, expected)
+
+    def test_resolve_capitalize2(self):
+        input = parse_template({"{list}": ["foo", ["foo", "foo", "bar"], "bar"], "{transform}": ["capitalize"]})
+        actual = resolve(input, data_0, data_index)
+        expected = ["Foo", ["Foo", "Foo", "Bar"], "Bar"]
+        self.assertEqual(actual, expected)
+
+    def test_resolve_flatten_capitalize(self):
+        input = parse_template({"{list}": ["foo", ["foo", "foo", "bar"], "bar"], "{transform}": ["capitalize", "flatten"]})
+        actual = resolve(input, data_0, data_index)
+        expected = ["Foo", "Foo", "Foo", "Bar", "Bar"]
         self.assertEqual(actual, expected)
 
 
