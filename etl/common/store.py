@@ -4,6 +4,7 @@ import collections
 import json
 import os
 import re
+from json import JSONDecodeError
 
 from etl.common.brapi import get_identifier
 from etl.common.utils import get_file_path, is_list_like, remove_empty
@@ -105,7 +106,7 @@ class JSONSplitStore(object):
         json_path = None
         while not json_path or os.path.exists(json_path):
             self.file_index += 1
-            json_path = get_file_path([self.output_dir, self.base_json_name], ext=str(self.file_index) + ".json")
+            json_path = get_file_path([self.output_dir, self.base_json_name], ext="-" + str(self.file_index) + ".json")
             if self.file_index > 1000000:
                 raise Exception('Max file index exceeded')
         return open(json_path, 'a')
@@ -251,9 +252,14 @@ class DataIdIndex(collections.Mapping):
         with open(json_path, 'r') as json_file:
             json_file.seek(data_location['offset'])
             line = json_file.readline()
+
         if not line:
             return
-        data = json.loads(line)
+        try:
+            data = json.loads(line)
+        except JSONDecodeError as e:
+            print("Error while reading file {}".format(json_path))
+            raise e
         if not data:
             return
         data['brapi:type'] = data_location['brapi:type']

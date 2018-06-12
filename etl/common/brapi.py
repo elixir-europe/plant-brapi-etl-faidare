@@ -5,7 +5,7 @@ from itertools import chain
 
 import requests
 import rfc3987
-import urllib
+import urllib.parse
 
 from etl.common.utils import join_url_path, remove_falsey, replace_template, remove_none
 
@@ -123,11 +123,11 @@ def get_uri(source, entity_name, object):
         object_uri = get_uri_by_id(source, entity_name, object_id)
     else:
         # Generate URI by prepending the original URI with the source identifier
-        object_uri = 'urn:{}/{}'.format(source_id, object_uri)
+        object_uri = 'urn:{}/{}'.format(source_id, urllib.parse.quote(object_uri, safe=''))
 
     if not rfc3987.match(object_uri, rule='URI'):
-        raise Exception('Could not get or create a correct URI for {} object id {}'
-                        .format(entity_name, object_id))
+        raise Exception('Could not get or create a correct URI for "{}" object id "{}" (malformed URI: "{}")'
+                        .format(entity_name, object_id, object_uri))
 
     return object_uri
 

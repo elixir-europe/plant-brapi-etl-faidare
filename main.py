@@ -157,7 +157,7 @@ def launch_etl(options, config):
         mapping_files = list_entity_files(os.path.join(config['conf-dir'], 'elasticsearch'))
 
         selected_document_types = None
-        if 'document_types' in options:
+        if 'document_types' in options and options['document_types']:
             selected_document_types = set(options['document_types'].split(','))
         config['load-elasticsearch']['url'] = '{}:{}'.format(options['host'], options['port'])
         config['load-elasticsearch']['mappings'] = {
