@@ -323,6 +323,7 @@ def transform_source(source, transform_config, source_json_dir, source_bulk_dir,
 
         tmp_index_dir = get_folder_path([source_bulk_dir, 'tmp'], recreate=True)
         data_index = index_on_disk(tmp_index_dir, data_list, pool, logger)
+        os.sync()
 
         logger.info('Generating documents...')
         documents = generate_elasticsearch_documents(
