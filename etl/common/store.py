@@ -122,6 +122,7 @@ class JSONSplitStore(object):
             self.data_buffer.clear()
             if self._should_switch_file():
                 if self.json_file:
+                    self.json_file.flush()
                     self.json_file.close()
                 self.json_file = self._new_file()
 
@@ -131,6 +132,7 @@ class JSONSplitStore(object):
         """
         self.flush()
         if self.json_file:
+            self.json_file.flush()
             self.json_file.close()
         self.closed = True
 
@@ -258,7 +260,7 @@ class DataIdIndex(collections.Mapping):
         try:
             data = json.loads(line)
         except JSONDecodeError as e:
-            print("Error while reading file {}".format(json_path))
+            print("Error while reading file {} at line:\n{}".format(json_path, line))
             raise e
         if not data:
             return
