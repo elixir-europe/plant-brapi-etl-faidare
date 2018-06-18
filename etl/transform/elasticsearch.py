@@ -122,8 +122,8 @@ def load_all_data_with_uri(source, source_json_dir, transform_config, pool, logg
 
 
 def index_batch(tmp_index_dir, batch):
-    # path = get_folder_path([tmp_index_dir, str(random.random())], recreate=True)
-    store = IndexStore(tmp_index_dir)
+    path = get_folder_path([tmp_index_dir, str(random.random())], recreate=True)
+    store = IndexStore(path)
     for data in batch:
         store.dump(data)
     return store.get_index_by_id()
