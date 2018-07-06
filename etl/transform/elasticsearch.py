@@ -137,7 +137,7 @@ def index_on_disk(tmp_index_dir, data_list, pool, logger):
     batches = split_every(1000, data_list)
     index_list = pool.imap_unordered(index, batches)
 
-    global_index = reduce(DataIdIndex.merge, index_list)
+    global_index = reduce(DataIdIndex.merge, index_list, DataIdIndex({}))
     return global_index
 
 
@@ -274,9 +274,12 @@ def get_required_entities(document_configs, source_json_dir):
         filtered_files = list(filter(lambda x: x[0] in source_entities, all_files))
         for entity_name, file_path in filtered_files:
             with open(file_path, 'r') as file:
-                data = json.loads(file.readline())
-                links = get_entity_links(data, 'DbId', 'PUI')
-                required_entities.update(set(map(first, links)))
+                line = file.readline()
+                if line:
+                    data = json.loads(line)
+                    links = get_entity_links(data, 'DbId', 'PUI')
+                    entity_names = set(map(first, links))
+                    required_entities.update(entity_names)
 
     return required_entities
 
