@@ -7,7 +7,7 @@
   "@id": "https://www.eu-sol.wur.nl/",
   "schema:name": "WUR EU-SOL BreeDB",
   "schema:identifier": "WUR",
-  "brapi:endpointUrl": "https://www.eu-sol.wur.nl/webapi/tomato/brapi/v1/",
+  "brapi:endpointUrl": "http://www.eu-sol.wur.nl/brapi/v1/",
 
   "-comment": "The following list is to be removed once WUR correctly implements the calls call",
   "implemented-calls": [
