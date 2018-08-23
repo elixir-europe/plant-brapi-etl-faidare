@@ -42,8 +42,7 @@ class BreedingAPIIterator:
 
     def __fetch_page(self):
         url = join_url_path(self.brapi_url, self.call['path'])
-        headers = {'Content-type': 'application/json',
-                   'Accept': 'application/json, application/ld+json'}
+        headers = {'Accept': 'application/json, application/ld+json'}
         params = {}
         if self.is_paginated:
             params = {'page': self.page, 'pageSize': self.page_size}
@@ -57,6 +56,7 @@ class BreedingAPIIterator:
         if self.call['method'] == 'GET':
             response = requests.get(url, params=params, headers=headers, verify=False)
         elif self.call['method'] == 'POST':
+            headers['Content-type'] = 'application/json'
             response = requests.post(url, data=params_json, headers=headers, verify=False)
 
         if response.status_code != 200:
@@ -183,4 +183,5 @@ def get_entity_links(data, *id_fields):
                 return [entity_name, key, plural, value]
         return remove_none(map(extract_link, data.items()))
     return list(itertools.chain.from_iterable(map(extract_links, id_fields)))
+
 
