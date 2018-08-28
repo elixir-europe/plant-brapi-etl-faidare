@@ -34,65 +34,38 @@
         },
 
         "germplasm": {
-          "facet": {
-            "commonCropName": {
-              "{flatten_distinct}": "{.commonCropName}"
-            },
-            "species": {
-              "{flatten_distinct}": "{.genus + .species}"
-            }
+          "cropName": {
+            "{list}": [
+              "{.commonCropName}",
+              "{.taxonCommonNames}",
+              "{.genus}",
+              "{.genus + .species}",
+              "{.genus + .species + .subtaxa}",
+              "{.taxonSynonyms}"
+            ], "{transform}": ["capitalize", "flatten", "distinct"]
           },
-          "search": {
-            "cropName": {
-              "{list}": [
-                "{.commonCropName}",
-                "{.taxonCommonNames}",
-                "{.genus}",
-                "{.genus + .species}",
-                "{.genus + .species + .subtaxa}",
-                "{.taxonSynonyms}"
-              ], "{transform}": ["capitalize", "flatten", "distinct"]
-            },
-            "germplasmList": {
-              "{flatten_distinct}": [
-                "{.panel.name}",
-                "{.collection.name}",
-                "{.population.name}",
-                "{.holdingGenbank.instituteName}"
-              ]
-            },
-            "accession": {
-              "{flatten_distinct}": [
-                "{.germplasmName}",
-                "{.defaultDisplayName}",
-                "{.accessionNumber}",
-                "{.synonyms}"
-              ]
-            }
+          "germplasmList": {
+            "{flatten_distinct}": [
+              "{.panel.name}",
+              "{.collection.name}",
+              "{.population.name}",
+              "{.holdingGenbank.instituteName}"
+            ]
+          },
+          "accession": {
+            "{flatten_distinct}": [
+              "{.germplasmName}",
+              "{.defaultDisplayName}",
+              "{.accessionNumber}",
+              "{.synonyms}"
+            ]
           }
         },
         "trait": {
-          "facet": {
-            "observationVariableIds": {
-              "{flatten_distinct}": [
-                "{.studyDbIds => .observationVariablePUIs}"
-              ]
-            }
-          }
-        },
-        "study": {
-          "facet": {
-            "dataSet": {
-              "{flatten_distinct}": [
-                "{.studyDbIds => .trialDbIds => .trialName}"
-              ]
-            },
-            "location": {
-              "{flatten_distinct}": [
-                "{.studyDbIds => .locationDbId => .locationName}",
-                "{.studyDbIds => .locationDbId => .countryName}"
-              ]
-            }
+          "observationVariableIds": {
+            "{flatten_distinct}": [
+              "{.studyDbIds => .observationVariablePUIs}"
+            ]
           }
         }
       }
@@ -120,8 +93,10 @@
             "\" is a phenotyping study",
 	        { "{or}": [" conducted from {.startDate} to {.endDate}", " running since {.startDate}"] },
             { "{join}": [" (seasons: ", {"{join}": "{.seasons}", "{separator}": ", "}, ")"], "{accept_none}": false },
-            " in {.locationDbId => .locationName}",
-            " ({.locationDbId => .countryName})",
+            { "{or}": [
+              " in {.locationDbId => .locationName} ({.locationDbId => .countryName})",
+              " in {.locationDbId => .countryName}"
+            ]},
             ". this study is part of the {.programName} program",
             ".",
             " {.studyDescription}"
@@ -129,67 +104,39 @@
         },
 
         "germplasm": {
-          "facet": {
-            "commonCropName": {
-              "{flatten_distinct}": "{.germplasmDbIds => .commonCropName}"
-            },
-            "species": {
-              "{flatten_distinct}": "{.germplasmDbIds => .genus + .species}"
-            }
+          "cropName": {
+            "{list}": [
+              "{.germplasmDbIds => .commonCropName}",
+              "{.germplasmDbIds => .taxonCommonNames}",
+              "{.germplasmDbIds => .genus}",
+              "{.germplasmDbIds => .genus + .species}",
+              "{.germplasmDbIds => .genus + .species + .subtaxa}",
+              "{.germplasmDbIds => .taxonSynonyms}"
+            ], "{transform}": ["capitalize", "flatten", "distinct"]
           },
-          "search": {
-            "cropName": {
-              "{list}": [
-                "{.germplasmDbIds => .commonCropName}",
-                "{.germplasmDbIds => .taxonCommonNames}",
-                "{.germplasmDbIds => .genus}",
-                "{.germplasmDbIds => .genus + .species}",
-                "{.germplasmDbIds => .genus + .species + .subtaxa}",
-                "{.germplasmDbIds => .taxonSynonyms}"
-              ], "{transform}": ["capitalize", "flatten", "distinct"]
-            },
-            "germplasmList": {
-              "{flatten_distinct}": [
-                "{.germplasmDbIds => .panel.name}",
-                "{.germplasmDbIds => .collection.name}",
-                "{.germplasmDbIds => .population.name}",
-                "{.germplasmDbIds => .holdingGenbank.instituteName}"
-              ]
-            },
-            "accession": {
-              "{flatten_distinct}": [
-                "{.germplasmDbIds => .germplasmName}",
-                "{.germplasmDbIds => .defaultDisplayName}",
-                "{.germplasmDbIds => .accessionNumber}",
-                "{.germplasmDbIds => .synonyms}"
-              ]
-            }
+          "germplasmList": {
+            "{flatten_distinct}": [
+              "{.germplasmDbIds => .panel.name}",
+              "{.germplasmDbIds => .collection.name}",
+              "{.germplasmDbIds => .population.name}",
+              "{.germplasmDbIds => .holdingGenbank.instituteName}"
+            ]
+          },
+          "accession": {
+            "{flatten_distinct}": [
+              "{.germplasmDbIds => .germplasmName}",
+              "{.germplasmDbIds => .defaultDisplayName}",
+              "{.germplasmDbIds => .accessionNumber}",
+              "{.germplasmDbIds => .synonyms}"
+            ]
           }
         },
 
         "trait": {
-          "facet": {
-            "observationVariableIds": {
-              "{flatten_distinct}": [
-                "{.observationVariablePUIs}"
-              ]
-            }
-          }
-        },
-
-        "study": {
-          "facet": {
-            "dataSet": {
-              "{flatten_distinct}": [
-                "{.trialDbIds => .trialName}"
-              ]
-            },
-            "location": {
-              "{flatten_distinct}": [
-                "{.locationDbId => .locationName}",
-                "{.locationDbId => .countryName}"
-              ]
-            }
+          "observationVariableIds": {
+            "{flatten_distinct}": [
+              "{.observationVariablePUIs}"
+            ]
           }
         }
       }
