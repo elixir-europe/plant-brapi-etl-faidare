@@ -5,10 +5,34 @@ Elixir plant Breeding API JSON ETL
 - **T**ransform extracted data (into Elasticsearch bulk json, into JSON-LD, into RDF)
 - **L**oad JSON into Elasticsearch or RDF into a virtuoso
 
-## I. Script requirements
+## I. Execution
 
+### From linux binary distribution
+
+You can find a binary distribution of the ETL package in [dist/plant-brapi-etl-data-lookup-gnpis.tar.gz](dist/plant-brapi-etl-data-lookup-gnpis.tar.gz).
+ 
+First you will need to extract the archive:
+```sh
+$ tar xzf plant-brapi-etl-data-lookup-gnpis.tar.gz
+``` 
+
+And then you can simply call the main program:
+```sh
+$ ./etl/main
+```
+
+### From source code
+
+Requirements:
 - Python version 3.6.x
 - Python dependencies (pip install -r requirements.txt)
+
+
+The `main.py` script can be used to launch the full BrAPI to elasticsearch or BrAPI to virtuoso ETL. To get the usage help run the following command:
+
+```sh
+$ python3 main.py
+```
 
 ## II. Configuration
 
@@ -42,14 +66,6 @@ The BrAPI endpoint must implement the required calls (also listed in `./config/e
 - /brapi/v1/studies-search (in GET or POST)
 - /brapi/v1/studies/{id} 
 - /brapi/v1/studies/{id}/germplasm
-
-## III. Execution
-
-The `main.py` script can be used to launch the full BrAPI to elasticsearch or BrAPI to virtuoso ETL. To get the usage help run the following command:
-
-```sh
-python3 main.py
-```
 
 See [`README-elasticsearch.md`](README-elasticsearch.md) for specific details on BrAPI to elasticsearch ETL.
 
