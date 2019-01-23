@@ -1,0 +1,34 @@
+{
+  "type": "object",
+  "properties": {
+    "locationDbId": {
+      "type": "string"
+    },
+    "locationName": {
+      "type": "string"
+    },
+    "altitude": {
+      "type": "number"
+    },
+    "latitude": {
+      "type": "number"
+    },
+    "longitude": {
+      "type": "number"
+    },
+    "@id": {
+      "type": "string",
+      "format": "uri"
+    },
+    "schema:includedInDataCatalog": {
+      "type": "string",
+      "format": "uri"
+    }
+  },
+  "required": [
+    "locationDbId",
+    "locationName",
+    "@id",
+    "schema:includedInDataCatalog"
+  ]
+}

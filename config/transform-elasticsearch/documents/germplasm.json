@@ -1,0 +1,24 @@
+{
+  "document-type": "germplasm",
+  "source-entity": "germplasm",
+
+  "document-transform": {
+    "schema:url": "{.documentationURL}",
+    "schema:includedInDataCatalog": "{.source}",
+
+    "germplasmName": {
+      "{or}": [
+        "{.germplasmName}",
+        "{.defaultDisplayName}",
+        "{.accessionNumber}"
+      ]
+    },
+    "defaultDisplayName": {
+      "{or}": [
+        "{.defaultDisplayName}",
+        "{.germplasmName}",
+        "{.accessionNumber}"
+      ]
+    }
+  }
+}

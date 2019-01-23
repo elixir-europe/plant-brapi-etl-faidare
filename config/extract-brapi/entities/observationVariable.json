@@ -1,0 +1,23 @@
+{
+  "list": {
+    "call": [
+      {
+        "method": "GET",
+        "path": "variables",
+        "page-size": 500
+      },
+      {
+        "method": "POST",
+        "path": "variables-search",
+        "page-size": 500
+      }
+    ]
+  },
+  "links": [
+    {
+      "type": "internal",
+      "entity": "ontology",
+      "json-path": "."
+    }
+  ]
+}

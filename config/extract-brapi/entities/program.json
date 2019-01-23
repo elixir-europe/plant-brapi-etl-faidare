@@ -1,0 +1,16 @@
+{
+  "list": {
+    "call": [
+      {
+        "method": "GET",
+        "path": "programs",
+        "page-size": 500
+      },
+      {
+        "method": "POST",
+        "path": "programs-search",
+        "page-size": 500
+      }
+    ]
+  }
+}

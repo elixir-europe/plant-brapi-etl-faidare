@@ -1,0 +1,43 @@
+{
+  "type": "object",
+  "properties": {
+    "trialDbId": {
+      "type": "string"
+    },
+    "trialName": {
+      "type": "string"
+    },
+    "studies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "studyDbId": {
+            "type": "string"
+          },
+          "studyName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "studyDbId",
+          "studyName"
+        ]
+      }
+    },
+    "@id": {
+      "type": "string",
+      "format": "uri"
+    },
+    "schema:includedInDataCatalog": {
+      "type": "string",
+      "format": "uri"
+    }
+  },
+  "required": [
+    "trialDbId",
+    "trialName",
+    "@id",
+    "schema:includedInDataCatalog"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "document-type": "location",
+  "source-entity": "location",
+
+  "document-transform": {
+    "schema:url": "{.documentationURL}",
+    "schema:includedInDataCatalog": "{.source}",
+
+    "locationName": {
+      "{or}": [
+        "{.locationName}",
+        "{.name}"
+      ]
+    },
+    "instituteAddress": {
+      "{or}": [
+        "{.instituteAddress}",
+        "{.instituteAdress}"
+      ]
+    },
+    "abbreviation": {
+      "{or}": [
+        "{.abbreviation}",
+        "{.abreviation}"
+      ]
+    }
+  }
+}

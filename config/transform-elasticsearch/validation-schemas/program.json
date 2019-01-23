@@ -1,0 +1,25 @@
+{
+  "type": "object",
+  "properties": {
+    "programDbId": {
+      "type": "string"
+    },
+    "programName": {
+      "type": "string"
+    },
+    "@id": {
+      "type": "string",
+      "format": "uri"
+    },
+    "schema:includedInDataCatalog": {
+      "type": "string",
+      "format": "uri"
+    }
+  },
+  "required": [
+    "programDbId",
+    "programName",
+    "@id",
+    "schema:includedInDataCatalog"
+  ]
+}

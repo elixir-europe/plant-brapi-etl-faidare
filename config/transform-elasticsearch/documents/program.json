@@ -1,0 +1,16 @@
+{
+  "document-type": "program",
+  "source-entity": "program",
+
+  "document-transform": {
+    "schema:url": "{.documentationURL}",
+    "schema:includedInDataCatalog": "{.source}",
+
+    "programName": {
+      "{or}": [
+        "{.programName}",
+        "{.name}"
+      ]
+    }
+  }
+}

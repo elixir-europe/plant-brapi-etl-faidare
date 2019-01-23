@@ -79,7 +79,7 @@ def pool_worker(fn, array_of_args, nb_thread=default_nb_threads):
 
 
 def is_collection(value):
-    return not isinstance(value, str) and isinstance(value, collections.Iterable)
+    return not isinstance(value, str) and isinstance(value, collections.abc.Iterable)
 
 
 def remove_falsey(value, predicate=bool):
@@ -238,3 +238,20 @@ def first(it):
 
 def compose(*functions):
     return functools.reduce(lambda f, g: lambda x: f(g(x)), functions, lambda x: x)
+
+
+def update_in(dictionary, path, value):
+    """
+    Update a dict value at given path
+
+    update_in({}, ['a', 'b', 'c'], 'd')
+    => {'a':{'b':{'c':'d'}}}
+    """
+    current = dictionary
+    for pathPart in path[:-1]:
+        previous = current
+        current = current.get(pathPart)
+        if current is None:
+            previous[pathPart] = current = {}
+    current[path[-1]] = value
+    return dictionary

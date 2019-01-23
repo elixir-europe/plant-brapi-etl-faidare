@@ -1,0 +1,29 @@
+{
+  "type": "object",
+  "properties": {
+    "@id": {
+      "type": "string",
+      "format": "uri"
+    },
+    "@type": {
+      "$ref": "#/definitions/es-strings"
+    },
+    "schema:name": {
+      "type": "string"
+    },
+    "schema:url": {
+      "type": "string",
+      "format": "url"
+    },
+    "schema:includedInDataCatalog": {
+      "type": "string",
+      "format": "uri"
+    }
+  },
+  "required": [
+    "@id",
+    "@type",
+    "schema:name",
+    "schema:includedInDataCatalog"
+  ]
+}

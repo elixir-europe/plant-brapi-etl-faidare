@@ -25,13 +25,19 @@ class TestResolve(unittest.TestCase):
         expected = [data_1, data_2, data_3, data_4, data_6]
         self.assertEqual(actual, expected)
 
-    def test_resolve2(self):
+    def test_resolve_field_join(self):
         input = parse_template("{.refIds => .a}")
         actual = resolve(input, data_0, data_index)
         expected = ["a", "b", "b"]
         self.assertEqual(actual, expected)
 
-    def test_resolve3(self):
+    def test_resolve_self(self):
+        input = parse_template("{.}")
+        actual = resolve(input, data_0, data_index)
+        expected = data_0
+        self.assertEqual(actual, expected)
+
+    def test_resolve_field(self):
         input = parse_template("{.foo}")
         actual = resolve(input, data_0, data_index)
         expected = [1, 2, 3]
@@ -209,6 +215,69 @@ class TestResolve(unittest.TestCase):
         input = parse_template({"{list}": ["foo", ["foo", "foo", "bar"], "bar"], "{transform}": ["capitalize", "flatten"]})
         actual = resolve(input, data_0, data_index)
         expected = ["Foo", "Foo", "Foo", "Bar", "Bar"]
+        self.assertEqual(actual, expected)
+
+    def test_resolve_map_empty(self):
+        template = parse_template({
+            "studies": {
+                "{map}": "{.nonExistingField}", "{to}": {"id": "{.}"}
+            },
+            "foo": "bar"
+        })
+        actual = resolve(template, data_0, data_index)
+        expected = {"foo": "bar"}
+        self.assertEqual(actual, expected)
+
+    def test_resolve_map(self):
+        template = parse_template({
+            "studies": {
+                "{map}": "{.refIds}", "{to}": {"id": "{.}"}
+            }
+        })
+        actual = resolve(template, data_0, data_index)
+        expected = {
+            'studies': [
+                {'id': 1},
+                {'id': 2},
+                {'id': 3},
+                {'id': '4'},
+                {'id': 5}
+            ]
+        }
+        self.assertEqual(actual, expected)
+
+    def test_resolve_merge_value(self):
+        template = parse_template({
+            "{merge}": {
+                "foo": "bar",
+                "baz": "fizz"
+            },
+            "{with}": {
+                "foo": "fuzz"
+            }
+        })
+        actual = resolve(template, None, None)
+        expected = {
+            "foo": "fuzz",
+            "baz": "fizz"
+        }
+        self.assertEqual(actual, expected)
+
+    def test_resolve_merge_resolved(self):
+        template = parse_template({
+            "{merge}": {
+                "foo": "{.foo}",
+                "baz": "{.species}"
+            },
+            "{with}": {
+                "foo": "{.genus}"
+            }
+        })
+        actual = resolve(template, data_0, data_index)
+        expected = {
+            "foo": "Zea",
+            "baz": "mays"
+        }
         self.assertEqual(actual, expected)
 
 

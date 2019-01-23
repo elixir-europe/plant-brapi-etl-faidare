@@ -1,0 +1,99 @@
+{
+  "list": {
+    "required": true,
+    "call": [
+      {
+        "method": "GET",
+        "path": "studies",
+        "page-size": 500
+      },
+      {
+        "method": "GET",
+        "path": "studies-search",
+        "page-size": 500
+      },
+      {
+        "method": "POST",
+        "path": "studies-search",
+        "page-size": 500
+      }
+    ]
+  },
+  "detail": {
+    "required": true,
+    "call": {
+      "method": "GET",
+      "path": "studies/{studyDbId}"
+    }
+  },
+  "links": [
+    {
+      "type": "external-object",
+      "entity": "germplasm",
+      "required": true,
+      "call": {
+        "method": "GET",
+        "path": "studies/{studyDbId}/germplasm",
+        "page-size": 500
+      }
+    },
+    {
+      "type": "external-object",
+      "entity": "observationVariable",
+      "required": false,
+      "call": [
+        {
+          "method": "GET",
+          "path": "studies/{studyDbId}/observationvariables",
+          "page-size": 500
+        },
+        {
+          "method": "GET",
+          "path": "studies/{studyDbId}/observationVariables",
+          "page-size": 500
+        }
+      ]
+    },
+    {
+      "type": "-external-object",
+      "entity": "observationUnit",
+      "call": [
+        {
+          "method": "GET",
+          "path": "studies/{studyDbId}/observationunits",
+          "page-size": 500
+        },
+        {
+          "method": "GET",
+          "path": "studies/{studyDbId}/observationUnits",
+          "page-size": 500
+        }
+      ]
+    },
+    {
+      "type": "internal-object",
+      "entity": "contact",
+      "json-path": ".contacts"
+    },
+    {
+      "type": "internal-object",
+      "entity": "location",
+      "json-path": ".location"
+    },
+    {
+      "type": "internal",
+      "entity": "location",
+      "json-path": "."
+    },
+    {
+      "type": "internal",
+      "entity": "trial",
+      "json-path": "."
+    },
+    {
+      "type": "internal",
+      "entity": "program",
+      "json-path": "."
+    }
+  ]
+}

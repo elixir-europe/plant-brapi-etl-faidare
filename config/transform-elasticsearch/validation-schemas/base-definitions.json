@@ -1,0 +1,24 @@
+{
+  "es-string": {
+    "comment": "Elasticsearch accepts numbers as string with automatic conversion",
+    "type": [
+      "number",
+      "string"
+    ]
+  },
+
+  "es-strings": {
+    "comment": "Elasticsearch does not discriminate between a single string or an array of strings",
+    "anyOf": [
+      {
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/es-string"
+        }
+      },
+      {
+        "$ref": "#/definitions/es-string"
+      }
+    ]
+  }
+}

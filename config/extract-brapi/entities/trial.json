@@ -1,0 +1,34 @@
+{
+  "list": {
+    "call": [
+      {
+        "method": "GET",
+        "path": "trials",
+        "page-size": 500
+      }
+    ]
+  },
+  "detail": {
+    "call": {
+      "method": "GET",
+      "path": "trials/{trialDbId}"
+    }
+  },
+  "links": [
+    {
+      "type": "internal-object",
+      "entity": "study",
+      "json-path": ".studies"
+    },
+    {
+      "type": "internal",
+      "entity": "program",
+      "json-path": "."
+    },
+    {
+      "type": "internal-object",
+      "entity": "contact",
+      "json-path": ".contacts"
+    }
+  ]
+}

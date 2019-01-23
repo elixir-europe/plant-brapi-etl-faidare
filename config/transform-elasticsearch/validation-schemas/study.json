@@ -1,0 +1,25 @@
+{
+  "type": "object",
+  "properties": {
+    "studyDbId": {
+      "type": "string"
+    },
+    "studyName": {
+      "type": "string"
+    },
+    "@id": {
+      "type": "string",
+      "format": "uri"
+    },
+    "schema:includedInDataCatalog": {
+      "type": "string",
+      "format": "uri"
+    }
+  },
+  "required": [
+    "studyDbId",
+    "studyName",
+    "@id",
+    "schema:includedInDataCatalog"
+  ]
+}

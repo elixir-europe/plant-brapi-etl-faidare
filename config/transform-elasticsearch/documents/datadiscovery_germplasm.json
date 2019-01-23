@@ -1,0 +1,70 @@
+{
+  "document-type": "datadiscovery",
+  "source-entity": "germplasm",
+
+  "document-transform": {
+    "@type": [ "Germplasm" ],
+    "@id": "{.germplasmPUI}",
+
+    "schema:includedInDataCatalog": "{.source}",
+    "schema:identifier": "{.germplasmDbId}",
+    "schema:name": {
+      "{or}": [
+        "{.defaultDisplayName}",
+        "{.germplasmName}",
+        "{.accessionNumber}"
+      ]
+    },
+    "schema:url": "{.documentationURL}",
+    "schema:description": {
+      "{join}": [
+        "\"",
+        { "{or}": ["{.germplasmName}", "{.defaultDisplayName}"] },
+        "\" is a",
+        " {.genus + .species + .subtaxa}",
+        " ({.commonCropName})",
+        " accession",
+        " (number: \"{.accessionNumber}\")",
+        " managed by {.holdingInstitute.instituteName}",
+        ".",
+        " {.comment}"
+      ]
+    },
+
+    "germplasm": {
+      "cropName": {
+        "{list}": [
+          "{.commonCropName}",
+          "{.taxonCommonNames}",
+          "{.genus}",
+          "{.genus + .species}",
+          "{.genus + .species + .subtaxa}",
+          "{.taxonSynonyms}"
+        ], "{transform}": ["capitalize", "flatten", "distinct"]
+      },
+      "germplasmList": {
+        "{flatten_distinct}": [
+          "{.panel.name}",
+          "{.collection.name}",
+          "{.population.name}",
+          "{.holdingGenbank.instituteName}"
+        ]
+      },
+      "accession": {
+        "{flatten_distinct}": [
+          "{.germplasmName}",
+          "{.defaultDisplayName}",
+          "{.accessionNumber}",
+          "{.synonyms}"
+        ]
+      }
+    },
+    "trait": {
+      "observationVariableIds": {
+        "{flatten_distinct}": [
+          "{.studyDbIds => .observationVariablePUIs}"
+        ]
+      }
+    }
+  }
+}
