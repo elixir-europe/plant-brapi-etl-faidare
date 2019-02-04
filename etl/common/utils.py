@@ -21,7 +21,7 @@ def __get_path(parts, ext, create=False, recreate=False, is_file=True):
     base_path = os.path.join(*parts)
     # path = os.path.abspath(base_path + ext)
     path = base_path + ext
-    create = True if recreate else create
+    create = recreate or create
     if recreate and os.path.exists(path):
         if is_file:
             os.remove(path)
@@ -29,9 +29,9 @@ def __get_path(parts, ext, create=False, recreate=False, is_file=True):
             shutil.rmtree(path)
     if create and not os.path.exists(path):
         if is_file:
-            dir = os.path.dirname(path)
-            if not os.path.exists(dir):
-                os.makedirs(dir)
+            dir_name = os.path.dirname(path)
+            if not os.path.exists(dir_name):
+                os.makedirs(dir_name)
             open(path, 'a').close()
         else:
             os.makedirs(path)
@@ -118,7 +118,7 @@ def remove_none(value):
 def remove_empty(value):
     """Remove `None` values and empty collections and strings"""
     return remove_falsey(
-        value, predicate=lambda x: x is not None and ((not isinstance(x, collections.Sized)) or len(x) > 0))
+        value, predicate=lambda x: x is not None and ((not isinstance(x, collections.abc.Sized)) or len(x) > 0))
 
 
 # Replace variables in template strings (ex: "{id}/") by its value in "value_dict" dict (ex: value_dict['id'])

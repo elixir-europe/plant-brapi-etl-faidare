@@ -1,6 +1,19 @@
 {
   "type": "object",
   "properties": {
+    "@id": {
+      "type": "string",
+      "format": "uri"
+    },
+    "schema:includedInDataCatalog": {
+      "type": "string",
+      "format": "uri"
+    },
+    "schema:url": {
+      "type": "string",
+      "format": "url"
+    },
+
     "trialDbId": {
       "type": "string"
     },
@@ -25,13 +38,9 @@
         ]
       }
     },
-    "@id": {
+    "documentationURL": {
       "type": "string",
-      "format": "uri"
-    },
-    "schema:includedInDataCatalog": {
-      "type": "string",
-      "format": "uri"
+      "format": "url"
     }
   },
   "required": [

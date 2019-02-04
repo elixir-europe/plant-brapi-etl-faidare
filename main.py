@@ -15,7 +15,7 @@ from etl.common.utils import get_folder_path
 
 
 def main():
-    def handler():
+    def handler(*_):
         sys.exit(0)
 
     # Trap SIGINT to force exit the program

@@ -53,7 +53,7 @@ def remove_white_space_token(tree):
 def coll_as_str(value, separator=''):
     if isinstance(value, str):
         return value
-    if isinstance(value, collections.Iterable):
+    if isinstance(value, collections.abc.Iterable):
         return separator.join(map(lambda s: coll_as_str(s, separator), value))
     return str(value)
 

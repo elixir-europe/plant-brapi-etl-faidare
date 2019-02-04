@@ -12,6 +12,7 @@
         "{.name}"
       ]
     },
+
     "studies": {
       "{map}": {
         "{or}": [
@@ -31,6 +32,7 @@
         }
       }
     },
+
     "contacts": {
       "{or}": [
         "{.contacts}",

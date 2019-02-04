@@ -12,12 +12,14 @@
         "{.name}"
       ]
     },
+
     "contacts": {
       "{or}": [
         "{.contacts}",
         "{.contactDbIds => .}"
       ]
     },
+
     "seasons": {
       "{or}": [
         "{.seasons.season} {.seasons.year}",

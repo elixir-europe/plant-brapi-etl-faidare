@@ -1,6 +1,19 @@
 {
   "type": "object",
   "properties": {
+    "@id": {
+      "type": "string",
+      "format": "uri"
+    },
+    "schema:includedInDataCatalog": {
+      "type": "string",
+      "format": "uri"
+    },
+    "schema:url": {
+      "type": "string",
+      "format": "url"
+    },
+
     "locationDbId": {
       "type": "string"
     },
@@ -16,13 +29,9 @@
     "longitude": {
       "type": "number"
     },
-    "@id": {
+    "documentationURL": {
       "type": "string",
-      "format": "uri"
-    },
-    "schema:includedInDataCatalog": {
-      "type": "string",
-      "format": "uri"
+      "format": "url"
     }
   },
   "required": [

@@ -1,12 +1,6 @@
 {
   "type": "object",
   "properties": {
-    "programDbId": {
-      "type": "string"
-    },
-    "programName": {
-      "type": "string"
-    },
     "@id": {
       "type": "string",
       "format": "uri"
@@ -14,6 +8,21 @@
     "schema:includedInDataCatalog": {
       "type": "string",
       "format": "uri"
+    },
+    "schema:url": {
+      "type": "string",
+      "format": "url"
+    },
+
+    "programDbId": {
+      "type": "string"
+    },
+    "programName": {
+      "type": "string"
+    },
+    "documentationURL": {
+      "type": "string",
+      "format": "url"
     }
   },
   "required": [
