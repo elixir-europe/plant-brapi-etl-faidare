@@ -1,0 +1,32 @@
+{
+  "document-type": "study",
+  "source-entity": "study",
+
+  "document-transform": {
+    "schema:url": "{.documentationURL}",
+    "schema:includedInDataCatalog": "{.source}",
+
+    "studyName": {
+      "{or}": [
+        "{.studyName}",
+        "{.name}"
+      ]
+    },
+
+    "contacts": {
+      "{or}": [
+        "{.contacts}",
+        "{.contactDbIds => .}"
+      ]
+    },
+
+    "seasons": {
+      "{or}": [
+        "{.seasons.season} {.seasons.year}",
+        "{.seasons.season}",
+        "{.seasons.year}",
+        "{.seasons}"
+      ]
+    }
+  }
+}

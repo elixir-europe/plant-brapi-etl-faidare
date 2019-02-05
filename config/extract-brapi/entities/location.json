@@ -1,0 +1,18 @@
+{
+  "list": {
+    "call": [
+      {
+        "method": "GET",
+        "path": "locations",
+        "page-size": 500
+      }
+    ]
+  },
+  "detail": {
+    "skip-if-in-store": true,
+    "call": {
+      "method": "GET",
+      "path": "locations/{locationDbId}"
+    }
+  }
+}

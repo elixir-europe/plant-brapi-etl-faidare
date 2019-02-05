@@ -212,7 +212,7 @@ def extract_source(source, entities, config, output_dir):
     source_name = source['schema:identifier']
     action = 'extract-' + source_name
     log_file = get_file_path([config['log-dir'], action], ext='.log', recreate=True)
-    logger = create_logger(action, log_file, config['verbose'])
+    logger = create_logger(action, log_file, config['options']['verbose'])
     pool = ThreadPool(10)
 
     logger.info("Extracting BrAPI {}...".format(source_name))

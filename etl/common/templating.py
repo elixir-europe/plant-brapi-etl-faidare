@@ -53,7 +53,7 @@ def remove_white_space_token(tree):
 def coll_as_str(value, separator=''):
     if isinstance(value, str):
         return value
-    if isinstance(value, collections.Iterable):
+    if isinstance(value, collections.abc.Iterable):
         return separator.join(map(lambda s: coll_as_str(s, separator), value))
     return str(value)
 
@@ -143,6 +143,29 @@ def resolve_or_template(template, data, data_index):
     )
 
 
+def resolve_map_template(template, data, data_index):
+    elements = template.get('{map}')
+    transform = template.get('{to}')
+
+    resolved = as_list(resolve(elements, data, data_index))
+    if not isinstance(resolved, list):
+        raise Exception("Map can only work on lists.")
+    if not remove_empty(resolved):
+        return None
+    resolved = list(map(lambda value: resolve(transform, value, data_index), resolved))
+    return resolved
+
+
+def resolve_merge_template(template, data, data_index):
+    merge_branch = template.get('{merge}')
+    with_branch = template.get('{with}')
+    resolved_merge = resolve(merge_branch, data, data_index)
+    resolved_with = resolve(with_branch, data, data_index)
+    if not isinstance(resolved_merge, dict) or not isinstance(resolved_with, dict):
+        raise Exception("Merge can't work on anything but dictionaries.")
+    return merge_dict(resolved_merge, resolved_with)
+
+
 def resolve(parsed_template, data, data_index):
     if isinstance(parsed_template, str):
         return parsed_template
@@ -154,7 +177,9 @@ def resolve(parsed_template, data, data_index):
             '{or}': resolve_or_template,
             '{join}': resolve_join_template,
             '{list}': resolve_list_template,
-            '{lark}': resolve_field_value_template
+            '{lark}': resolve_field_value_template,
+            '{map}': resolve_map_template,
+            '{merge}': resolve_merge_template,
         }
         for key, evaluator in evaluable_templates.items():
             if key in parsed_template:
@@ -250,6 +275,30 @@ def parse_list_template(template):
     return {'{list}': parse_template(elements), '{transform}': transforms}
 
 
+def parse_map_template(template):
+    elements = template.get('{map}')
+    to = template.get('{to}')
+
+    if not elements:
+        raise Exception("Empty '{{map}}' template '{}'".format(elements))
+    if not to:
+        raise Exception("Missing '{{to}}' branch in '{{map}}' template '{}'".format(template))
+
+    return {'{map}': parse_template(elements), '{to}': parse_template(to)}
+
+
+def parse_merge_template(template):
+    elements = template.get('{merge}')
+    with_branch = template.get('{with}')
+
+    if not elements:
+        raise Exception("Empty '{{merge}}' template '{}'".format(elements))
+    if not with_branch:
+        raise Exception("Missing '{{with}}' branch in '{{merge}}' template '{}'".format(template))
+
+    return {'{merge}': parse_template(elements), '{with}': parse_template(with_branch)}
+
+
 def parse_template(template):
     if isinstance(template, str):
         return parse_string_template(template)
@@ -262,6 +311,8 @@ def parse_template(template):
             '{join}': parse_join_template,
             '{flatten_distinct}': parse_flatten_template,
             '{list}': parse_list_template,
+            '{map}': parse_map_template,
+            '{merge}': parse_merge_template,
         }
         for key, parser in template_parsers.items():
             if key in template:

@@ -7,5 +7,15 @@
   "@id": "http://brapi.tropgenedb.cirad.fr:8888/",
   "schema:identifier": "CIRAD",
   "schema:name": "CIRAD TROPGENE",
-  "brapi:endpointUrl": "http://brapi.tropgenedb.cirad.fr:8888/rice/brapi/v1/"
+  "brapi:endpointUrl": "http://brapi.tropgenedb.cirad.fr:8888/rice/brapi/v1/",
+
+  "implemented-calls": [
+    "GET germplasm",
+    "GET germplasm/{germplasmDbId}",
+    "GET trials/{trialDbId}",
+    "GET trials",
+    "GET studies",
+    "GET studies/{studyDbId}",
+    "GET studies/{studyDbId}/germplasm"
+  ]
 }

@@ -1,0 +1,71 @@
+{
+  "document-type": "datadiscovery",
+  "source-entity": "study",
+
+  "document-transform": {
+    "@type": [
+      "Phenotyping Study"
+    ],
+    "@id": "{.studyPUI}",
+
+    "schema:includedInDataCatalog": "{.source}",
+    "schema:identifier": "{.studyDbId}",
+    "schema:name": {
+      "{or}": ["{.studyName}", "{.name}"]
+    },
+    "schema:url": "{.documentationURL}",
+    "schema:description": {
+      "{join}": [
+        "\"",
+        { "{or}": ["{.studyName}", "{.name}"] },
+        "\" is a phenotyping study",
+        { "{or}": [" conducted from {.startDate} to {.endDate}", " running since {.startDate}"] },
+        { "{join}": [" (seasons: ", {"{join}": "{.seasons}", "{separator}": ", "}, ")"], "{accept_none}": false },
+        { "{or}": [
+          " in {.locationDbId => .locationName} ({.locationDbId => .countryName})",
+          " in {.locationDbId => .countryName}"
+        ]},
+        ". this study is part of the {.programName} program",
+        ".",
+        " {.studyDescription}"
+      ]
+    },
+
+    "germplasm": {
+      "cropName": {
+        "{list}": [
+          "{.germplasmDbIds => .commonCropName}",
+          "{.germplasmDbIds => .taxonCommonNames}",
+          "{.germplasmDbIds => .genus}",
+          "{.germplasmDbIds => .genus + .species}",
+          "{.germplasmDbIds => .genus + .species + .subtaxa}",
+          "{.germplasmDbIds => .taxonSynonyms}"
+        ], "{transform}": ["capitalize", "flatten", "distinct"]
+      },
+      "germplasmList": {
+        "{flatten_distinct}": [
+          "{.germplasmDbIds => .panel.name}",
+          "{.germplasmDbIds => .collection.name}",
+          "{.germplasmDbIds => .population.name}",
+          "{.germplasmDbIds => .holdingGenbank.instituteName}"
+        ]
+      },
+      "accession": {
+        "{flatten_distinct}": [
+          "{.germplasmDbIds => .germplasmName}",
+          "{.germplasmDbIds => .defaultDisplayName}",
+          "{.germplasmDbIds => .accessionNumber}",
+          "{.germplasmDbIds => .synonyms}"
+        ]
+      }
+    },
+
+    "trait": {
+      "observationVariableIds": {
+        "{flatten_distinct}": [
+          "{.observationVariablePUIs}"
+        ]
+      }
+    }
+  }
+}

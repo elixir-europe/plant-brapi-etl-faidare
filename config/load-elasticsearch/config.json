@@ -1,0 +1,5 @@
+{
+  "host": "localhost",
+  "port": 9200,
+  "index-template": "gnpis_{source}_{documentType}"
+}

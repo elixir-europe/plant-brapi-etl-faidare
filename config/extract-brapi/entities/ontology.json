@@ -1,0 +1,11 @@
+{
+  "list": {
+    "call": [
+      {
+        "method": "GET",
+        "path": "ontologies",
+        "page-size": 500
+      }
+    ]
+  }
+}

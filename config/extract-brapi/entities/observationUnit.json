@@ -1,0 +1,28 @@
+{
+  "-list": {
+    "call": [
+      {
+        "method": "POST",
+        "path": "phenotypes-search",
+        "page-size": 500
+      }
+    ]
+  },
+  "links": [
+    {
+      "type": "internal",
+      "entity": "study",
+      "json-path": "."
+    },
+    {
+      "type": "internal",
+      "entity": "germplasm",
+      "json-path": "."
+    },
+    {
+      "type": "internal",
+      "entity": "observationVariable",
+      "json-path": ".observations.observationVariableDbId"
+    }
+  ]
+}

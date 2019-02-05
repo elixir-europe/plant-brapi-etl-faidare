@@ -1,0 +1,43 @@
+{
+  "document-type": "trial",
+  "source-entity": "trial",
+
+  "document-transform": {
+    "schema:url": "{.documentationURL}",
+    "schema:includedInDataCatalog": "{.source}",
+
+    "trialName": {
+      "{or}": [
+        "{.trialName}",
+        "{.name}"
+      ]
+    },
+
+    "studies": {
+      "{map}": {
+        "{or}": [
+          "{.studies}",
+          "{.studyDbIds => .}"
+        ]
+      },
+      "{to}": {
+        "{merge}": "{.}",
+        "{with}": {
+          "studyName": {
+            "{or}": [
+              "{.studyName}",
+              "{.name}"
+            ]
+          }
+        }
+      }
+    },
+
+    "contacts": {
+      "{or}": [
+        "{.contacts}",
+        "{.contactDbIds => .}"
+      ]
+    }
+  }
+}

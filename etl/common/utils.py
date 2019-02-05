@@ -21,7 +21,7 @@ def __get_path(parts, ext, create=False, recreate=False, is_file=True):
     base_path = os.path.join(*parts)
     # path = os.path.abspath(base_path + ext)
     path = base_path + ext
-    create = True if recreate else create
+    create = recreate or create
     if recreate and os.path.exists(path):
         if is_file:
             os.remove(path)
@@ -29,9 +29,9 @@ def __get_path(parts, ext, create=False, recreate=False, is_file=True):
             shutil.rmtree(path)
     if create and not os.path.exists(path):
         if is_file:
-            dir = os.path.dirname(path)
-            if not os.path.exists(dir):
-                os.makedirs(dir)
+            dir_name = os.path.dirname(path)
+            if not os.path.exists(dir_name):
+                os.makedirs(dir_name)
             open(path, 'a').close()
         else:
             os.makedirs(path)
@@ -79,7 +79,7 @@ def pool_worker(fn, array_of_args, nb_thread=default_nb_threads):
 
 
 def is_collection(value):
-    return not isinstance(value, str) and isinstance(value, collections.Iterable)
+    return not isinstance(value, str) and isinstance(value, collections.abc.Iterable)
 
 
 def remove_falsey(value, predicate=bool):
@@ -118,7 +118,7 @@ def remove_none(value):
 def remove_empty(value):
     """Remove `None` values and empty collections and strings"""
     return remove_falsey(
-        value, predicate=lambda x: x is not None and ((not isinstance(x, collections.Sized)) or len(x) > 0))
+        value, predicate=lambda x: x is not None and ((not isinstance(x, collections.abc.Sized)) or len(x) > 0))
 
 
 # Replace variables in template strings (ex: "{id}/") by its value in "value_dict" dict (ex: value_dict['id'])
@@ -238,3 +238,20 @@ def first(it):
 
 def compose(*functions):
     return functools.reduce(lambda f, g: lambda x: f(g(x)), functions, lambda x: x)
+
+
+def update_in(dictionary, path, value):
+    """
+    Update a dict value at given path
+
+    update_in({}, ['a', 'b', 'c'], 'd')
+    => {'a':{'b':{'c':'d'}}}
+    """
+    current = dictionary
+    for pathPart in path[:-1]:
+        previous = current
+        current = current.get(pathPart)
+        if current is None:
+            previous[pathPart] = current = {}
+    current[path[-1]] = value
+    return dictionary

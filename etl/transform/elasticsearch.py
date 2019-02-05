@@ -7,6 +7,7 @@ import base64
 from functools import reduce
 
 import jsonschema
+from jsonschema import SchemaError
 
 from etl.common.brapi import get_identifier, get_uri, get_entity_links, get_uri_by_id
 from etl.common.store import JSONSplitStore, IndexStore, list_entity_files, DataIdIndex, load_entity_lines
@@ -181,7 +182,7 @@ def generate_elasticsearch_documents(restricted_documents, document_configs_by_e
     logger.debug("Generated {} documents.".format(document_count))
 
 
-def validate_documents(document_tuples, validation_config, logger):
+def validate_documents(document_tuples, validation_schemas, logger):
     """
     Consumes an iterable of document type and document tuples and validate each document according to its
     validation schema defined in configuration.
@@ -191,8 +192,11 @@ def validate_documents(document_tuples, validation_config, logger):
     document_count = 0
     for document_type, document in document_tuples:
         document_count += 1
-        schema = validation_config['documents'].get(document_type)
-        schema and jsonschema.validate(document, schema)
+        schema = validation_schemas.get(document_type)
+        try:
+            schema and jsonschema.validate(document, schema)
+        except SchemaError as e:
+            raise Exception("Could not validate document of type {} using the provided json schema.".format(document_type)) from e
         yield document_type, document
     logger.debug("Validated {} documents.".format(document_count))
 
@@ -291,11 +295,11 @@ def transform_source(source, transform_config, source_json_dir, source_bulk_dir,
     failed_dir = source_bulk_dir + '-failed'
     if os.path.exists(failed_dir):
         shutil.rmtree(failed_dir, ignore_errors=True)
-    validation_config = transform_config['validation']
+    validation_schemas = transform_config['validation-schemas']
     source_name = source['schema:identifier']
     action = 'transform-es-' + source_name
     log_file = get_file_path([config['log-dir'], action], ext='.log', recreate=True)
-    logger = create_logger(action, log_file, config['verbose'])
+    logger = create_logger(action, log_file, config['options']['verbose'])
     pool = Pool(NB_THREADS)
 
     document_configs = transform_config['documents']
@@ -333,7 +337,7 @@ def transform_source(source, transform_config, source_json_dir, source_bulk_dir,
             restricted_documents, document_configs_by_entity, data_index, pool, logger)
 
         # Validate the document schemas
-        validated_documents = validate_documents(documents, validation_config, logger)
+        validated_documents = validate_documents(documents, validation_schemas, logger)
 
         # Generate Elasticsearch bulk headers before each documents
         documents_with_headers = generate_bulk_headers(validated_documents)

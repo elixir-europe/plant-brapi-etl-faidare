@@ -1,0 +1,46 @@
+{
+  "type": "object",
+  "properties": {
+    "@id": {
+      "type": "string",
+      "format": "uri"
+    },
+    "schema:includedInDataCatalog": {
+      "type": "string",
+      "format": "uri"
+    },
+    "schema:url": {
+      "type": "string",
+      "format": "url"
+    },
+
+    "studyDbId": {
+      "type": "string"
+    },
+    "studyName": {
+      "type": "string"
+    },
+    "seasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "locationDbId": {
+      "type": "string"
+    },
+    "locationName": {
+      "type": "string"
+    },
+    "documentationURL": {
+      "type": "string",
+      "format": "url"
+    }
+  },
+  "required": [
+    "studyDbId",
+    "studyName",
+    "@id",
+    "schema:includedInDataCatalog"
+  ]
+}

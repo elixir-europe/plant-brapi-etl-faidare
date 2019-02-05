@@ -1,0 +1,27 @@
+{
+  "list": {
+    "call": [
+      {
+        "method": "GET",
+        "path": "germplasm",
+        "page-size": 500
+      },
+      {
+        "method": "GET",
+        "path": "germplasm-search",
+        "page-size": 500
+      },
+      {
+        "method": "POST",
+        "path": "germplasm-search",
+        "page-size": 500
+      }
+    ]
+  },
+  "detail": {
+    "call": {
+      "method": "GET",
+      "path": "germplasm/{germplasmDbId}"
+    }
+  }
+}

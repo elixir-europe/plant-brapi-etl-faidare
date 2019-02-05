@@ -45,17 +45,10 @@ def create_template(es_client, es_config, document_type, base_index_name, logger
     template_name = 'template_elixir_' + base_index_name
     template_pattern = base_index_name + '-d*'
 
-    mapping_file_path = es_config['mappings'].get(document_type)
-    if not mapping_file_path:
-        return
-    if not os.path.exists(mapping_file_path):
-        logger.debug('No mapping file "{}" for document type "{}". Skipping template creation.'
-                     .format(mapping_file_path, document_type))
+    mapping = es_config['document-mappings'].get(document_type+"_mapping")
+    if not mapping:
         return
     logger.debug('Creating template "{}" on pattern "{}"...'.format(template_name, template_pattern))
-
-    with open(mapping_file_path, 'r') as mapping_file:
-        mapping = json.load(mapping_file)
 
     template_body = {'template': template_pattern, 'mappings': mapping}
 
@@ -91,7 +84,7 @@ def load_source(source, config, source_bulk_dir, log_dir):
     source_name = source['schema:identifier']
     action = 'load-elasticsearch-' + source_name
     log_file = get_file_path([log_dir, action], ext='.log', recreate=True)
-    logger = create_logger(source_name, log_file, config['verbose'])
+    logger = create_logger(source_name, log_file, config['options']['verbose'])
 
     load_config = config['load-elasticsearch']
     es_client = init_es_client(load_config['url'], logger)

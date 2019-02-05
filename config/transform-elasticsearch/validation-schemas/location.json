@@ -1,0 +1,43 @@
+{
+  "type": "object",
+  "properties": {
+    "@id": {
+      "type": "string",
+      "format": "uri"
+    },
+    "schema:includedInDataCatalog": {
+      "type": "string",
+      "format": "uri"
+    },
+    "schema:url": {
+      "type": "string",
+      "format": "url"
+    },
+
+    "locationDbId": {
+      "type": "string"
+    },
+    "locationName": {
+      "type": "string"
+    },
+    "altitude": {
+      "type": "number"
+    },
+    "latitude": {
+      "type": "number"
+    },
+    "longitude": {
+      "type": "number"
+    },
+    "documentationURL": {
+      "type": "string",
+      "format": "url"
+    }
+  },
+  "required": [
+    "locationDbId",
+    "locationName",
+    "@id",
+    "schema:includedInDataCatalog"
+  ]
+}

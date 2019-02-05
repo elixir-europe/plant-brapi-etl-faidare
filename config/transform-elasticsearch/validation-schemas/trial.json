@@ -1,0 +1,52 @@
+{
+  "type": "object",
+  "properties": {
+    "@id": {
+      "type": "string",
+      "format": "uri"
+    },
+    "schema:includedInDataCatalog": {
+      "type": "string",
+      "format": "uri"
+    },
+    "schema:url": {
+      "type": "string",
+      "format": "url"
+    },
+
+    "trialDbId": {
+      "type": "string"
+    },
+    "trialName": {
+      "type": "string"
+    },
+    "studies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "studyDbId": {
+            "type": "string"
+          },
+          "studyName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "studyDbId",
+          "studyName"
+        ]
+      }
+    },
+    "documentationURL": {
+      "type": "string",
+      "format": "url"
+    }
+  },
+  "required": [
+    "trialDbId",
+    "trialName",
+    "@id",
+    "schema:includedInDataCatalog"
+  ]
+}
