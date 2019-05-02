@@ -59,7 +59,12 @@
     "ontology": {
       "@type": "Ontology",
       "@context": "linked-data/Ontology.jsonld",
-      "brapi-name": "locations"
+      "brapi-name": "ontology"
+    },
+    "contact": {
+      "@type": "Contact",
+      "@context": "linked-data/Contact.jsonld",
+      "brapi-name": "contact"
     }
   }
 }
