@@ -9,15 +9,21 @@ def load_file_config(config):
     """
     Initialize a new configuration dict and loading JSON configuration files into it
     """
-
-    # Walk through the local ./config dir and load every JSON into the config dict
-    for root, _, files in os.walk(config['conf-dir']):
-        for file in files:
-            if file.endswith('.json'):
-                file_path = os.path.join(root, file)
-                config_path = file_path.replace(config['conf-dir'] + os.sep, '').replace('.json', '').split(os.sep)
-                with open(file_path) as config_file:
-                    update_in(config, config_path, json.loads(config_file.read()))
+    # The institution dict that will hold info about institutions existing in ./sources
+    config['institutions'] = {}
+    # Walk through the local ./config and ./sources dir and load every JSON into the config dict
+    dirs = ['sources-dir', 'conf-dir']
+    for dir in dirs:
+        for root, _, files in os.walk(config[dir]):
+            for file in files:
+                if file.endswith('.json'):
+                    file_path = os.path.join(root, file)
+                    config_path = file_path.replace(config[dir] + os.sep, '').replace('.json', '').split(os.sep)
+                    with open(file_path) as config_file:
+                        if dir == 'sources-dir':
+                            update_in(config['institutions'], config_path, json.loads(config_file.read()))
+                        else:
+                            update_in(config, config_path, json.loads(config_file.read()))
     return config
 
 

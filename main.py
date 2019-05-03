@@ -26,6 +26,7 @@ def main():
     config['root-dir'] = os.path.dirname(__file__)
     config['default-data-dir'] = os.path.join(config['root-dir'], 'data')
     config['conf-dir'] = os.path.join(config['root-dir'], 'config')
+    config['sources-dir'] = os.path.join(config['root-dir'], 'sources')
     config['log-dir'] = get_folder_path([config['root-dir'], 'log'], create=True)
 
     # Load file configs
@@ -33,6 +34,7 @@ def main():
 
     # Parse command line arguments
     options = parse_cli_arguments(config)
+    #options = {"transform_rdf": True, "verbose": False}
 
     # Extend config with CLI arguments
     config = extend_config(config, options)

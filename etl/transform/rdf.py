@@ -62,10 +62,11 @@ def main(config):
 
     rdf_dir = get_folder_path([config['data-dir'], 'rdf'], recreate=True)
 
-    institutions = config['sources']
+    institutions = config['institutions']
     for institution_name in institutions:
         institution_jsonld_dir = get_folder_path([jsonld_dir, institution_name])
         if not os.path.exists(institution_jsonld_dir):
+            print("=> Skiping files in rdf dir, institution_jsonld_dir: ", institution_jsonld_dir)
             continue
         institution_rdf_dir = get_folder_path([rdf_dir, institution_name], recreate=True)
 

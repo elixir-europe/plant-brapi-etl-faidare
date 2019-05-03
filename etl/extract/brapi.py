@@ -262,7 +262,7 @@ def main(config):
         entity['name'] = entity_name
 
     json_dir = get_folder_path([config['data-dir'], 'json'], create=True)
-    sources = config['sources']
+    sources = config['institutions']
 
     threads = list()
     for source_name in sources:

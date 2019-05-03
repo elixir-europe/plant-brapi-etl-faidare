@@ -63,7 +63,7 @@ Here is an example of data source description:
 The `@id` field contains the URI identifying the data source (we use the URL of the official web site for convinience), the `schema:identifier` contains a short identifier for this data source, the `schema:name` contains the display name and `brapi:endpoint` contains the URL of the BrAPI endpoint.
 
 The BrAPI endpoint must implement the required calls (also listed in `./config/extract-brapi.json`):
-- /brapi/v1/studies-search (in GET or POST)
+- ~~/brapi/v1/studies-search (in GET or POST)~~: This one is [deprecated](https://brapi.docs.apiary.io/#reference/study/studies-search) in v1.3, more details [here](https://brapi.docs.apiary.io/#introduction/search-services).
 - /brapi/v1/studies/{id} 
 - /brapi/v1/studies/{id}/germplasm
 
