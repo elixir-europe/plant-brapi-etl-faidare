@@ -1,0 +1,11 @@
+{
+  "@context": {
+    "schema": "http://schema.org/",
+    "brapi": "https://brapi.org/"
+  },
+  "@type": "schema:DataCatalog",
+  "@id": "https://terraref.org",
+  "schema:name": "TERRA REF",
+  "schema:identifier": "TERRA REF",
+  "brapi:endpointUrl": "https://brapi.workbench.terraref.org/brapi/v1/",
+}
