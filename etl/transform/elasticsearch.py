@@ -88,8 +88,7 @@ def generate_elasticsearch_document2(options):
 def generate_elasticsearch_documents2(restricted_documents, document_configs_by_entity,
                                       uri_data_index: UriIndex, pool: Pool, logger: Logger):
     """
-    Produces and iterable of tuples (of document type and document) generated using the
-    document templates in configuration.
+    Same as generate_elasticsearch_documents but not threaded
     """
     logger.debug("Preparing documents generation...")
     document_count = 0

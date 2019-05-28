@@ -379,19 +379,5 @@ def transform_source(source, config):
     id_indices = step1(source, entities, source_json_dir, index_dir)
 
     # Step 2: Replace all DbIds links with b64 encoded URIs
-    uri_indices = {
-        'location': './data/uri-index/URGI/location.byuri',
-        'germplasmProgeny': './data/uri-index/URGI/germplasmProgeny.byuri',
-        'program': './data/uri-index/URGI/program.byuri',
-        'observationUnit': './data/uri-index/URGI/observationUnit.byuri',
-        'study': './data/uri-index/URGI/study.byuri',
-        'contact': './data/uri-index/URGI/contact.byuri',
-        'trial': './data/uri-index/URGI/trial.byuri',
-        'germplasmAttribute': './data/uri-index/URGI/germplasmAttribute.byuri',
-        'germplasmPedigree': './data/uri-index/URGI/germplasmPedigree.byuri',
-        'germplasm': './data/uri-index/URGI/germplasm.byuri',
-        'attribute': './data/uri-index/URGI/attribute.byuri',
-    }
     uri_indices = step2(source, entities, ignore_links, source_json_dir, index_dir, id_indices)
-    print(uri_indices)
     return UriIndex(uri_indices)
