@@ -22,7 +22,13 @@
     {
       "type": "internal",
       "entity": "observationVariable",
-      "json-path": ".observations.observationVariableDbId"
+      "json-path": ".observations"
+    },
+    {
+      "type": "internal",
+      "entity": "studyLocation",
+      "entity-alias": "location",
+      "json-path": "."
     }
   ]
 }

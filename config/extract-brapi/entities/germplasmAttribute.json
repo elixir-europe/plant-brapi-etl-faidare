@@ -1,0 +1,9 @@
+{
+  "links": [
+    {
+      "type": "internal-object",
+      "entity": "attribute",
+      "json-path": ".data"
+    }
+  ]
+}

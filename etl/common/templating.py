@@ -1,12 +1,12 @@
 import itertools
 
 import collections
-import lark
+import lark, lark.lexer
 import re
 from copy import deepcopy
 from functools import reduce, partial
 
-from etl.common.utils import remove_none, resolve_path, as_list, flatten, distinct, is_list_like, \
+from etl.common.utils import remove_none, get_in, as_list, flatten, distinct, is_list_like, \
     remove_empty
 
 field_template_string_parser = lark.Lark('''
@@ -27,7 +27,7 @@ start: "{" WS* object_path* WS* value_path WS* "}"
 
 
 def get_field_path(tree):
-    return resolve_path(tree, ['field_path', 'FIELD'])
+    return get_in(tree, ['field_path', 'FIELD'])
 
 
 def tree_to_dict(tree):
@@ -70,20 +70,26 @@ list_transforms = {"flatten": flatten, "distinct": distinct, "capitalize": capit
 
 
 def resolve_field_value_template(tree, data, data_index):
-    object_paths = as_list(resolve_path(tree, ['start', 'object_path']))
+    object_paths = as_list(get_in(tree, ['start', 'object_path']))
     for object_path in object_paths:
-        ids = as_list(resolve_path(data, get_field_path(object_path)))
+        field_path = get_field_path(object_path)
+        ids = as_list(get_in(data, field_path))
         if not ids:
             return None
-        data = remove_none(list(map(lambda id: data_index.get(id), ids)))
-    value_paths = as_list(resolve_path(tree, ['start', 'value_path']))
+        field = field_path[-1]
+        entity = re.sub(r"(\w+)URIs?", "\\1", field)
+        entity_index = data_index[entity]
+        data = remove_none(list(map(lambda id: entity_index[id], ids)))
+        if getattr(entity_index, 'close', False):
+            entity_index.close()
+    value_paths = as_list(get_in(tree, ['start', 'value_path']))
     if len(value_paths) == 1:
-        return resolve_path(data, get_field_path(value_paths[0]))
+        return get_in(data, get_field_path(value_paths[0]))
     else:
         new_value = []
         for data in as_list(data):
             field_values = remove_empty(map(
-                lambda value_path: as_list(resolve_path(data, get_field_path(value_path))) or None,
+                lambda value_path: as_list(get_in(data, get_field_path(value_path))) or None,
                 value_paths
             ))
             product = itertools.product(*field_values)

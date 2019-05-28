@@ -46,9 +46,16 @@ def load_entity_lines(options):
 
 class CustomJSONEncoder(json.JSONEncoder):
     """JSON encoder that encodes sets and iterables as list"""
+
+    @classmethod
+    def dump(cls, data, json_file):
+        json.dump(data, json_file, cls=cls)
+
     def default(self, obj):
         if is_list_like(obj):
             return list(obj)
+        if isinstance(obj, bytes):
+            return obj.decode()
         return json.JSONEncoder.default(self, obj)
 
 
@@ -82,7 +89,7 @@ class MergeStore(dict):
             for data in self.values():
                 if 'etl:detailed' in data:
                     del data['etl:detailed']
-                json.dump(data, json_file, cls=CustomJSONEncoder)
+                CustomJSONEncoder.dump(data, json_file)
                 json_file.write('\n')
 
 
@@ -117,7 +124,7 @@ class JSONSplitStore(object):
     def flush(self):
         if self.data_buffer:
             for element in self.data_buffer:
-                json.dump(element, self.json_file, cls=CustomJSONEncoder)
+                CustomJSONEncoder.dump(element, self.json_file)
                 self.json_file.write('\n')
             self.data_buffer.clear()
             if self._should_switch_file():
@@ -147,6 +154,7 @@ class JSONSplitStore(object):
             self.flush()
 
 
+# TODO: remove
 class IndexStore(object):
     def __init__(self, json_dir, max_file_byte_size=JSONSplitStore.DEFAULT_MAX_FILE_SIZE):
         self.json_dir = json_dir
@@ -214,6 +222,7 @@ class IndexStore(object):
         })
 
 
+# TODO: remove
 class DataIdIndex(collections.Mapping):
     def __init__(self,  data_location_by_id):
         super().__init__()

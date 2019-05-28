@@ -7,7 +7,7 @@
     "@id": "{.germplasmPUI}",
 
     "schema:includedInDataCatalog": "{.source}",
-    "schema:identifier": "{.germplasmDbId}",
+    "schema:identifier": "{.germplasmURI}",
     "schema:name": {
       "{or}": [
         "{.defaultDisplayName}",
@@ -62,7 +62,7 @@
     "trait": {
       "observationVariableIds": {
         "{flatten_distinct}": [
-          "{.studyDbIds => .observationVariablePUIs}"
+          "{.studyURIs => .observationVariablePUIs}"
         ]
       }
     }

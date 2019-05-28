@@ -22,8 +22,8 @@
         { "{or}": [" conducted from {.startDate} to {.endDate}", " running since {.startDate}"] },
         { "{join}": [" (seasons: ", {"{join}": "{.seasons}", "{separator}": ", "}, ")"], "{accept_none}": false },
         { "{or}": [
-          " in {.locationDbId => .locationName} ({.locationDbId => .countryName})",
-          " in {.locationDbId => .countryName}"
+          " in {.locationURI => .locationName} ({.locationURI => .countryName})",
+          " in {.locationURI => .countryName}"
         ]},
         ". this study is part of the {.programName} program",
         ".",
@@ -34,28 +34,28 @@
     "germplasm": {
       "cropName": {
         "{list}": [
-          "{.germplasmDbIds => .commonCropName}",
-          "{.germplasmDbIds => .taxonCommonNames}",
-          "{.germplasmDbIds => .genus}",
-          "{.germplasmDbIds => .genus + .species}",
-          "{.germplasmDbIds => .genus + .species + .subtaxa}",
-          "{.germplasmDbIds => .taxonSynonyms}"
+          "{.germplasmURIs => .commonCropName}",
+          "{.germplasmURIs => .taxonCommonNames}",
+          "{.germplasmURIs => .genus}",
+          "{.germplasmURIs => .genus + .species}",
+          "{.germplasmURIs => .genus + .species + .subtaxa}",
+          "{.germplasmURIs => .taxonSynonyms}"
         ], "{transform}": ["capitalize", "flatten", "distinct"]
       },
       "germplasmList": {
         "{flatten_distinct}": [
-          "{.germplasmDbIds => .panel.name}",
-          "{.germplasmDbIds => .collection.name}",
-          "{.germplasmDbIds => .population.name}",
-          "{.germplasmDbIds => .holdingGenbank.instituteName}"
+          "{.germplasmURIs => .panel.name}",
+          "{.germplasmURIs => .collection.name}",
+          "{.germplasmURIs => .population.name}",
+          "{.germplasmURIs => .holdingGenbank.instituteName}"
         ]
       },
       "accession": {
         "{flatten_distinct}": [
-          "{.germplasmDbIds => .germplasmName}",
-          "{.germplasmDbIds => .defaultDisplayName}",
-          "{.germplasmDbIds => .accessionNumber}",
-          "{.germplasmDbIds => .synonyms}"
+          "{.germplasmURIs => .germplasmName}",
+          "{.germplasmURIs => .defaultDisplayName}",
+          "{.germplasmURIs => .accessionNumber}",
+          "{.germplasmURIs => .synonyms}"
         ]
       }
     },

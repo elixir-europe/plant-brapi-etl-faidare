@@ -13,12 +13,8 @@
       ]
     },
 
-    "contacts": {
-      "{or}": [
-        "{.contacts}",
-        "{.contactDbIds => .}"
-      ]
-    },
+    "contacts": "{.contactURIs => .}",
+    "location": "{.locationURI => .}",
 
     "seasons": {
       "{or}": [

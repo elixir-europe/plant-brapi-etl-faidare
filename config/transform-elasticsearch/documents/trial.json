@@ -14,12 +14,7 @@
     },
 
     "studies": {
-      "{map}": {
-        "{or}": [
-          "{.studies}",
-          "{.studyDbIds => .}"
-        ]
-      },
+      "{map}": "{.studyURIs => .}",
       "{to}": {
         "{merge}": "{.}",
         "{with}": {
@@ -33,11 +28,6 @@
       }
     },
 
-    "contacts": {
-      "{or}": [
-        "{.contacts}",
-        "{.contactDbIds => .}"
-      ]
-    }
+    "contacts": "{.contactURIs => .}"
   }
 }

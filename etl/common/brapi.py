@@ -1,13 +1,16 @@
 import itertools
 import json
 import re
+from functools import partial
 from itertools import chain
+from typing import Tuple, List
 
 import requests
 import rfc3987
 import urllib.parse
 
-from etl.common.utils import join_url_path, remove_falsey, replace_template, remove_none
+from etl.common.utils import join_url_path, remove_falsey, replace_template, remove_none, is_collection
+from pyhashxx import hashxx
 
 
 class BreedingAPIIterator:
@@ -90,17 +93,21 @@ class BrapiServerError(Exception):
     pass
 
 
-def get_identifier(entity_name, object):
-    """Get identifier from BrAPI object or generate one from hashed string json representation"""
+def get_identifier(entity_name, data):
+    """
+    Get identifier from BrAPI object or generate one from hashed string json representation
+    """
     entity_id = entity_name + 'DbId'
-    object_id = object.get(entity_id)
-    if not object_id:
-        simplified_object = remove_falsey(object, predicate=lambda x: x and not isinstance(x, set))
-        object_id = str(hash(json.dumps(simplified_object, sort_keys=True)))
-        object[entity_id] = object_id
-    return object_id
+    data_id = data.get(entity_id)
+    if not data_id:
+        simplified_object = remove_falsey(data, predicate=lambda x: x and not isinstance(x, set))
+        json_rep = json.dumps(simplified_object, sort_keys=True)
+        data_id = str(hashxx(json_rep.encode()))
+    data[entity_id] = str(data_id)
+    return data_id
 
 
+# TODO: remove
 def get_uri_by_id(source, entity_name, object_id):
     """Generate URI from source ID, entity name and object id"""
     source_id = source['schema:identifier']
@@ -108,6 +115,7 @@ def get_uri_by_id(source, entity_name, object_id):
     return 'urn:{}/{}/{}'.format(source_id, entity_name, encoded_id)
 
 
+# TODO: remove
 def get_uri(source, entity_name, object):
     """Get URI from BrAPI object or generate one"""
     pui_field = entity_name + 'PUI'
@@ -169,19 +177,34 @@ def get_implemented_call(source, call_group, context=None):
     if call_group.get('required'):
         calls_description = "\n".join(map(get_call_id, calls))
         raise NotImplementedError('{} does not implement required call in list:\n{}'
-                                  .format(source['schema:name'], calls_description))
+                                  .format(source['schema:identifier'], calls_description))
     return None
 
 
-def get_entity_links(data, *id_fields):
-    def extract_links(id_field):
-        def extract_link(entry):
-            key, value = entry
-            match = re.search("^(\w+)"+id_field+"(s?)$", key)
+def get_entity_links(data: dict, id_field: str) -> List[Tuple[str, List[str], str]]:
+    """
+    List links in a nested BrAPI object.
+    Can list DbIds or URIs, PUIs using the field pattern "{entity}(DbID|PUI|URI)s?"
+    """
+
+    def get_entry_link(path, entry):
+        key, value = entry
+        new_path = [*path, key]
+
+        if isinstance(key, str):
+            match = re.search(f"^(\\w+){id_field}(s?)$", key)
             if match and value:
                 entity_name, plural = match.groups()
-                return [entity_name, key, plural, value]
-        return remove_none(map(extract_link, data.items()))
-    return list(itertools.chain.from_iterable(map(extract_links, id_fields)))
+                return [(entity_name, new_path, value)]
 
+        return get_links(new_path, value)
 
+    def get_links(path, data):
+        if is_collection(data):
+            if isinstance(data, dict):
+                entries = data.items()
+            else:
+                entries = enumerate(data)
+            return itertools.chain.from_iterable(remove_none(map(partial(get_entry_link, path), entries)))
+
+    return list(get_links([], data))

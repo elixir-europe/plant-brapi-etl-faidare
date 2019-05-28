@@ -1,0 +1,16 @@
+{
+  "links": [
+    {
+      "type": "internal",
+      "entity": "parent1",
+      "entity-alias": "germplasm",
+      "json-path": "."
+    },
+    {
+      "type": "internal",
+      "entity": "parent2",
+      "entity-alias": "germplasm",
+      "json-path": "."
+    }
+  ]
+}
