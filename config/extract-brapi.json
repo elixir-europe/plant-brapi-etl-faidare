@@ -254,6 +254,18 @@
       ]
     },
 
-    "contact": {}
+    "contact": {},
+
+    "token": {
+      "list": {
+        "call": [
+          {
+            "method": "POST",
+            "path": "token",
+            "page-size": 500
+          }
+        ]
+      }
+    }
   }
 }

@@ -204,6 +204,19 @@ def remove_internal_objects(entities):
                 if link_context and last in link_context:
                     del link_context[last]
 
+def extract_token(source, entity):
+    print('extract_token')
+    call = get_implemented_call(source, entity['list'])
+    call['param'] = {'grant_type': 'password','username': 'guest@opensilex.org','password': '084e0343a0486ff05530df6c705c8bb4','client_id': 'string'}
+    print('call à exécuter', call)
+    if call is None:
+        print('call is none')
+        return
+    # print(source['brapi:endpointUrl'])
+    data_list = list(BreedingAPIIterator.fetch_all(source['brapi:endpointUrl'], call))
+    # print('data_list dans list_object : ', data_list)
+    return
+
 
 def extract_source(source, entities, config, output_dir):
     """
@@ -223,7 +236,16 @@ def extract_source(source, entities, config, output_dir):
 
         # Fetch server implemented calls
         if 'implemented-calls' not in source:
+            print('___________________________________________________________________________________')
+            print('remplir implemented-calls pour ', source)
             source['implemented-calls'] = get_implemented_calls(source, logger)
+
+            print(source['implemented-calls'])
+
+        # Authentification for PHIS
+        if source_name == 'PHIS':
+            token_ext = extract_token(source, entities['token'])
+            print(token_ext)
 
         # Fetch entities lists
         fetch_all_list(source, logger, entities, pool)
@@ -283,4 +305,3 @@ def main(config):
     for thread in threads:
         while thread.isAlive():
             thread.join(500)
-
