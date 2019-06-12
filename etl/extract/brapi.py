@@ -54,11 +54,13 @@ def fetch_all_in_store(entities, fetch_function, arguments, pool):
     """
     Run a fetch function with arguments in a pool worker and collect results in the entity MergeStore
     """
+
     results = remove_empty(pool.imap_unordered(fetch_function, arguments, 4))
     if not results:
         return
 
     for (entity_name, data_list) in results:
+
         for data in data_list:
             entities[entity_name]['store'].add(data)
 
@@ -94,10 +96,12 @@ def fetch_all_details(source, logger, entities, pool):
     """
     Fetch all details for each object of each entity
     """
+
     args = list()
     for (entity_name, entity) in entities.items():
         for (_, object) in entity['store'].items():
             object_id = get_identifier(entity_name, object)
+
             args.append((source, logger, entity, object_id))
     fetch_all_in_store(entities, fetch_details, args, pool)
 
@@ -122,6 +126,7 @@ def fetch_all_list(source, logger, entities, pool):
     """
     Fetch entities list for all entities
     """
+
     args = list()
     for (entity_name, entity) in entities.items():
         args.append((source, logger, entity))
@@ -139,6 +144,7 @@ def fetch_all_links(source, logger, entities):
       (ex: link to observation variables via /brapi/v1/studies/{id}/observationvariables)
     """
     for (entity_name, entity) in entities.items():
+
         if 'links' not in entity:
             continue
 
@@ -204,18 +210,21 @@ def remove_internal_objects(entities):
                 if link_context and last in link_context:
                     del link_context[last]
 
-def extract_token(source, entity):
-    print('extract_token')
+def extract_token(source, logger, entity):
+
+    options = (source, logger, entity)
     call = get_implemented_call(source, entity['list'])
     call['param'] = {'grant_type': 'password','username': 'guest@opensilex.org','password': '084e0343a0486ff05530df6c705c8bb4','client_id': 'string'}
-    print('call à exécuter', call)
+
     if call is None:
-        print('call is none')
+
         return
-    # print(source['brapi:endpointUrl'])
-    data_list = list(BreedingAPIIterator.fetch_all(source['brapi:endpointUrl'], call))
-    # print('data_list dans list_object : ', data_list)
-    return
+
+    data_list = BreedingAPIIterator.fetch_all(source['brapi:endpointUrl'], call, logger)
+    data_list = "".join(list(data_list))
+
+
+    return data_list
 
 
 def extract_source(source, entities, config, output_dir):
@@ -236,29 +245,32 @@ def extract_source(source, entities, config, output_dir):
 
         # Fetch server implemented calls
         if 'implemented-calls' not in source:
-            print('___________________________________________________________________________________')
-            print('remplir implemented-calls pour ', source)
             source['implemented-calls'] = get_implemented_calls(source, logger)
-
-            print(source['implemented-calls'])
 
         # Authentification for PHIS
         if source_name == 'PHIS':
-            token_ext = extract_token(source, entities['token'])
-            print(token_ext)
+            token_ext = extract_token(source, logger, entities['token'])
+            access = {'Authorization' : "Bearer " + token_ext}
+            entities['token']['list']['call'][0].update(access)
+            excluded_entities = ["observationUnit", "contact", "token"]
+            for entity in entities:
+                if entity not in excluded_entities:
+                    entities[entity]['list']['call'][0].update(access)
+
+            del entities['token']
 
         # Fetch entities lists
         fetch_all_list(source, logger, entities, pool)
 
-        # Detail entities
+        # # Detail entities
         fetch_all_details(source, logger, entities, pool)
-
-        # Link entities (internal links, internal object links and external object links)
+        #
+        # # Link entities (internal links, internal object links and external object links)
         fetch_all_links(source, logger, entities)
-
-        # Detail entities (for object that might have been discovered by links)
+        #
+        # # Detail entities (for object that might have been discovered by links)
         fetch_all_details(source, logger, entities, pool)
-
+        #
         remove_internal_objects(entities)
 
         logger.info("SUCCEEDED Extracting BrAPI {}.".format(source_name))

@@ -42,32 +42,40 @@ class BreedingAPIIterator:
         return self.__fetch_page()
 
     def __fetch_page(self):
-        print("FETCH PAGE")
+
         url = join_url_path(self.brapi_url, self.call['path'])
-        print('-------------------------------------------------------------------------------------------------------')
-        print('url : ', url)
-        headers = {'Accept': 'application/json, application/ld+json'}
+
+        if 'openSilex' in url and 'Authorization' in self.call: #and ('/token' not in url):
+
+            access_token = self.call['Authorization']
+            headers = {'Accept': 'application/json, application/ld+json', 'Authorization': access_token}
+
+
+        else:
+            headers = {'Accept': 'application/json, application/ld+json'}
+
+
         params = {}
         if self.is_paginated:
             params = {'page': self.page, 'pageSize': self.page_size}
         if 'param' in self.call:
             params.update(self.call['param'])
-            print('params : ', params)
+
         params_json = json.dumps(params)
+
 
         if self.logger:
             self.logger.debug('Fetching {} {} {}'.format(self.call['method'], url.encode('utf-8'), params_json))
         response = None
         if self.call['method'] == 'GET':
-            print("GET")
             response = requests.get(url, params=params, headers=headers, verify=False)
         elif self.call['method'] == 'POST':
-            print("else POST")
+
             headers['Content-type'] = 'application/json'
             response = requests.post(url, data=params_json, headers=headers, verify=False)
-        print("response ----------> ", response)
 
-        if response.status_code != 200:
+
+        if response.status_code != 200 | response.status_code != 201:
             try:
                 message = response.json()['metadata']
             except ValueError:
@@ -75,58 +83,33 @@ class BreedingAPIIterator:
             self.total_pages = -1
             raise BrapiServerError(message)
 
-
-        #print(response.text== response.json())
-        #print(response.text)
-        #print (response.json())
         content = response.json()
-        # content = eval(response.text)
-        # print ('HOLA : ', (content))
-        # print (content['result'])
-        # print (content['userDisplayName'])
-
-        # print (' DADA : ', dict(content))
-
-
-        # print(content)
 
         if self.is_paginated:
-            # self.total_pages = max(content['metadata']['pagination']['totalPages'], 1)
-            self.total_pages = 1
+            if content['metadata']['pagination'] is not None:
+                self.total_pages = max(content['metadata']['pagination']['totalPages'], 1)
+            else:
+                self.total_pages = 1
             self.page += 1
         else:
             self.total_pages = -1
 
         if self.is_paginated:
-            print('pagination, CONTENT : ----------------------------------------------------')
-            print(content)
-            print ('JE SUIS LA')
-            print(dict(content).get('userDisplayName'))
-            content2 = dict(content).copy()
-            content2['result'] = {'userDisplayName' : '', 'access_token': '', 'expires_in': ''}
-            content2['result']['userDisplayName'] = dict(content).get('userDisplayName')
-            content2['result']['access_token'] = dict(content).get('access_token')
-            content2['result']['expires_in'] = dict(content).get('expires_in')
-            # content['result'] = {'userDisplayName' : content['userDisplayName'], 'access_token': content['access_token'], 'expires_in': content['expires_in']}
-            # print(content)
-            # content2 = {'metadata':{}, 'result':{'userDisplayName' : '', 'access_token': '', 'expires_in': ''}}
-            print('CONTENT2')
-            print(content2)
-            # content2['metadata'] = content['metadata']
-            # content2['result']['userDisplayName'] = content['userDisplayName']
-            # content2['result']['access_token'] = content['access_token']
-            # content2['result']['expires_in'] = content['expires_in']
-            # print(content2)
-            return content2['result']
-            # return content2['result']
+            if "/token" in url:
+                content2 = dict(content).copy()
+                content2['result'] = {'userDisplayName' : '', 'access_token': '', 'expires_in': ''}
+                content2['result']['userDisplayName'] = dict(content).get('userDisplayName')
+                content2['result']['access_token'] = dict(content).get('access_token')
+                content2['result']['expires_in'] = dict(content).get('expires_in')
+                return content2['result']['access_token']
+            else:
+                return content['result']['data']
+
         else:
-            return content2['result']
+            return content['result']
 
     @staticmethod
     def fetch_all(brapi_url, call, logger=None):
-        print("FETCH_ALL")
-        print(brapi_url)
-        print(call)
         """Iterate through all BrAPI objects for given call (does pagination automatically if needed)"""
         return chain.from_iterable(BreedingAPIIterator(brapi_url, call, logger))
 
@@ -184,21 +167,20 @@ def get_implemented_calls(source, logger):
     calls_call = {'method': 'GET', 'path': '/calls', 'page-size': 100}
 
     for call in BreedingAPIIterator.fetch_all(source['brapi:endpointUrl'], calls_call, logger):
-        print("call de get_implemented_calls: ", call)
+
         for method in call['methods']:
             implemented_calls.add(method + " " + call["call"].replace('/brapi/v1/', '').replace(' /', ''))
     return implemented_calls
 
 
 def get_implemented_call(source, call_group, context=None):
+
     calls = call_group['call'].copy()
     if not isinstance(calls, list):
         calls = [calls]
 
     for call in calls:
         call_id = get_call_id(call)
-        print('call_id : ', call_id)
-        print(source)
 
         if call_id in source['implemented-calls']:
             call = call.copy()
@@ -212,10 +194,10 @@ def get_implemented_call(source, call_group, context=None):
 
             return call
 
-    if call_group.get('required'):
-        calls_description = "\n".join(map(get_call_id, calls))
-        raise NotImplementedError('{} does not implement required call in list:\n{}'
-                                  .format(source['schema:name'], calls_description))
+    # if call_group.get('required'):
+    #     calls_description = "\n".join(map(get_call_id, calls))
+    #     raise NotImplementedError('{} does not implement required call in list:\n{}'
+    #                               .format(source['schema:name'], calls_description))
     return None
 
 
