@@ -45,15 +45,11 @@ class BreedingAPIIterator:
 
         url = join_url_path(self.brapi_url, self.call['path'])
 
-        if 'openSilex' in url and 'Authorization' in self.call: #and ('/token' not in url):
-
-            access_token = self.call['Authorization']
-            headers = {'Accept': 'application/json, application/ld+json', 'Authorization': access_token}
-
+        if 'openSilex' in url and 'Authorization' in self.call:
+            headers = {'Accept': 'application/json, application/ld+json', 'Authorization': self.call['Authorization']}
 
         else:
             headers = {'Accept': 'application/json, application/ld+json'}
-
 
         params = {}
         if self.is_paginated:
@@ -96,12 +92,8 @@ class BreedingAPIIterator:
 
         if self.is_paginated:
             if "/token" in url:
-                content2 = dict(content).copy()
-                content2['result'] = {'userDisplayName' : '', 'access_token': '', 'expires_in': ''}
-                content2['result']['userDisplayName'] = dict(content).get('userDisplayName')
-                content2['result']['access_token'] = dict(content).get('access_token')
-                content2['result']['expires_in'] = dict(content).get('expires_in')
-                return content2['result']['access_token']
+                # Penser à rajouter niveau "result" quand le endpoint sera à jour
+                return content
             else:
                 return content['result']['data']
 
@@ -165,7 +157,6 @@ def get_call_id(call):
 def get_implemented_calls(source, logger):
     implemented_calls = set()
     calls_call = {'method': 'GET', 'path': '/calls', 'page-size': 100}
-
     for call in BreedingAPIIterator.fetch_all(source['brapi:endpointUrl'], calls_call, logger):
 
         for method in call['methods']:

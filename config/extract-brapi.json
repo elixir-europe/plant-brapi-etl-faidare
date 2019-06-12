@@ -259,11 +259,17 @@
     "token": {
       "list": {
         "call": [
-          {
-            "method": "POST",
-            "path": "token",
-            "page-size": 500
-          }
+            {
+                "method": "POST",
+                "path": "token",
+                "page-size": 500,
+                "param": {
+                    "grant_type": "password",
+                    "username": "guest@opensilex.org",
+                    "password": "084e0343a0486ff05530df6c705c8bb4",
+                    "client_id": "string"
+                }
+            }
         ]
       }
     }

@@ -214,17 +214,13 @@ def extract_token(source, logger, entity):
 
     options = (source, logger, entity)
     call = get_implemented_call(source, entity['list'])
-    call['param'] = {'grant_type': 'password','username': 'guest@opensilex.org','password': '084e0343a0486ff05530df6c705c8bb4','client_id': 'string'}
 
+    print(call)
     if call is None:
-
         return
 
-    data_list = BreedingAPIIterator.fetch_all(source['brapi:endpointUrl'], call, logger)
-    data_list = "".join(list(data_list))
-
-
-    return data_list
+    access_token = list(BreedingAPIIterator(source['brapi:endpointUrl'], call, logger))[0]['access_token']
+    return access_token
 
 
 def extract_source(source, entities, config, output_dir):
@@ -262,15 +258,15 @@ def extract_source(source, entities, config, output_dir):
         # Fetch entities lists
         fetch_all_list(source, logger, entities, pool)
 
-        # # Detail entities
+        # Detail entities
         fetch_all_details(source, logger, entities, pool)
-        #
-        # # Link entities (internal links, internal object links and external object links)
+
+        # Link entities (internal links, internal object links and external object links)
         fetch_all_links(source, logger, entities)
-        #
-        # # Detail entities (for object that might have been discovered by links)
+
+        # Detail entities (for object that might have been discovered by links)
         fetch_all_details(source, logger, entities, pool)
-        #
+        
         remove_internal_objects(entities)
 
         logger.info("SUCCEEDED Extracting BrAPI {}.".format(source_name))
