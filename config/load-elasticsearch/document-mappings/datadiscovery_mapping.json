@@ -10,69 +10,50 @@
     },
     "properties": {
       "@type": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "@id": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "schema:includedInDataCatalog": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "schema:identifier": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "schema:name": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "schema:url": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "schema:description": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "germplasm": {
         "type": "object",
         "properties": {
           "cropName": {
-            "type": "string",
-            "index": "not_analyzed",
+            "type": "keyword",
             "fields": {
               "suggest": {
-                "type": "string",
-                "index": "analyzed",
-                "search_analyzer": "search_suggester",
-                "analyzer": "index_suggester"
+                "type": "text"
               }
             }
           },
           "germplasmList": {
-            "type": "string",
-            "index": "not_analyzed",
+            "type": "keyword",
             "fields": {
               "suggest": {
-                "type": "string",
-                "index": "analyzed",
-                "search_analyzer": "search_suggester",
-                "analyzer": "index_suggester"
+                "type": "text"
               }
             }
           },
           "accession": {
-            "type": "string",
-            "index": "not_analyzed",
+            "type": "keyword",
             "fields": {
               "suggest": {
-                "type": "string",
-                "index": "analyzed",
-                "search_analyzer": "search_suggester",
-                "analyzer": "index_suggester"
+                "type": "text"
               }
             }
           }
@@ -82,8 +63,7 @@
         "type": "object",
         "properties": {
           "observationVariableIds": {
-            "type": "string",
-            "index": "not_analyzed"
+            "type": "keyword"
           }
         }
       }

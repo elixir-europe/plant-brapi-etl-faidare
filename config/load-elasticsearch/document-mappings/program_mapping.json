@@ -3,24 +3,19 @@
     "dynamic": false,
     "properties": {
       "programDbId": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "programName": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "abbreviation": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "objective": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "leadPerson": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       }
     }
   }

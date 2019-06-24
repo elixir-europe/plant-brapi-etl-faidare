@@ -52,9 +52,8 @@ def create_template(es_client, es_config, document_type, base_index_name, logger
 
     template_body = {'template': template_pattern, 'mappings': mapping}
 
-    if 'index-settings' in es_config:
-        template_body['settings'] = es_config['index-settings']
-
+    if 'settings' in es_config:
+        template_body['settings'] = es_config['settings']
     check_error(es_client.indices.put_template(name=template_name, body=template_body))
 
 
@@ -72,6 +71,10 @@ def create_alias(es_client, alias_name, base_index_name, logger):
 
 def get_indices(es_client, base_index_name):
     indices = es_client.cat.indices(base_index_name + '-d*', params={'h': 'index'})
+    print("base_index_name ---> ", base_index_name)
+    print("indices ---> ", indices)
+    print("type(indices) ---> ", type(indices))
+
     index_names = list(map(lambda i: i['index'], indices))
     index_names.sort(reverse=True)
     return index_names

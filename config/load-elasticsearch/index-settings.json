@@ -1,5 +1,5 @@
 {
-  "index-settings": {
+  "settings": {
     "analysis": {
       "analyzer": {
         "search_suggester": {

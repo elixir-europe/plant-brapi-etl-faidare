@@ -3,28 +3,22 @@
     "dynamic": false,
     "properties": {
       "locationDbId": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "locationType": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "locationName": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "abbreviation": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "countryCode": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "countryName": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "latitude": {
         "type": "double"
@@ -36,20 +30,17 @@
         "type": "double"
       },
       "institutionName": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "institutionAddress": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "additionalInfo": {
         "type": "object",
         "properties": {}
       },
       "studyPUIs": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       }
     }
   }

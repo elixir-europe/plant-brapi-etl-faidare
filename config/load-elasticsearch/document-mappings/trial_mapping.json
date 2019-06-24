@@ -3,16 +3,13 @@
     "dynamic": false,
     "properties": {
       "trialDbId": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "trialName": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "trialType": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "startDate": {
         "type": "date",
@@ -28,60 +25,48 @@
       "contacts": {
         "properties": {
           "contactDbId": {
-            "type": "string",
-            "index": "not_analyzed"
+            "type": "keyword"
           },
           "email": {
-            "type": "string",
-            "index": "not_analyzed"
+            "type": "keyword"
           },
           "institutionName": {
-            "type": "string",
-            "index": "not_analyzed"
+            "type": "keyword"
           },
           "name": {
-            "type": "string",
-            "index": "not_analyzed"
+            "type": "keyword"
           },
           "orcid": {
-            "type": "string",
-            "index": "not_analyzed"
+            "type": "keyword"
           },
           "type": {
-            "type": "string",
-            "index": "not_analyzed"
+            "type": "keyword"
           }
         }
       },
       "datasetAuthorship": {
         "properties": {
           "license": {
-            "type": "string",
-            "index": "not_analyzed"
+            "type": "keyword"
           },
           "datasetPUI": {
-            "type": "string",
-            "index": "not_analyzed"
+            "type": "keyword"
           }
         }
       },
       "studies": {
         "properties": {
           "locationName": {
-            "type": "string",
-            "index": "not_analyzed"
+            "type": "keyword"
           },
           "locationDbId": {
-            "type": "string",
-            "index": "not_analyzed"
+            "type": "keyword"
           },
           "studyDbId": {
-            "type": "string",
-            "index": "not_analyzed"
+            "type": "keyword"
           },
           "studyName": {
-            "type": "string",
-            "index": "not_analyzed"
+            "type": "keyword"
           }
         }
       },

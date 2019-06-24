@@ -3,116 +3,90 @@
     "dynamic": false,
     "properties": {
       "germplasmDbId": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "defaultDisplayName": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "accessionNumber": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "germplasmName": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "germplasmPUI": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "pedigree": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "seedSource": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "synonyms": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "commonCropName": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "instituteCode": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "instituteName": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "documentationURL": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "biologicalStatusOfAccessionCode": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "countryOfOriginCode": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "typeOfGermplasmStorageCode": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "taxonIds": {
         "properties": {
           "sourceName": {
-            "type": "string",
-            "index": "not_analyzed"
+            "type": "keyword"
           },
           "taxonId": {
-            "type": "string",
-            "index": "not_analyzed"
+            "type": "keyword"
           }
         }
       },
       "genus": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "species": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "speciesAuthority": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "subtaxa": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "subtaxaAuthority": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       },
       "donors": {
         "properties": {
           "donorAccessionNumber": {
-            "type": "string",
-            "index": "not_analyzed"
+            "type": "keyword"
           },
           "donorInstituteCode": {
-            "type": "string",
-            "index": "not_analyzed"
+            "type": "keyword"
           },
           "donorGermplasmPUI": {
-            "type": "string",
-            "index": "not_analyzed"
+            "type": "keyword"
           }
         }
       },
       "acquisitionDate": {
-        "type": "string",
-        "index": "not_analyzed"
+        "type": "keyword"
       }
     }
   }
