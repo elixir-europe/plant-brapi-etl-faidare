@@ -195,13 +195,13 @@ class TestResolve(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def test_resolve_non_existing_field_in_join_without_none_template(self):
-        template = parse_template({"{join}": ["The species is ", "{.nonExisitngField}"], "{accept_none}": False})
+        template = parse_template({"{join}": ["The species is ", "{.nonExistingField}"], "{accept_none}": False})
         actual = resolve(template, data_0, data_index)
         expected = None
         self.assertEqual(actual, expected)
 
     def test_resolve_non_existing_field_in_string_template(self):
-        template = parse_template("The species is {.nonExisitngField}")
+        template = parse_template("The species is {.nonExistingField}")
         actual = resolve(template, data_0, data_index)
         expected = None
         self.assertEqual(actual, expected)
