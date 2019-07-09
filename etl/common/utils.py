@@ -148,9 +148,20 @@ def flatten_it(iterable):
         else:
             yield element
 
+def flatten_it_static(iterable):
+    for element in iterable:
+        if is_list_like(element):
+            for sub_element in flatten_it(element):
+                return sub_element
+        else:
+            return element
+
 
 def flatten(value):
     return list(flatten_it(value))
+
+def flatten_static(value):
+    return list(flatten_it_static(value))
 
 
 def distinct(values):
@@ -166,8 +177,13 @@ def get_in(values, path):
     """
     Get in nested values (dict/list) through a path
     """
-    if not path or not values:
-        return values
+    if not path:
+        if not values or isinstance(values, filter):
+            return dict()
+        elif values:
+            return values
+        else:
+            return None
     if isinstance(values, dict):
         first, rest = path[0], path[1:]
         if first in values:

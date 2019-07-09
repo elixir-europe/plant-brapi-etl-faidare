@@ -69,10 +69,13 @@ def generate_elasticsearch_documents(restricted_documents, document_configs_by_e
         CHUNK_SIZE
     )
 
+    document_tuple_list = []
     document_count = 0
     for document_tuple in document_tuples:
         document_count += 1
-        yield document_tuple
+        yield dict(document_tuple)
+        document_tuple_list.append(document_tuple)
+    print("document_tuple_list ===========> ", document_tuple_list)
     logger.debug(f"Generated {document_count} documents.")
 
 
