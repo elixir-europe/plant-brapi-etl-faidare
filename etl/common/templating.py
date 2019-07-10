@@ -1,5 +1,5 @@
 import itertools
-
+import json
 import collections
 import lark, lark.lexer
 import re
@@ -79,7 +79,11 @@ def resolve_field_value_template(tree, data, data_index):
         field = field_path[-1]
         entity = re.sub(r"(\w+)URIs?", "\\1", field)
         entity_index = data_index[entity]
-        data = remove_none(list(map(lambda id: entity_index[id], ids)))
+        #data = remove_none(list(map(lambda id: entity_index[id], ids)))
+        dataList=[]
+        for id in ids:
+            dataList.append(json.loads(entity_index[id].decode()))
+        data=remove_none(dataList)
         if getattr(entity_index, 'close', False):
             entity_index.close()
     value_paths = as_list(get_in(tree, ['start', 'value_path']))

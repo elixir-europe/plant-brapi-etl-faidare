@@ -10,12 +10,8 @@
         "{.name}"
       ]
     },
-    "contacts": {
-      "{flatten_distinct}": [
-        "{.contactURIs => .}"
-      ]
-    },
-    "location": "{.locationURI => .}",
+    "location": "{.locationURI => .locationName}",
+    "contact": "{.contactURIs => .email + .name + .orcid }",
     "seasons": {
       "{flatten_distinct}": {
         "{or}": [
