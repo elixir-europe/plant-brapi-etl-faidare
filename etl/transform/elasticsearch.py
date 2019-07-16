@@ -6,6 +6,9 @@ import traceback
 import base64
 from functools import reduce
 from logging import Logger
+import json
+import os
+import glob
 
 import jsonschema
 from jsonschema import SchemaError
@@ -19,6 +22,27 @@ from etl.transform.uri import UriIndex
 
 NB_THREADS = max(int(multiprocessing.cpu_count() * 0.75), 2)
 CHUNK_SIZE = 500
+
+
+def json_to_jsonl(source_json_dir):
+    """
+    Conversion from JSON to JSONL (http://jsonlines.org/) for EVA dump
+    :param source_json_dir: the json files directory
+    """
+    json_files = glob.glob(source_json_dir + "/*.json")
+    for json_file in json_files:
+        # read the file
+        try:
+            with open(json_file) as old_json_file:
+                data = json.load(old_json_file)
+        except json.decoder.JSONDecodeError:
+            print("INFO: The file '{}' is already flattened. Skipping.." .format(json_file))
+            continue
+        # write the new one (overriding the old json)
+        with open(json_file, 'w') as new_json_file:
+            for entry in data:
+                json.dump(entry, new_json_file)
+                new_json_file.write('\n')
 
 
 def is_checkpoint(n):
@@ -75,7 +99,6 @@ def generate_elasticsearch_documents(restricted_documents, document_configs_by_e
         document_count += 1
         yield dict(document_tuple)
         document_tuple_list.append(document_tuple)
-    print("document_tuple_list ===========> ", document_tuple_list)
     logger.debug(f"Generated {document_count} documents.")
 
 
@@ -154,6 +177,14 @@ def dump_in_bulk_files(source_bulk_dir, logger, documents_tuples):
         document_type = document_header['index']['_type']
         if document_type not in json_stores:
             json_stores[document_type] = JSONSplitStore(source_bulk_dir, document_type)
+
+        # Find and Replace "@type": ["Phenotyping Study"] by "@type": ["Genotyping Study"]
+        # in all "datadiscovery-*.json" files (if we have EVA as source)
+        if (document_type == 'datadiscovery'
+                and document['@id'].startswith('urn:EVA')
+                and document['@type'][0] == 'Phenotyping Study'):
+            document['@type'][0] = 'Genotyping Study'
+
         json_store = json_stores[document_type]
 
         document_count += 1
@@ -253,6 +284,10 @@ def transform_source(source, transform_config, source_json_dir, source_bulk_dir,
                 f"No such file or directory: '{source_json_dir}'.\n"
                 'Please make sure you have run the BrAPI extraction before trying to launch the transformation process.'
             )
+
+        if source_name == 'EVA':
+            logger.info("Flattening EVA data...")
+            json_to_jsonl(source_json_dir)
 
         logger.info('Loading data, generating URIs and global identifiers...')
         uri_data_index = uri.transform_source(source, config)

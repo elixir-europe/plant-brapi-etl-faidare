@@ -268,6 +268,9 @@ def main(config):
 
     threads = list()
     for source_name in sources:
+        if source_name == 'EVA':
+            print("# INFO: EVA data can't be extracted, EVA Skipped ..")
+            continue
         source_json_dir = get_folder_path([json_dir, source_name], recreate=True)
         source_json_dir_failed = source_json_dir + '-failed'
         if os.path.exists(source_json_dir_failed):
