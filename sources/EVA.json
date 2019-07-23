@@ -6,5 +6,8 @@
   "@type": "schema:DataCatalog",
   "@id": "http://eva.test.imaginary.endpoint",
   "schema:identifier": "EVA",
-  "schema:name": "EVA"
+  "schema:name": "EVA",
+  "brapi:staticUrl": "ftp",
+  "brapi:static-file-repository-url": "ftp://ftp.ensemblgenomes.org/pub/misc_data/plant_index/",
+  "brapi:studyType": "Genotyping"
 }
