@@ -24,7 +24,9 @@
       "{join}": [
         "\"",
         { "{or}": ["{.studyName}", "{.name}"] },
-        "\" is a phenotyping study",
+        "\" is a ",
+        { "{or}": ["{.studyTypeName}", "phenotyping"] },
+        " study",
         { "{or}": [" conducted from {.startDate} to {.endDate}", " running since {.startDate}"] },
         { "{join}": [" (seasons: ", {"{join}": "{.seasons}", "{separator}": ", "}, ")"], "{accept_none}": false },
         { "{or}": [
