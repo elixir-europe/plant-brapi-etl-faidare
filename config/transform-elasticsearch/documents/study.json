@@ -10,8 +10,24 @@
         "{.name}"
       ]
     },
-    "location": "{.locationURI => .locationName}",
-    "contact": "{.contactURIs => .email + .name + .orcid }",
+    "location": {
+        "locationName": {
+          "{join}": "{.locationURI => .locationName}"
+        }
+    },
+    "contacts": {
+      "{list}": [{
+        "email": {
+          "{join}": "{.contactURIs => .email}"
+        },
+        "name": {
+          "{join}": "{.contactURIs => .name}"
+        },
+        "orcid": {
+          "{join}": "{.contactURIs => .orcid}"
+        }
+      }]
+    },
     "seasons": {
       "{flatten_distinct}": {
         "{or}": [
