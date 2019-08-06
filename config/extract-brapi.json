@@ -265,8 +265,8 @@
                 "page-size": 500,
                 "param": {
                     "grant_type": "password",
-                    "username": "guest@opensilex.org",
-                    "password": "084e0343a0486ff05530df6c705c8bb4",
+                  "username": "admin@opensilex.org",
+                  "password": "21232f297a57a5a743894a0e4a801fc3",
                     "client_id": "string"
                 }
             }

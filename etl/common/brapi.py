@@ -82,6 +82,7 @@ class BreedingAPIIterator:
         content = response.json()
 
         if self.is_paginated:
+            # For call token only, because 'totalPages' field is missing in 'pagination'
             if content['metadata']['pagination'] is not None:
                 self.total_pages = max(content['metadata']['pagination']['totalPages'], 1)
             else:
@@ -92,7 +93,7 @@ class BreedingAPIIterator:
 
         if self.is_paginated:
             if "/token" in url:
-                # Penser à rajouter niveau "result" quand le endpoint sera à jour
+                # Call token does not contain 'result' field in BrAPI 1.3
                 return content
             else:
                 return content['result']['data']
@@ -158,7 +159,6 @@ def get_implemented_calls(source, logger):
     implemented_calls = set()
     calls_call = {'method': 'GET', 'path': '/calls', 'page-size': 100}
     for call in BreedingAPIIterator.fetch_all(source['brapi:endpointUrl'], calls_call, logger):
-
         for method in call['methods']:
             implemented_calls.add(method + " " + call["call"].replace('/brapi/v1/', '').replace(' /', ''))
     return implemented_calls

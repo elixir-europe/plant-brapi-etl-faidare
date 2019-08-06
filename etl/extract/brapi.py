@@ -211,11 +211,11 @@ def remove_internal_objects(entities):
                     del link_context[last]
 
 def extract_token(source, logger, entity):
-
-    options = (source, logger, entity)
+    """
+    Fetch token using credentials from extract-brapi.json
+    """
     call = get_implemented_call(source, entity['list'])
 
-    print(call)
     if call is None:
         return
 
