@@ -202,7 +202,9 @@ def resolve(parsed_template, data, data_index):
         new_dict = dict()
         for (key, value) in parsed_template.items():
             new_value = resolve(value, data, data_index)
-            if new_value:
+            # added an exception for 'schema:includedInDataCatalog' to keep it as a url
+            # This field is linked/should be identical to 'uri' field in the application configuration file
+            if new_value and key != "schema:includedInDataCatalog":
                 new_dict[key] = new_value
         return new_dict
     else:
