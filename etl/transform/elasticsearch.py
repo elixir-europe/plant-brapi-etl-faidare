@@ -178,13 +178,13 @@ def dump_in_bulk_files(source_bulk_dir, logger, documents_tuples):
         if document_type not in json_stores:
             json_stores[document_type] = JSONSplitStore(source_bulk_dir, document_type)
 
-        # TODO: to remove since we edited the `documents/datadiscovery_study.json` file
+        # TODO: to keep for the moment since there are some issues with the 'studyTypeName' field
         # Find and Replace "@type": ["Phenotyping Study"] by "@type": ["Genotyping Study"]
         # in all "datadiscovery-*.json" files (if we have EVA as source)
-        # if (document_type == 'datadiscovery'
-        #         and document['@id'].startswith('urn:EVA')
-        #         and document['@type'][0] == 'Phenotyping Study'):
-        #     document['@type'][0] = 'Genotyping Study'
+        if (document_type == 'datadiscovery'
+                and document['@id'].startswith('urn:EVA')
+                and document['@type'][0] == 'Phenotyping Study'):
+            document['@type'][0] = 'Genotyping Study'
 
         json_store = json_stores[document_type]
 

@@ -202,7 +202,7 @@ def resolve(parsed_template, data, data_index):
         new_dict = dict()
         for (key, value) in parsed_template.items():
             new_value = resolve(value, data, data_index)
-            if new_value:
+            if new_value and key != "schema:includedInDataCatalog":
                 new_dict[key] = new_value
         return new_dict
     else:

@@ -3,15 +3,9 @@
   "source-entity": "study",
 
   "document-transform": {
-    "@type": {
-      "{list}": [{
-        "{or}": [
-          "{.studyTypeName} Study",
-          "Phenotyping Study"
-        ]
-      }]
-
-    },
+    "@type": [
+      "Phenotyping Study"
+    ],
     "@id": "{.studyPUI}",
 
     "schema:includedInDataCatalog": "{.source}",
