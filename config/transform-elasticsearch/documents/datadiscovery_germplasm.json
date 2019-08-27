@@ -7,7 +7,7 @@
     "@id": "{.germplasmPUI}",
 
     "schema:includedInDataCatalog": "{.source}",
-    "schema:identifier": "{.germplasmURI}",
+    "schema:identifier": "{.germplasmDbId}",
     "schema:name": {
       "{or}": [
         "{.defaultDisplayName}",
