@@ -4,7 +4,7 @@
     "brapi": "https://brapi.org/rdf/"
   },
   "@type": "schema:DataCatalog",
-  "@id": "http://eva.test.imaginary.endpoint",
+  "@id": "https://www.ebi.ac.uk/eva",
   "schema:identifier": "EVA",
   "schema:name": "EVA",
   "brapi:static-file-repository-url": "ftp://ftp.ensemblgenomes.org/pub/misc_data/plant_index/",
