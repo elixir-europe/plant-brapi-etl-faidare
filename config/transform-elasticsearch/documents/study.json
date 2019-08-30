@@ -10,11 +10,6 @@
         "{.name}"
       ]
     },
-    "location": {
-        "locationName": {
-          "{join}": "{.locationURI => .locationName}"
-        }
-    },
     "contacts": {
       "{list}": [{
         "email": {
