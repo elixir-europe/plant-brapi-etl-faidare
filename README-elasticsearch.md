@@ -120,6 +120,7 @@ $ python3 main.py transform elasticsearch sources/VIB.json
 $ python3 main.py trans es --data-dir /tmp/data sources/VIB.json sources/NIB.json
 ```
 
+**Transformation templating documentation :** see test_templating.py
 
 ### III.3. Load/index into Elasticsearch
 

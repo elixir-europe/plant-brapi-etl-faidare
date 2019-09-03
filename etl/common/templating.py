@@ -1,5 +1,5 @@
 import itertools
-
+import json
 import collections
 import lark, lark.lexer
 import re
@@ -15,12 +15,12 @@ WS: /[ ]/+
 LCASE_LETTER: "a".."z"
 UCASE_LETTER: "A".."Z"
 
-FIELD: (UCASE_LETTER | LCASE_LETTER)+ 
+FIELD: (UCASE_LETTER | LCASE_LETTER)+
 field_path: ("." FIELD?)+
 
 object_path: field_path WS* "=>" WS*
 
-value_path: field_path (WS* "+" WS* field_path)* 
+value_path: field_path (WS* "+" WS* field_path)*
 
 start: "{" WS* object_path* WS* value_path WS* "}"
 ''')
@@ -79,7 +79,11 @@ def resolve_field_value_template(tree, data, data_index):
         field = field_path[-1]
         entity = re.sub(r"(\w+)URIs?", "\\1", field)
         entity_index = data_index[entity]
-        data = remove_none(list(map(lambda id: entity_index[id], ids)))
+        #data = remove_none(list(map(lambda id: entity_index[id], ids)))
+        dataList=[]
+        for id in ids:
+            dataList.append(json.loads(entity_index[id].decode()))
+        data=remove_none(dataList)
         if getattr(entity_index, 'close', False):
             entity_index.close()
     value_paths = as_list(get_in(tree, ['start', 'value_path']))
@@ -163,10 +167,14 @@ def resolve_map_template(template, data, data_index):
 
 
 def resolve_merge_template(template, data, data_index):
+
     merge_branch = template.get('{merge}')
     with_branch = template.get('{with}')
+
     resolved_merge = resolve(merge_branch, data, data_index)
+
     resolved_with = resolve(with_branch, data, data_index)
+
     if not isinstance(resolved_merge, dict) or not isinstance(resolved_with, dict):
         raise Exception("Merge can't work on anything but dictionaries.")
     return merge_dict(resolved_merge, resolved_with)
@@ -185,16 +193,18 @@ def resolve(parsed_template, data, data_index):
             '{list}': resolve_list_template,
             '{lark}': resolve_field_value_template,
             '{map}': resolve_map_template,
-            '{merge}': resolve_merge_template,
+            '{merge}': resolve_merge_template
         }
         for key, evaluator in evaluable_templates.items():
             if key in parsed_template:
                 return evaluator(parsed_template, data, data_index)
-        
+
         new_dict = dict()
         for (key, value) in parsed_template.items():
             new_value = resolve(value, data, data_index)
-            if new_value:
+            # added an exception for 'schema:includedInDataCatalog' to keep it as a url
+            # This field is linked/should be identical to 'uri' field in the application configuration file
+            if new_value and key != "schema:includedInDataCatalog":
                 new_dict[key] = new_value
         return new_dict
     else:

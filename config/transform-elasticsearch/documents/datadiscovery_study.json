@@ -63,7 +63,7 @@
     "trait": {
       "observationVariableIds": {
         "{flatten_distinct}": [
-          "{.observationVariablePUIs}"
+          "{.observationVariableDbIds}"
         ]
       }
     }
