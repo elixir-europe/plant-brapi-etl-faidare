@@ -2,19 +2,20 @@ import unittest
 
 from etl.common.templating import resolve, parse_template
 
-data_0 = {"refURIs": [1, 2, 3, '4', 5], "foo": [1, 2, 3], "genus": "Zea", "species": "mays", "falseField": False}
+data_0 = {"refURIs": [1, 2, 3, '4', 5], "foo": [1, 2, 3], "genus": "Zea", "species": "mays", "falseField": False, "studyTypeName": "gnomic"}
 data_1 = {"a": "a", "genus": "Zea", "species": "Zea mays"}
 data_2 = {"a": "b", "g": {"genus": "Populus"}}
 data_3 = {"a": "b", "g": {"genus": "Triticum", "species": "Triticum aestivum"}}
 data_4 = {"g": {"genus": "Triticum", "species": "aestivum"}}
 data_5 = {"links": {"objURIs": [1, 2, 3, '4', 'g6']}}
 data_6 = {"g": {"genus": "Zea", "species": "mays", "subtaxa": "subsp. mexicana"}}
+data_7 = {"refURIs": [1, 2, 3, '4', 5], "studyTypeName": "geno", "genus": "Zea", "species": "mays", "falseField": False}
 data_index = {
     'ref': {
         1: data_1, 2: data_2, 3: data_3, '4': data_4, 5: data_5
     },
     'obj': {
-        1: data_1, 2: data_2, 3: data_3, '4': data_4, 'g6': data_6
+        1: data_1, 2: data_2, 3: data_3, '4': data_4, 'g6': data_6, 'g7': data_7
     },
 }
 
@@ -156,6 +157,19 @@ class TestResolve(unittest.TestCase):
         template = parse_template({"{if}": "{.falseField}", "{then}": "bar", "{else}": "else"})
         actual = resolve(template, data_0, data_index)
         expected = "else"
+        self.assertEqual(actual, expected)
+
+    def test_resolve_replace_with(self):
+        template = parse_template({
+            "{replace}": {
+                "possible_terms": ["geno", "genotyping study", "Gnomic", "genotyping"]
+            },
+            "{with}": {
+                "replaced_by": "Genotyping Study"
+            }
+        })
+        actual = resolve(template, data_0, data_index)
+        expected = "Genotyping Study"
         self.assertEqual(actual, expected)
 
     def test_resolve_dict1(self):

@@ -3,9 +3,23 @@
   "source-entity": "study",
 
   "document-transform": {
-    "@type": [
-      "Phenotyping Study"
-    ],
+    "@type": {
+      "{list}": [
+        {
+          "{or}": [
+            {
+              "{replace}":{
+                "possible_terms": ["geno", "genotyping", "gnomic"]
+              },
+              "{with}": {
+                "replaced_by": "Genotyping Study"
+              }
+            },
+            "Phenotyping Study"
+          ]
+        }
+      ]
+    },
     "@id": "{.studyPUI}",
 
     "schema:includedInDataCatalog": "{.source}",

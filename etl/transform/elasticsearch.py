@@ -165,7 +165,7 @@ def generate_bulk_headers(document_tuples):
         yield bulk_header, document
 
 
-def dump_in_bulk_files(source_bulk_dir, logger, documents_tuples, source_study_type):
+def dump_in_bulk_files(source_bulk_dir, logger, documents_tuples):
     """
     Consumes an iterable of header and document tuples and dump into the JSONSplitStore
     """
@@ -177,11 +177,6 @@ def dump_in_bulk_files(source_bulk_dir, logger, documents_tuples, source_study_t
         document_type = document_header['index']['_type']
         if document_type not in json_stores:
             json_stores[document_type] = JSONSplitStore(source_bulk_dir, document_type)
-
-        # Find and Replace "@type": ["Phenotyping Study"] by "@type": [source_study_type]
-        # in all "datadiscovery-*.json" files (if source_study_type isn't None)
-        if document_type == 'datadiscovery' and source_study_type is not None:
-            document['@type'][0] = 'Genotyping Study'
 
         json_store = json_stores[document_type]
 
@@ -257,11 +252,6 @@ def transform_source(source, transform_config, source_json_dir, source_bulk_dir,
     validation_schemas = transform_config['validation-schemas']
     source_name = source['schema:identifier']
 
-    try:
-        source_study_type = source['brapi:studyType']
-    except KeyError:
-        source_study_type = None
-
     action = 'transform-es-' + source_name
     log_file = get_file_path([config['log-dir'], action], ext='.log', recreate=True)
     logger = create_logger(action, log_file, config['options']['verbose'])
@@ -308,7 +298,7 @@ def transform_source(source, transform_config, source_json_dir, source_bulk_dir,
         documents_with_headers = generate_bulk_headers(validated_documents)
 
         # Write the documents in bulk files
-        dump_in_bulk_files(source_bulk_dir, logger, documents_with_headers, source_study_type)
+        dump_in_bulk_files(source_bulk_dir, logger, documents_with_headers)
         # shutil.rmtree(tmp_index_dir, ignore_errors=True)
 
         logger.info(f"SUCCEEDED Transforming BrAPI {source_name}.")
