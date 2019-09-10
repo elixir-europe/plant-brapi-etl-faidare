@@ -97,7 +97,6 @@ def generate_elasticsearch_documents(restricted_documents, document_configs_by_e
     for document_tuple in document_tuples:
         document_count += 1
         yield dict(document_tuple)
-        
     logger.debug(f"Generated {document_count} documents.")
 
 
