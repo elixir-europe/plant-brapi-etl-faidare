@@ -219,6 +219,7 @@ def extract_token(source, logger, entity):
     if call is None:
         return
 
+    call['param'] = source['param'];
     access_token = list(BreedingAPIIterator(source['brapi:endpointUrl'], call, logger))[0]['access_token']
     return access_token
 
