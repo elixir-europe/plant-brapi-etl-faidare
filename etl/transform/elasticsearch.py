@@ -1,5 +1,4 @@
 import itertools
-import json
 import random
 import threading
 import traceback
@@ -9,6 +8,8 @@ from logging import Logger
 import json
 import os
 import glob
+import re
+from xml.sax import saxutils as su
 
 import jsonschema
 from jsonschema import SchemaError
@@ -24,6 +25,21 @@ NB_THREADS = max(int(multiprocessing.cpu_count() * 0.75), 2)
 CHUNK_SIZE = 500
 
 
+def remove_html_tags(text):
+    """
+    Remove html tags from a string
+    """
+    extra_char = {
+        '&apos;': '',
+        '&quot;': '',
+        '&amp;': ''
+    }
+    # unescap HTML tags
+    text = su.unescape(text, extra_char)
+    clean = re.compile('<.*?>')
+    return re.sub(clean, '', text)
+
+
 def json_to_jsonl(source_json_dir):
     """
     Conversion from JSON to JSONL (http://jsonlines.org/) for EVA dump
@@ -36,11 +52,30 @@ def json_to_jsonl(source_json_dir):
             with open(json_file) as old_json_file:
                 data = json.load(old_json_file)
         except json.decoder.JSONDecodeError:
-            print("INFO: The file '{}' is already flattened. Skipping.." .format(json_file))
+            print("INFO: The file '{}' is already flattened. Removing HTML tags if any .." .format(json_file))
             continue
         # write the new one (overriding the old json)
         with open(json_file, 'w') as new_json_file:
             for entry in data:
+                json.dump(entry, new_json_file)
+                new_json_file.write('\n')
+
+
+def rm_tags(source_json_dir):
+    json_files = glob.glob(source_json_dir + "/*.json")
+    for json_file in json_files:
+        new_json_list = []
+        with open(json_file) as old_json_file:
+            json_list = list(old_json_file)
+        for json_str in json_list:
+            line = json.loads(json_str)
+            if "studyDescription" in line:
+                # remove escaped html
+                line["studyDescription"] = remove_html_tags(line["studyDescription"])
+            new_json_list.append(line)
+
+        with open(json_file, 'w') as new_json_file:
+            for entry in new_json_list:
                 json.dump(entry, new_json_file)
                 new_json_file.write('\n')
 
@@ -280,6 +315,7 @@ def transform_source(source, transform_config, source_json_dir, source_bulk_dir,
         if source_name == 'EVA':
             logger.info("Flattening EVA data...")
             json_to_jsonl(source_json_dir)
+            rm_tags(source_json_dir)
 
         logger.info('Loading data, generating URIs and global identifiers...')
         uri_data_index = uri.transform_source(source, config)
