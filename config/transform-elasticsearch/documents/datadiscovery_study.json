@@ -9,13 +9,28 @@
           "{or}": [
             {
               "{replace}":{
-                "possible_terms": ["geno", "genotyping", "gnomic"]
+                "possible_terms": [
+                  "Genotyping Study", "geno",
+                  "genotyping", "gnomic"]
               },
               "{with}": {
                 "replaced_by": "Genotyping Study"
               }
             },
-            "Phenotyping Study"
+            {
+              "{replace}":{
+                "possible_terms": [
+                  "Phenotypes", "Phenotyping Study",
+                  "Phenotyping", "Field Experiement",
+                  "Greenhouse (29\\u00baC/20\\u00baC)",
+                  "Green house", "Growth chamber"
+                ]
+              },
+              "{with}": {
+                "replaced_by": "Phenotyping Study"
+              }
+            },
+            "Uncategorized Study"
           ]
         }
       ]
