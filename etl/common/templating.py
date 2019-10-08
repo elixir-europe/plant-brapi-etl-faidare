@@ -79,11 +79,14 @@ def resolve_field_value_template(tree, data, data_index):
         field = field_path[-1]
         entity = re.sub(r"(\w+)URIs?", "\\1", field)
         entity_index = data_index[entity]
-        #data = remove_none(list(map(lambda id: entity_index[id], ids)))
-        dataList=[]
-        for id in ids:
-            dataList.append(json.loads(entity_index[id].decode()))
-        data=remove_none(dataList)
+        try:
+            dataList = []
+            for id in ids:
+                dataList.append(json.loads(entity_index[id].decode()))
+            data = remove_none(dataList)
+        except AttributeError:
+            data = remove_none(list(map(lambda id: entity_index[id], ids)))
+
         if getattr(entity_index, 'close', False):
             entity_index.close()
     value_paths = as_list(get_in(tree, ['start', 'value_path']))
@@ -116,6 +119,24 @@ def resolve_if_template(template, data, data_index):
         return resolve(then_branch, data, data_index)
     elif else_branch:
         return resolve(else_branch, data, data_index)
+
+
+def resolve_replace_with_template(template, data, data_index):
+    parse_study_type_value = parse_template("{.studyTypeName}")
+    try:
+        study_type_value = resolve(parse_study_type_value, data, data_index).lower()
+    except AttributeError:
+        # if 'studyTypeName' field doesn't exist (eg. VIB)
+        study_type_value = None
+
+    all_possible_terms = [x.lower() for x in template.get('{replace}')["possible_terms"]]
+    replaced_by = template.get('{with}')["replaced_by"]
+
+    if study_type_value is not None and study_type_value in all_possible_terms:
+        study_type_value = replaced_by
+        return resolve(study_type_value, data, data_index)
+    else:
+        return
 
 
 def resolve_join_template(template, data, data_index):
@@ -167,7 +188,6 @@ def resolve_map_template(template, data, data_index):
 
 
 def resolve_merge_template(template, data, data_index):
-
     merge_branch = template.get('{merge}')
     with_branch = template.get('{with}')
 
@@ -193,7 +213,8 @@ def resolve(parsed_template, data, data_index):
             '{list}': resolve_list_template,
             '{lark}': resolve_field_value_template,
             '{map}': resolve_map_template,
-            '{merge}': resolve_merge_template
+            '{merge}': resolve_merge_template,
+            '{replace}': resolve_replace_with_template
         }
         for key, evaluator in evaluable_templates.items():
             if key in parsed_template:

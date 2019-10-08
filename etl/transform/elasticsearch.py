@@ -1,11 +1,15 @@
 import itertools
-import json
 import random
 import threading
 import traceback
 import base64
 from functools import reduce
 from logging import Logger
+import json
+import os
+import glob
+import re
+from xml.sax import saxutils as su
 
 import jsonschema
 from jsonschema import SchemaError
@@ -19,6 +23,61 @@ from etl.transform.uri import UriIndex
 
 NB_THREADS = max(int(multiprocessing.cpu_count() * 0.75), 2)
 CHUNK_SIZE = 500
+
+
+def remove_html_tags(text):
+    """
+    Remove html tags from a string
+    """
+    extra_char = {
+        '&apos;': '',
+        '&quot;': '',
+        '&amp;': ''
+    }
+    # unescap HTML tags
+    text = su.unescape(text, extra_char)
+    clean = re.compile('<.*?>')
+    return re.sub(clean, '', text)
+
+
+def json_to_jsonl(source_json_dir):
+    """
+    Conversion from JSON to JSONL (http://jsonlines.org/) for EVA dump
+    :param source_json_dir: the json files directory
+    """
+    json_files = glob.glob(source_json_dir + "/*.json")
+    for json_file in json_files:
+        # read the file
+        try:
+            with open(json_file) as old_json_file:
+                data = json.load(old_json_file)
+        except json.decoder.JSONDecodeError:
+            print("INFO: The file '{}' is already flattened. Removing HTML tags if any .." .format(json_file))
+            continue
+        # write the new one (overriding the old json)
+        with open(json_file, 'w') as new_json_file:
+            for entry in data:
+                json.dump(entry, new_json_file)
+                new_json_file.write('\n')
+
+
+def rm_tags(source_json_dir):
+    json_files = glob.glob(source_json_dir + "/*.json")
+    for json_file in json_files:
+        new_json_list = []
+        with open(json_file) as old_json_file:
+            json_list = list(old_json_file)
+        for json_str in json_list:
+            line = json.loads(json_str)
+            if "studyDescription" in line:
+                # remove escaped html
+                line["studyDescription"] = remove_html_tags(line["studyDescription"])
+            new_json_list.append(line)
+
+        with open(json_file, 'w') as new_json_file:
+            for entry in new_json_list:
+                json.dump(entry, new_json_file)
+                new_json_file.write('\n')
 
 
 def is_checkpoint(n):
@@ -151,6 +210,7 @@ def dump_in_bulk_files(source_bulk_dir, logger, documents_tuples):
         document_type = document_header['index']['_type']
         if document_type not in json_stores:
             json_stores[document_type] = JSONSplitStore(source_bulk_dir, document_type)
+
         json_store = json_stores[document_type]
 
         document_count += 1
@@ -224,6 +284,7 @@ def transform_source(source, transform_config, source_json_dir, source_bulk_dir,
         shutil.rmtree(failed_dir, ignore_errors=True)
     validation_schemas = transform_config['validation-schemas']
     source_name = source['schema:identifier']
+
     action = 'transform-es-' + source_name
     log_file = get_file_path([config['log-dir'], action], ext='.log', recreate=True)
     logger = create_logger(action, log_file, config['options']['verbose'])
@@ -250,6 +311,11 @@ def transform_source(source, transform_config, source_json_dir, source_bulk_dir,
                 f"No such file or directory: '{source_json_dir}'.\n"
                 'Please make sure you have run the BrAPI extraction before trying to launch the transformation process.'
             )
+
+        if source_name == 'EVA':
+            logger.info("Flattening EVA data...")
+            json_to_jsonl(source_json_dir)
+            rm_tags(source_json_dir)
 
         logger.info('Loading data, generating URIs and global identifiers...')
         uri_data_index = uri.transform_source(source, config)

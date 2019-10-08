@@ -56,7 +56,13 @@ def read_json_lines(json_dir: str, out_queue: Queue):
     Read JSON in source dir for each entity and output into queue
     """
     # List JSON files for each entities
-    file_names = filter(lambda f: f.endswith(".json"), os.listdir(json_dir))
+    try:
+        file_names = filter(lambda f: f.endswith(".json"), os.listdir(json_dir))
+    except FileNotFoundError:
+        raise FileNotFoundError(
+            f"No such file or directory: '{json_dir}'.\n"
+            'Please make sure you have run the BrAPI extraction before trying to launch the transformation process.'
+        )
     file_readers = {}
     for file_name in file_names:
         # Use file base name a the entity name
