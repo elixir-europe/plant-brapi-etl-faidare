@@ -9,9 +9,7 @@
           "{or}": [
             {
               "{replace}":{
-                "possible_terms": [
-                  "Genotyping Study",
-                  "genotyping"]
+                "possible_terms": [ "Genotyping" ]
               },
               "{with}": {
                 "replaced_by": "Genotyping Study"
@@ -20,17 +18,16 @@
             {
               "{replace}":{
                 "possible_terms": [
-                  "Phenotypes", "Phenotyping Study",
-                  "Phenotyping", "Field Experiement",
-                  "Greenhouse (29\u00baC/20\u00baC)",
-                  "Green house", "Growth chamber"
+                  "Phenotypes", "Phenotyping", "Field Experiement",
+                  "Greenhouse (29\u00baC/20\u00baC)", "Green house",
+                  "Growth chamber"
                 ]
               },
               "{with}": {
                 "replaced_by": "Phenotyping Study"
               }
             },
-            "Uncategorized Study"
+            "Study"
           ]
         }
       ]
@@ -48,7 +45,7 @@
         "\"",
         { "{or}": ["{.studyName}", "{.name}"] },
         "\" is a ",
-        { "{or}": ["{.studyTypeName}", "phenotyping"] },
+        { "{or}": ["{.studyTypeName}", "{.studyType}", "study"] },
         " study",
         { "{or}": [" conducted from {.startDate} to {.endDate}", " running since {.startDate}"] },
         { "{join}": [" (seasons: ", {"{join}": "{.seasons}", "{separator}": ", "}, ")"], "{accept_none}": false },
