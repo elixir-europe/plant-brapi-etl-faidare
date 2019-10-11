@@ -122,15 +122,13 @@ def resolve_if_template(template, data, data_index):
 
 
 def resolve_replace_with_template(template, data, data_index):
-    parse_study_type_value = parse_template("{.studyTypeName}")
-    try:
-        study_type_value = resolve(parse_study_type_value, data, data_index)
-    except AttributeError:
-        # if we have 'studyType' instead of 'studyTypeName' (e.g. VIB)
+    if "studyTypeName" in data:
+        parse_study_type_value = parse_template("{.studyTypeName}")
+    # if we have 'studyType' instead of 'studyTypeName' (e.g. VIB)
+    elif "studyType" in data:
         parse_study_type_value = parse_template("{.studyType}")
-        study_type_value = resolve(parse_study_type_value, data, data_index)
-    #study_type_value = study_type_value.lower()
 
+    study_type_value = resolve(parse_study_type_value, data, data_index).lower()
     all_possible_terms = [x.lower() for x in template.get('{replace}')["possible_terms"]]
     replaced_by = template.get('{with}')["replaced_by"]
 
