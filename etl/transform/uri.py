@@ -286,10 +286,14 @@ def transform_uri_link(source: dict, entities: dict, ignore_links,
             try:
                 return uri_index[link_id].decode()
             except KeyError as e:
-                raise MissingDataLink(
-                    f"Could not find '{alias or linked_entity}' with id '{link_id}' "
-                    f"found in '{link_path}' of object:\n{data}"
-                ) from e
+                try:
+                    # upper() to solve case sensitive issues (eg. "ea00371") in WUR data
+                    return uri_index[link_id.upper()].decode()
+                except KeyError as e:
+                    raise MissingDataLink(
+                        f"Could not find '{alias or linked_entity}' with id '{link_id}' "
+                        f"found in '{link_path}' of object:\n{data}"
+                    ) from e
         if plural:
             link_uri = list(map(get_in_index, link_value))
         else:

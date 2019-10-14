@@ -62,6 +62,8 @@ def fetch_all_in_store(entities, fetch_function, arguments, pool):
 
     for (entity_name, data_list) in results:
         for data in data_list:
+            if entities['study']['store'].get('source_id') == 'WUR' and entity_name == 'study':
+                data['startDate'] = data['startDate'] + "-01-01"
             entities[entity_name]['store'].add(data)
 
 
