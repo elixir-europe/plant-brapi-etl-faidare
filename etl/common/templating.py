@@ -122,6 +122,8 @@ def resolve_if_template(template, data, data_index):
 
 
 def resolve_replace_with_template(template, data, data_index):
+    # In case 'studyTypeName' and 'studyTypeName' field doesn't exist
+    parse_study_type_value = ""
     if "studyTypeName" in data:
         parse_study_type_value = parse_template("{.studyTypeName}")
     # if we have 'studyType' instead of 'studyTypeName' (e.g. VIB)
