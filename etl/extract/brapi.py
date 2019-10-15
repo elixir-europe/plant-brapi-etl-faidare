@@ -56,13 +56,14 @@ def fetch_all_in_store(entities, fetch_function, arguments, pool):
     """
     Run a fetch function with arguments in a pool worker and collect results in the entity MergeStore
     """
+    source_name = arguments[0][0]['schema:identifier']
     results = remove_empty(pool.imap_unordered(fetch_function, arguments, 4))
     if not results:
         return
 
     for (entity_name, data_list) in results:
         for data in data_list:
-            if entities['study']['store'].get('source_id') == 'WUR' and entity_name == 'study':
+            if source_name == 'WUR' and entity_name == 'study':
                 data['startDate'] = data['startDate'] + "-01-01"
             entities[entity_name]['store'].add(data)
 
