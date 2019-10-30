@@ -5,7 +5,7 @@
 Software requirements:
 
 - Same requirements as in [README.md](README.md)
-- Elasticsearch 2.3.x
+- Elasticsearch 2+
 
 For the BrAPI server requirements, please consult [the Elixir EXCELERATE BrAPI recommendations](https://wiki.brapi.org/index.php/Elixir_Excelerate_phenotyping_data_discovery).
 
@@ -122,7 +122,7 @@ $ python3 main.py trans es --data-dir /tmp/data sources/VIB.json sources/NIB.jso
 
 **Transformation templating documentation :** see test_templating.py
 
-### III.3. Load/index into Elasticsearch
+### III.3. Load/index into Elasticsearch (Deprecated!)
 
 To load/index Elasticsearch documents, simply run:
 
