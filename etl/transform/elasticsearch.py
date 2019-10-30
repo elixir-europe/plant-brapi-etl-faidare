@@ -1,21 +1,15 @@
-import itertools
-import random
 import threading
 import traceback
-import base64
-from functools import reduce
 from logging import Logger
 import json
-import os
 import glob
-import re
 from xml.sax import saxutils as su
 
 import jsonschema
 from jsonschema import SchemaError
 
-from etl.common.brapi import get_identifier, get_uri, get_entity_links, get_uri_by_id
-from etl.common.store import JSONSplitStore, IndexStore, list_entity_files, DataIdIndex, load_entity_lines
+from etl.common.brapi import get_entity_links
+from etl.common.store import JSONSplitStore, list_entity_files
 from etl.common.templating import resolve, parse_template
 from etl.common.utils import *
 from etl.transform import uri
@@ -94,60 +88,10 @@ def generate_elasticsearch_document(options):
 
 
 def generate_elasticsearch_documents(restricted_documents, document_configs_by_entity,
-                                     uri_data_index: UriIndex, pool: Pool, logger: Logger):
-    """
-    Produces and iterable of tuples (of document type and document) generated using the
-    document templates in configuration.
-    """
-    logger.debug("Preparing documents generation...")
-
-    # Prepare list of args for the 'generate_elasticsearch_document' function to run in a thread pool
-    def list_documents():
-        """
-        List data from index for which we have a document to generate
-        """
-        for entity_name in uri_data_index.keys():
-            uri_index = uri_data_index[entity_name]
-            for data_json in uri_index.values():
-                document_configs = document_configs_by_entity.get(entity_name) or [{}]
-                for document_config in document_configs:
-                    document_type = document_config.get('document-type') or entity_name
-                    if restricted_documents and document_type not in restricted_documents:
-                        continue
-                    document_transform = document_config.get('document-transform')
-                    yield document_type, document_transform, uri_data_index, data_json
-                if is_checkpoint(document_count):
-                    uri_index.close()
-                    uri_index.open()
-            uri_index.close()
-
-    logger.debug("Generating documents...")
-    document_tuples = pool.imap_unordered(
-        generate_elasticsearch_document,
-        list_documents(),
-        CHUNK_SIZE
-    )
-
-    document_count = 0
-    for document_tuple in document_tuples:
-        document_count += 1
-        yield dict(document_tuple)
-    logger.debug(f"Generated {document_count} documents.")
-
-
-def generate_elasticsearch_document2(options):
-    document_type, document_transform, uri_data_index, data_json = options
-    document = json.loads(data_json)
-    if document_transform:
-        resolved = remove_empty(resolve(document_transform, document, uri_data_index))
-        document.update(resolved)
-    return document_type, document
-
-
-def generate_elasticsearch_documents2(restricted_documents, document_configs_by_entity,
                                       uri_data_index: UriIndex, pool: Pool, logger: Logger):
     """
-    Same as generate_elasticsearch_documents but not threaded
+    Produces and iterable of tuples (of document type and document) generated using the
+    document templates in configuration. (not threaded)
     """
     logger.debug("Preparing documents generation...")
     document_count = 0
@@ -161,7 +105,7 @@ def generate_elasticsearch_documents2(restricted_documents, document_configs_by_
                     continue
                 document_transform = document_config.get('document-transform')
                 document_count += 1
-                yield generate_elasticsearch_document2((document_type, document_transform, uri_data_index, data_json))
+                yield generate_elasticsearch_document((document_type, document_transform, uri_data_index, data_json))
         uri_index.close()
     logger.debug(f"Generated {document_count} documents.")
 
@@ -321,7 +265,7 @@ def transform_source(source, transform_config, source_json_dir, source_bulk_dir,
         uri_data_index = uri.transform_source(source, config)
 
         logger.info('Generating documents...')
-        documents = generate_elasticsearch_documents2(
+        documents = generate_elasticsearch_documents(
             restricted_documents, document_configs_by_entity, uri_data_index, pool, logger
         )
 

@@ -1,10 +1,12 @@
+import collections
 import itertools
 import json
-import collections
-import lark, lark.lexer
 import re
 from copy import deepcopy
 from functools import reduce, partial
+
+import lark
+import lark.lexer
 
 from etl.common.utils import remove_none, get_in, as_list, flatten, distinct, is_list_like, \
     remove_empty

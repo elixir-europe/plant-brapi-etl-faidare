@@ -4,10 +4,7 @@ import re
 from functools import partial
 from itertools import chain
 from typing import Tuple, List
-
 import requests
-import rfc3987
-import urllib.parse
 
 from etl.common.utils import join_url_path, remove_falsey, replace_template, remove_none, is_collection
 from pyhashxx import hashxx
@@ -105,39 +102,6 @@ def get_identifier(entity_name, data):
         data_id = str(hashxx(json_rep.encode()))
     data[entity_id] = str(data_id)
     return data_id
-
-
-# TODO: remove
-def get_uri_by_id(source, entity_name, object_id):
-    """Generate URI from source ID, entity name and object id"""
-    source_id = source['schema:identifier']
-    encoded_id = urllib.parse.quote(object_id, safe='')
-    return 'urn:{}/{}/{}'.format(source_id, entity_name, encoded_id)
-
-
-# TODO: remove
-def get_uri(source, entity_name, object):
-    """Get URI from BrAPI object or generate one"""
-    pui_field = entity_name + 'PUI'
-    object_uri = object.get(pui_field)
-
-    if object_uri and rfc3987.match(object_uri, rule='URI'):
-        # The original URI is valid
-        return object_uri
-
-    source_id = source['schema:identifier']
-    object_id = get_identifier(entity_name, object)
-    if not object_uri:
-        object_uri = get_uri_by_id(source, entity_name, object_id)
-    else:
-        # Generate URI by prepending the original URI with the source identifier
-        object_uri = 'urn:{}/{}'.format(source_id, urllib.parse.quote(object_uri, safe=''))
-
-    if not rfc3987.match(object_uri, rule='URI'):
-        raise Exception('Could not get or create a correct URI for "{}" object id "{}" (malformed URI: "{}")'
-                        .format(entity_name, object_id, object_uri))
-
-    return object_uri
 
 
 def get_call_id(call):
