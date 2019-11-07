@@ -1,32 +1,37 @@
 {
   "document-type": "study",
   "source-entity": "study",
-
   "document-transform": {
     "schema:url": "{.documentationURL}",
     "schema:includedInDataCatalog": "{.source}",
-
     "studyName": {
       "{or}": [
         "{.studyName}",
         "{.name}"
       ]
     },
-
     "contacts": {
-      "{or}": [
-        "{.contacts}",
-        "{.contactDbIds => .}"
-      ]
+      "{list}": [{
+        "email": {
+          "{join}": "{.contactURIs => .email}"
+        },
+        "name": {
+          "{join}": "{.contactURIs => .name}"
+        },
+        "orcid": {
+          "{join}": "{.contactURIs => .orcid}"
+        }
+      }]
     },
-
     "seasons": {
-      "{or}": [
-        "{.seasons.season} {.seasons.year}",
-        "{.seasons.season}",
-        "{.seasons.year}",
-        "{.seasons}"
-      ]
+      "{flatten_distinct}": {
+        "{or}": [
+          "{.seasons.season} {.seasons.year}",
+          "{.seasons.season}",
+          "{.seasons.year}",
+          "{.seasons}"
+        ]
+      }
     }
   }
 }

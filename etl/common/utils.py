@@ -13,6 +13,7 @@ from multiprocessing import Pool
 import collections
 
 import functools
+from typing import List
 
 default_nb_threads = multiprocessing.cpu_count() + 2
 
@@ -147,9 +148,20 @@ def flatten_it(iterable):
         else:
             yield element
 
+def flatten_it_static(iterable):
+    for element in iterable:
+        if is_list_like(element):
+            for sub_element in flatten_it(element):
+                return sub_element
+        else:
+            return element
+
 
 def flatten(value):
     return list(flatten_it(value))
+
+def flatten_static(value):
+    return list(flatten_it_static(value))
 
 
 def distinct(values):
@@ -161,17 +173,25 @@ def distinct(values):
                 yield value
 
 
-def resolve_path(values, path):
-    if not path or not values:
-        return values
+def get_in(values, path):
+    """
+    Get in nested values (dict/list) through a path
+    """
+    if not path:
+        if not values or isinstance(values, filter):
+            return dict()
+        elif values:
+            return values
+        else:
+            return None
     if isinstance(values, dict):
         first, rest = path[0], path[1:]
         if first in values:
-            return remove_none(resolve_path(values[first], rest)) or None
+            return remove_none(get_in(values[first], rest)) or None
         else:
             return None
     if is_list_like(values):
-        return remove_none(flatten(map(lambda value: resolve_path(value, path), values))) or None
+        return remove_none(flatten(map(lambda value: get_in(value, path), values))) or None
     return None
 
 
@@ -204,7 +224,7 @@ def create_logger(name, log_file, verbose):
 
     # Log stdout
     stdout_handler = logging.StreamHandler(sys.stdout)
-    stdout_handler.setFormatter(logging.Formatter('[{}] %(message)s'.format(name)))
+    stdout_handler.setFormatter(logging.Formatter(f'[{name}] %(message)s'))
     level = logging.DEBUG if verbose else logging.INFO
     stdout_handler.setLevel(level)
     logger.addHandler(stdout_handler)
@@ -247,11 +267,13 @@ def update_in(dictionary, path, value):
     update_in({}, ['a', 'b', 'c'], 'd')
     => {'a':{'b':{'c':'d'}}}
     """
-    current = dictionary
-    for pathPart in path[:-1]:
-        previous = current
-        current = current.get(pathPart)
-        if current is None:
-            previous[pathPart] = current = {}
-    current[path[-1]] = value
+    if path:
+        current = dictionary
+        for pathPart in path[:-1]:
+            previous = current
+            try:
+                current = current[pathPart]
+            except KeyError:
+                previous[pathPart] = current = {}
+        current[path[-1]] = value
     return dictionary

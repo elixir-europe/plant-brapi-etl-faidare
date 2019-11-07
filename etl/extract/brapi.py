@@ -11,7 +11,7 @@ from multiprocessing.pool import ThreadPool
 from etl.common.brapi import BreedingAPIIterator, get_implemented_calls, get_implemented_call
 from etl.common.brapi import get_identifier
 from etl.common.store import MergeStore
-from etl.common.utils import get_folder_path, resolve_path, remove_falsey, create_logger, get_file_path, remove_none, \
+from etl.common.utils import get_folder_path, get_in, remove_falsey, create_logger, get_file_path, remove_none, \
     as_list, remove_empty
 
 urllib3.disable_warnings()
@@ -42,8 +42,10 @@ def link_objects(entity, object, linked_entity, linked_objects_by_id):
         if linked_object:
             link_object(entity['name'], linked_object, object_id)
         else:
-            raise BrokenLink("{} object id {} not found in store while trying to link with {} object id {}"
-                             .format(linked_entity_name, link_id, entity['name'], object_id))
+            raise BrokenLink(
+                f"{linked_entity_name} object id {link_id} not found in store while trying to link with "
+                f"{entity['name']} object id {object_id}"
+            )
         link_object(linked_entity_name, object, link_id)
 
         if not was_in_store and linked_object:
@@ -74,7 +76,7 @@ def fetch_details(options):
 
     in_store = object_id in entity['store']
     skip_if_in_store = detail_call_group.get('skip-if-in-store')
-    already_detailed = resolve_path(entity['store'], [object_id, 'etl:detailed'])
+    already_detailed = get_in(entity['store'], [object_id, 'etl:detailed'])
     if in_store and (skip_if_in_store or already_detailed):
         return
 
@@ -136,7 +138,7 @@ def fetch_all_links(source, logger, entities):
      - Internal object: link an object (ex: study) to another contained inside the first
       (ex: link a location via study.location.locationDbId)
      - External object: link an object (ex: study) to another using a dedicated call
-      (ex: link to observation variables via /brapi/v1/studies/{id}/observationvariables)
+      (ex: link to observation variables via /brapi/v1/studies/{id}/observationVariables)
     """
     for (entity_name, entity) in entities.items():
         if 'links' not in entity:
@@ -152,7 +154,7 @@ def fetch_all_links(source, logger, entities):
                     link_path = link['json-path']
                     link_path_list = remove_empty(link_path.split('.'))
 
-                    link_values = remove_none(as_list(resolve_path(object, link_path_list)))
+                    link_values = remove_none(as_list(get_in(object, link_path_list)))
                     if not link_values:
                         if link.get('required'):
                             raise BrokenLink("Could not find required field '{}' in {} object id '{}'"
@@ -200,7 +202,7 @@ def remove_internal_objects(entities):
                 link_path_list = remove_empty(link_path.split('.'))
 
                 context_path, last = link_path_list[:-1], link_path_list[-1]
-                link_context = resolve_path(data, context_path)
+                link_context = get_in(data, context_path)
                 if link_context and last in link_context:
                     del link_context[last]
 
@@ -266,6 +268,9 @@ def main(config):
 
     threads = list()
     for source_name in sources:
+        if source_name == 'EVA':
+            print("# INFO: EVA data can't be extracted, EVA Skipped ..")
+            continue
         source_json_dir = get_folder_path([json_dir, source_name], recreate=True)
         source_json_dir_failed = source_json_dir + '-failed'
         if os.path.exists(source_json_dir_failed):

@@ -1,12 +1,14 @@
-import itertools
-
 import collections
-import lark
+import itertools
+import json
 import re
 from copy import deepcopy
 from functools import reduce, partial
 
-from etl.common.utils import remove_none, resolve_path, as_list, flatten, distinct, is_list_like, \
+import lark
+import lark.lexer
+
+from etl.common.utils import remove_none, get_in, as_list, flatten, distinct, is_list_like, \
     remove_empty
 
 field_template_string_parser = lark.Lark('''
@@ -15,19 +17,19 @@ WS: /[ ]/+
 LCASE_LETTER: "a".."z"
 UCASE_LETTER: "A".."Z"
 
-FIELD: (UCASE_LETTER | LCASE_LETTER)+ 
+FIELD: (UCASE_LETTER | LCASE_LETTER)+
 field_path: ("." FIELD?)+
 
 object_path: field_path WS* "=>" WS*
 
-value_path: field_path (WS* "+" WS* field_path)* 
+value_path: field_path (WS* "+" WS* field_path)*
 
 start: "{" WS* object_path* WS* value_path WS* "}"
 ''')
 
 
 def get_field_path(tree):
-    return resolve_path(tree, ['field_path', 'FIELD'])
+    return get_in(tree, ['field_path', 'FIELD'])
 
 
 def tree_to_dict(tree):
@@ -70,20 +72,33 @@ list_transforms = {"flatten": flatten, "distinct": distinct, "capitalize": capit
 
 
 def resolve_field_value_template(tree, data, data_index):
-    object_paths = as_list(resolve_path(tree, ['start', 'object_path']))
+    object_paths = as_list(get_in(tree, ['start', 'object_path']))
     for object_path in object_paths:
-        ids = as_list(resolve_path(data, get_field_path(object_path)))
+        field_path = get_field_path(object_path)
+        ids = as_list(get_in(data, field_path))
         if not ids:
             return None
-        data = remove_none(list(map(lambda id: data_index.get(id), ids)))
-    value_paths = as_list(resolve_path(tree, ['start', 'value_path']))
+        field = field_path[-1]
+        entity = re.sub(r"(\w+)URIs?", "\\1", field)
+        entity_index = data_index[entity]
+        try:
+            dataList = []
+            for id in ids:
+                dataList.append(json.loads(entity_index[id].decode()))
+            data = remove_none(dataList)
+        except AttributeError:
+            data = remove_none(list(map(lambda id: entity_index[id], ids)))
+
+        if getattr(entity_index, 'close', False):
+            entity_index.close()
+    value_paths = as_list(get_in(tree, ['start', 'value_path']))
     if len(value_paths) == 1:
-        return resolve_path(data, get_field_path(value_paths[0]))
+        return get_in(data, get_field_path(value_paths[0]))
     else:
         new_value = []
         for data in as_list(data):
             field_values = remove_empty(map(
-                lambda value_path: as_list(resolve_path(data, get_field_path(value_path))) or None,
+                lambda value_path: as_list(get_in(data, get_field_path(value_path))) or None,
                 value_paths
             ))
             product = itertools.product(*field_values)
@@ -106,6 +121,26 @@ def resolve_if_template(template, data, data_index):
         return resolve(then_branch, data, data_index)
     elif else_branch:
         return resolve(else_branch, data, data_index)
+
+
+def resolve_replace_with_template(template, data, data_index):
+    # In case 'studyTypeName' and 'studyTypeName' field doesn't exist
+    parse_study_type_value = ""
+    if "studyTypeName" in data:
+        parse_study_type_value = parse_template("{.studyTypeName}")
+    # if we have 'studyType' instead of 'studyTypeName' (e.g. VIB)
+    elif "studyType" in data:
+        parse_study_type_value = parse_template("{.studyType}")
+
+    study_type_value = resolve(parse_study_type_value, data, data_index).lower()
+    all_possible_terms = [x.lower() for x in template.get('{replace}')["possible_terms"]]
+    replaced_by = template.get('{with}')["replaced_by"]
+
+    if study_type_value is not None and study_type_value in all_possible_terms:
+        study_type_value = replaced_by
+        return resolve(study_type_value, data, data_index)
+    else:
+        return
 
 
 def resolve_join_template(template, data, data_index):
@@ -159,8 +194,11 @@ def resolve_map_template(template, data, data_index):
 def resolve_merge_template(template, data, data_index):
     merge_branch = template.get('{merge}')
     with_branch = template.get('{with}')
+
     resolved_merge = resolve(merge_branch, data, data_index)
+
     resolved_with = resolve(with_branch, data, data_index)
+
     if not isinstance(resolved_merge, dict) or not isinstance(resolved_with, dict):
         raise Exception("Merge can't work on anything but dictionaries.")
     return merge_dict(resolved_merge, resolved_with)
@@ -180,15 +218,18 @@ def resolve(parsed_template, data, data_index):
             '{lark}': resolve_field_value_template,
             '{map}': resolve_map_template,
             '{merge}': resolve_merge_template,
+            '{replace}': resolve_replace_with_template
         }
         for key, evaluator in evaluable_templates.items():
             if key in parsed_template:
                 return evaluator(parsed_template, data, data_index)
-        
+
         new_dict = dict()
         for (key, value) in parsed_template.items():
             new_value = resolve(value, data, data_index)
-            if new_value:
+            # added an exception for 'schema:includedInDataCatalog' to keep it as a url
+            # This field is linked/should be identical to 'uri' field in the application configuration file
+            if new_value and key != "schema:includedInDataCatalog":
                 new_dict[key] = new_value
         return new_dict
     else:
