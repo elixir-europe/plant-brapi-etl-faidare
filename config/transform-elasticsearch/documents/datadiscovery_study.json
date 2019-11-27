@@ -47,7 +47,12 @@
         "\" is a ",
         { "{or}": ["{.studyTypeName}", "{.studyType}", "study"] },
         { "{or}": [" conducted from {.startDate} to {.endDate}", " running since {.startDate}"] },
-        { "{join}": [" (seasons: ", {"{join}": "{.seasons}", "{separator}": ", "}, ")"], "{accept_none}": false },
+        { "{or}": [
+          { "{join}": [
+            " (seasons: ", {"{join}": ["{.seasons.season}", "{.seasons.year}"], "{separator}": ", "}, ")"],
+            "{accept_none}": false },
+          { "{join}": [" (seasons: ", {"{join}": "{.seasons}", "{separator}": ", "}, ")"], "{accept_none}": false }
+        ]},
         { "{or}": [
           " in {.locationURI => .locationName} ({.locationURI => .countryName})",
           " in {.locationURI => .countryName}"
