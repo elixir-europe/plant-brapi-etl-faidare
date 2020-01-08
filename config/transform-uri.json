@@ -1,3 +1,6 @@
 {
-  "ignore-links": ["observation", "observationVariable", "trait", "breedingMethod", "method", "ontology", "scale", "studyType"]
+  "ignore-links": [
+    "observation", "observationVariable", "trait",
+    "breedingMethod", "method", "ontology", "scale",
+    "studyType", "crop"]
 }
