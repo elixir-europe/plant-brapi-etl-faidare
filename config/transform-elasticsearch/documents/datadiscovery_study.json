@@ -20,7 +20,13 @@
                 "possible_terms": [
                   "Phenotypes", "Phenotyping", "Field Experiement",
                   "Greenhouse (29\u00baC/20\u00baC)", "Green house",
-                  "Growth chamber", "Phenotyping Study"
+                  "Growth chamber", "Phenotyping Study", "Provenance trial",
+                  "Half sibling progeny trial", "Clonal trial", "Progeny trial",
+                  "Other", "Provenance and half sibling progeny trial",
+                  "Species comparison", "Seed orchard", "Demonstration test",
+                  "Full sibling progeny trial", "Juveniles comparison",
+                  "Clonal archiva, clone bank", "Conservation plot",
+                  "Biomasse test - sylvabiom"
                 ]
               },
               "{with}": {
