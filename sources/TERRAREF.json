@@ -5,7 +5,7 @@
   },
   "@type": "schema:DataCatalog",
   "@id": "https://terraref.org",
-  "schema:name": "TERRA REF",
-  "schema:identifier": "TERRA REF",
-  "brapi:endpointUrl": "https://terraref.org/brapi/v1/",
+  "schema:name": "TERRA-REF",
+  "schema:identifier": "TERRA-REF",
+  "brapi:endpointUrl": "https://terraref.org/brapi/v1/"
 }
