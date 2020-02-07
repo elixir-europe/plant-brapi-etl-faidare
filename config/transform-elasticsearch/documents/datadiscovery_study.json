@@ -9,7 +9,10 @@
           "{or}": [
             {
               "{replace}":{
-                "possible_terms": [ "Genotyping", "Genotyping Study" ]
+                "possible_terms": [
+                  "Genotyping", "Genotyping Study",
+                  "allele size", "genotype"
+                ]
               },
               "{with}": {
                 "replaced_by": "Genotyping Study"
