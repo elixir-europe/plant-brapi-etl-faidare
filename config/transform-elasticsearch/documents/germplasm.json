@@ -20,6 +20,6 @@
         "{.accessionNumber}"
       ]
     },
-    "genusSpecies": ".genus + .species"
+    "genusSpecies": "{.genus + .species}"
   }
 }
