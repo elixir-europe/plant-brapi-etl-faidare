@@ -19,6 +19,7 @@
         "{.germplasmName}",
         "{.accessionNumber}"
       ]
-    }
+    },
+    "genusSpecies": "{.genus} {.species}"
   }
 }
