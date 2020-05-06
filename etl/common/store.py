@@ -96,7 +96,7 @@ class JSONSplitStore(object):
     """
     DEFAULT_MAX_FILE_SIZE = 100
 
-    def __init__(self, output_dir, base_json_name, buffer_size=1000, max_file_byte_size=DEFAULT_MAX_FILE_SIZE):
+    def __init__(self, output_dir, base_json_name, buffer_size=10, max_file_byte_size=DEFAULT_MAX_FILE_SIZE):
         self.output_dir = output_dir
         self.base_json_name = base_json_name
         self.file_index = 0
