@@ -94,9 +94,9 @@ class JSONSplitStore(object):
     """
     Store JSON in JSON files split by file size.
     """
-    DEFAULT_MAX_FILE_SIZE = 10
+    DEFAULT_MAX_FILE_SIZE = 100
 
-    def __init__(self, output_dir, base_json_name, buffer_size=10, max_file_byte_size=DEFAULT_MAX_FILE_SIZE):
+    def __init__(self, output_dir, base_json_name, buffer_size=100, max_file_byte_size=DEFAULT_MAX_FILE_SIZE):
         self.output_dir = output_dir
         self.base_json_name = base_json_name
         self.file_index = 0
@@ -119,8 +119,10 @@ class JSONSplitStore(object):
         return not self.json_file or self.json_file.tell() >= self.max_file_byte_size
 
     def flush(self):
+        print ("in flush")
         if self.data_buffer:
             for element in self.data_buffer:
+                print (element)
                 CustomJSONEncoder.dump(element, self.json_file)
                 self.json_file.write('\n')
             self.data_buffer.clear()
