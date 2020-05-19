@@ -39,21 +39,27 @@ def main():
 
     # Execute ETL actions based on CLI arguments:
     if 'extract' in options or 'etl_es' in options or 'etl_virtuoso' in options:
+        print ("In extract in options or etl_es in options or etl_virtuoso in options")
         etl.extract.brapi.main(config)
 
     if 'transform_elasticsearch' in options or 'etl_es' in options:
+        print ("In transform_elasticsearch in options or etl_es in options")
         etl.transform.elasticsearch.main(config)
 
     if 'transform_jsonld' in options or 'transform_rdf' in options or 'etl_virtuoso' in options:
+        print ("In transform_jsonld in options or transform_rdf in options or etl_virtuoso in options")
         etl.transform.jsonld.main(config)
 
     if 'transform_rdf' in options or 'etl_virtuoso' in options:
+        print ("In transform_rdf in options or etl_virtuoso in options")
         etl.transform.rdf.main(config)
 
     if 'load_elasticsearch' in options or 'etl_es' in options:
+        print ("In load_elasticsearch in options or etl_es in options")
         etl.load.elasticsearch.main(config)
 
     if 'load_virtuoso' in options or 'etl_virtuoso' in options:
+        print ("In load_virtuoso in options or etl_virtuoso in options")
         etl.load.virtuoso.main(config)
 
 
