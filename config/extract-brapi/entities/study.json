@@ -21,10 +21,17 @@
   },
   "detail": {
     "required": true,
-    "call": {
-      "method": "GET",
-      "path": "studies/{studyDbId}"
-    }
+    "call": [
+      {
+        "method": "GET",
+        "path": "studies/{studyDbId}"
+      },
+      {
+        "method": "GET",
+        "path": "studies-search",
+        "param": {"param_name": "studyDbId", "param_value": "{studyDbId}"}
+      }
+      ]
   },
   "links": [
     {
