@@ -1,6 +1,6 @@
 import unittest
 
-from etl.common.brapi import get_identifier, get_entity_links
+from etl.common.brapi import get_identifier, get_entity_links, get_implemented_call
 
 
 class TestGetIdentifier(unittest.TestCase):
@@ -105,3 +105,78 @@ class TestListLinks(unittest.TestCase):
         ]
         actual = get_entity_links(self.data, 'DbId')
         self.assertEqual(expected, actual)
+
+
+class TestGetDetails(unittest.TestCase):
+    """
+    Get DbId identifier from BrAPI object
+    """
+
+    def test_get_simple_study_details(self):
+        test_source = {
+            "@context": {
+                "schema": "http://schema.org/",
+                "brapi": "https://brapi.org/rdf/"
+            },
+            "@type": "schema:DataCatalog",
+            "@id": "https://www.foo.fr",
+            "schema:identifier": "foo",
+            "schema:name": "foofoo",
+            "brapi:endpointUrl": "https://www.foo.fr/brapi/v1/",
+            "brapi:studyType": "Genotyping"
+        }
+        test_source['implemented-calls'] = {
+            "GET studies",
+            "GET studies/{studyDbId}"}
+        detail_call_group = {
+                "required": "true",
+                "call": {
+                    "method": "GET",
+                    "path": "studies/{studyDbId}"
+                }
+        }
+        entity_name = 'study'
+        entity_id = entity_name + 'DbId'
+        detail_call = get_implemented_call(test_source, detail_call_group, {entity_id: "myStudyId"})
+
+        self.assertEqual({'method': 'GET', 'path': 'studies/myStudyId'}, detail_call)
+
+    def test_get_complex_study_details(self):
+
+        entity_name = 'study'
+        entity_id = entity_name + 'DbId'
+        test_source = {
+            "@context": {
+                "schema": "http://schema.org/",
+                "brapi": "https://brapi.org/rdf/"
+            },
+            "@type": "schema:DataCatalog",
+            "@id": "https://www.foo.fr",
+            "schema:identifier": "foo",
+            "schema:name": "foofoo",
+            "brapi:endpointUrl": "https://www.foo.fr/brapi/v1/",
+            "brapi:studyType": "Genotyping"
+        }
+        test_source['implemented-calls'] = [
+            "GET studies",
+            "GET studies-search"
+        ]
+        detail_call_group = {
+            "required": "true",
+            "call": [
+                {
+                    "method": "GET",
+                    "path": "studies/{studyDbId}"
+                },
+                {
+                    "method": "GET",
+                    "path": "studies-search",
+                    "param": {"param_name": entity_id, "param_value": "{studyDbId}"}
+                }
+            ]
+        }
+        detail_call = get_implemented_call(test_source, detail_call_group, {entity_id: "myStudyId"})
+
+        self.assertEqual({'method': 'GET',
+                          'param': {'param_name': 'studyDbId', 'param_value': 'myStudyId'},
+                          'path': 'studies-search'}, detail_call)
