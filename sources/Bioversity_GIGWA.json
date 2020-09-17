@@ -5,7 +5,7 @@
   },
   "@type": "schema:DataCatalog",
   "@id": "https://www.bioversityinternational.org",
-  "schema:identifier": "Bioversity International",
+  "schema:identifier": "BioversityInternational",
   "schema:name": "Bioversity GIGWA",
   "brapi:endpointUrl": "https://www.crop-diversity.org/gigwa/rest/GWAS_musa_acuminata_v2/brapi/v1/",
   "brapi:studyType": "Genotyping"
