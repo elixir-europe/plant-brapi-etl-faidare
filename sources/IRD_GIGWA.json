@@ -5,8 +5,8 @@
   },
   "@type": "schema:DataCatalog",
   "@id": "https://www.ird.fr",
-  "schema:identifier": "IRD",
-  "schema:name": "IRD GIGWA",
+  "schema:identifier": "IRD_GIGWA",
+  "schema:name": "IRD_GIGWA",
   "brapi:endpointUrl": "https://gigwa.ird.fr/gigwa/rest/AfricanRice/brapi/v1/",
   "brapi:studyType": "Genotyping"
 }
