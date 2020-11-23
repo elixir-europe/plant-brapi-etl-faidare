@@ -4,8 +4,8 @@
     "brapi": "https://brapi.org/"
   },
   "@type": "schema:DataCatalog",
-  "@id": "https://urgi.versailles.inra.fr/gnpis",
+  "@id": "https://urgi.versailles.inrae.fr/gnpis",
   "schema:identifier": "URGI",
   "schema:name": "URGI GnpIS",
-  "brapi:endpointUrl": "https://urgi.versailles.inra.fr/faidare/brapi/v1/"
+  "brapi:endpointUrl": "https://urgi.versailles.inrae.fr/faidare/brapi/v1/"
 }
