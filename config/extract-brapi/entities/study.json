@@ -21,6 +21,7 @@
   },
   "detail": {
     "required": true,
+    "expect-single-result": true,
     "call": {
       "method": "GET",
       "path": "studies/{studyDbId}"

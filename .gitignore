@@ -100,3 +100,5 @@ ENV/
 .vagrant
 
 /build-centos6/*.tar.gz
+/sandbox/
+/sandboxSources/
