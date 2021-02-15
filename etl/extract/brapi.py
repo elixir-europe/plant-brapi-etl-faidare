@@ -20,6 +20,9 @@ urllib3.disable_warnings()
 class BrokenLink(Exception):
     pass
 
+class EndPointError(Exception):
+    pass
+
 
 def link_object(dest_entity_name, dest_object, src_object_id):
     dest_object_ref = dest_entity_name + 'DbIds'
@@ -92,6 +95,16 @@ def fetch_details(options):
 
     details = BreedingAPIIterator.fetch_all(source['brapi:endpointUrl'], detail_call, logger).__next__()
     details['etl:detailed'] = True
+
+    # -----------------------------------------------------------------
+    # Detect bugy endpoints that returns several studies instead of one.
+    if "expect-single-result" in detail_call_group and detail_call_group["expect-single-result"] and 'data' in details and len(details['data'])!=1:
+        logger.debug(f"More than one results for {detail_call}")
+        raise EndPointError(f"More than one results for {detail_call}")
+    if 'data' in details and len(details['data']) == 1:
+        details = details['data'][0]
+    # -----------------------------------------------------------------
+    
     return entity_name, [details]
 
 

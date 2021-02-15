@@ -190,7 +190,9 @@ def step1(source: dict, entities: dict, json_dir: str, index_dir: str) -> dict:
     First MAJOR step: Load JSON data, Add URI, Index on disk for quick access
     """
     # Process 1: Read JSON for each source entity
-    entity_line_queue = Queue(50000)
+    # See https://github.com/uqfoundation/multiprocess/issues/66
+    # entity_line_queue = Queue(50000)
+    entity_line_queue = Queue(32767)
     Process(target=read_json_lines, args=(json_dir, entity_line_queue)).start()
 
     # Process 2 (with pool): Parse & add URI
@@ -341,7 +343,9 @@ def step2(source, entities, ignore_links, json_dir: str, index_dir: str, id_indi
     """
     Second MAJOR step: Replace DbId links with encoded URI, Index by URI on disk for quick access
     """
-    entity_line_queue = Queue(50000)
+    # See https://github.com/uqfoundation/multiprocess/issues/66
+    # entity_line_queue = Queue(50000)
+    entity_line_queue = Queue(32767)
     Process(target=read_json_lines, args=(json_dir, entity_line_queue)).start()
 
     # Transform URI links in process pool
