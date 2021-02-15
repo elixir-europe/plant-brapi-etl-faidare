@@ -6,7 +6,7 @@ import glob
 from xml.sax import saxutils as su
 
 import jsonschema
-from jsonschema import SchemaError
+from jsonschema import SchemaError, ValidationError
 
 from etl.common.brapi import get_entity_links
 from etl.common.store import JSONSplitStore, list_entity_files
@@ -123,9 +123,10 @@ def validate_documents(document_tuples, validation_schemas, logger):
         schema = validation_schemas.get(document_type)
         try:
             schema and jsonschema.validate(document, schema)
-        except SchemaError as e:
+        except (SchemaError, ValidationError) as e:
             raise Exception(
-                f"Could not validate document of type {document_type} using the provided json schema."
+                f"Could not validate document {document} \n"
+                f"of type {document_type} using the provided json schema:\n {schema}"
             ) from e
         yield document_type, document
     logger.debug(f"Validated {document_count} documents.")
