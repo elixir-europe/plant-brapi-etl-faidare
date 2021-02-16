@@ -120,7 +120,7 @@ def transform_folder(institution_add_jsonld, json_dir, jsonld_dir):
 
 def main(config):
     print()
-    entities = config['jsonld_entities']
+    entities = config['transform-jsonld']['entities']
     for entity_name in entities:
         entities[entity_name]['id'] = entity_name + 'DbId'
         entities[entity_name]['pui'] = entity_name + 'PUI'
@@ -130,10 +130,10 @@ def main(config):
         raise Exception('No json folder found in {}'.format(json_dir))
     jsonld_dir = get_folder_path([config['data-dir'], 'json-ld'], create=True)
 
-    institutions = config['institutions']
+    institutions = config['sources']
     for institution_name in institutions:
         institution = institutions[institution_name]
-        if not institution['active']:
+        if not institution.get('active'):
             continue
         institution_json_dir = get_folder_path([json_dir, institution_name])
         if not os.path.exists(institution_json_dir):
@@ -145,5 +145,3 @@ def main(config):
         institution_add_jsonld = functools.partial(add_jsonld, uri_base, entities)
 
         transform_folder(institution_add_jsonld, institution_json_dir, institution_jsonld_dir)
-
-

@@ -40,17 +40,16 @@ def parse_cli_arguments(config):
     transform_elasticsearch.add_argument('-d', '--document-types', type=str,
                                          help='list of document types you want to generate')
 
-    ## Transform jsonld
-    # transform_jsonld = add_sub_parser(
-    #    config, transform_targets, 'jsonld',
-    #    help='Transform BrAPI data into JSON-LD')
-    # transform_jsonld.set_defaults(transform_jsonld=True)
-    #
-    ## Transform rdf
-    # transform_rdf = add_sub_parser(
-    #    config, transform_targets, 'rdf',
-    #    help='Transform BrAPI data into RDF (requires JSON-LD transformation beforehand)')
-    # transform_rdf.set_defaults(transform_rdf=True)
+    # Transform jsonld
+    transform_jsonld = add_sub_parser(
+       config, transform_targets, 'transform_jsonld',  aliases=['jsonld'], help_message='Transform BrAPI data into JSON-LD')
+    transform_jsonld.set_defaults(transform_jsonld=True)
+
+    # Transform rdf
+    transform_rdf = add_sub_parser(
+       config, transform_targets, 'rdf',
+        help_message='Transform BrAPI data into RDF (requires JSON-LD transformation beforehand)')
+    transform_rdf.set_defaults(transform_rdf=True)
 
     # Load
     parser_load = parser_actions.add_parser('load', help='Load data')

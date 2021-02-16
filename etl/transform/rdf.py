@@ -45,16 +45,16 @@ def transform_folder(jsonld_dir, rdf_dir):
 def transform_brapi_model(model_path, rdf_dir):
     model_ttl_path = get_file_path([rdf_dir, 'pheno-brapi-model'], ext='.ttl')
     with open(model_path, 'r') as model_file:
-        graph = Graph().parse(data=model_file.read().decode('utf-8'))
+        graph = Graph().parse(data=model_file.read())
 
-        with open(model_ttl_path, 'w') as model_ttl_file:
+        with open(model_ttl_path, 'wb') as model_ttl_file:
             model_ttl_file.write(graph.serialize(format='turtle'))
 
 
 def main(config):
     print()
     # Pheno brapi OWL model
-    model_path = config['jsonld_model']
+    model_path = config["transform-jsonld"]['model']
 
     jsonld_dir = get_folder_path([config['data-dir'], 'json-ld'])
     if not os.path.exists(jsonld_dir):
@@ -62,11 +62,8 @@ def main(config):
 
     rdf_dir = get_folder_path([config['data-dir'], 'rdf'], recreate=True)
 
-    institutions = config['institutions']
+    institutions = config['sources']
     for institution_name in institutions:
-        institution = institutions[institution_name]
-        if not institution['active']:
-            continue
         institution_jsonld_dir = get_folder_path([jsonld_dir, institution_name])
         if not os.path.exists(institution_jsonld_dir):
             continue

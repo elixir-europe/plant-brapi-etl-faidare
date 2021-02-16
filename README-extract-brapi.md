@@ -5,7 +5,6 @@
 Software requirements:
 
 - Same requirements as in [README.md](README.md)
-- Elasticsearch 2+
 
 For the BrAPI server requirements, please consult [the Elixir EXCELERATE BrAPI recommendations](https://wiki.brapi.org/index.php/Elixir_Excelerate_phenotyping_data_discovery).
 
@@ -70,56 +69,27 @@ optional arguments:
 
 ```
 
-### III.2. Transform to Elasticsearch documents
 
-To transform BrAPI data to Elasticsearch documents, simply run:
+### III.1. Extract BrAPI
+
+To extract BrAPI data for a data source, simply run:
 
 ```sh
-python3 main.py transform elasticsearch --data-dir {datadir} --document-types {documenttypes} {datasource.json}
+python3 main.py extract --data-dir {datadir} {datasource.json}
 ```
 
-Where `{datasource.json}` is the path to the data source configuration file (ex: `sources/VIB.json`) and `{documenttypes}` the list of document type to generate (ex: `study,datadiscovery`).
-The generated Elasicsearch documents will then be available in the data directory `{datadir}/json-bulk/{datasource}/*.json`.
+Where `{datasource.json}` is the path to the data source configuration file (ex: `sources/VIB.json`).
+The harvested BrAPI data will then be available in the data directory `{datadir}/json/{datasource}/*.json`.
 
 Some example command run:
 
 ```sh
-# Transform BrAPI VIB to Elasticsearch documents in ./data/json-bulk/NIB
-$ python3 main.py transform elasticsearch sources/VIB.json
+# Extracting VIB to ./data/json/NIB
+$ pipenv run ./main.py extract sources/VIB.json
 ```
 
 
 ```sh
-# Transform BrAPI VIB and NIB to Elasticsearch documents in /tmp/data/json-bulk/VIB and /tmp/data/json-bulk/NIB
-$ pipenv run ./main.py trans es --data-dir /tmp/data sources/VIB.json sources/NIB.json
-```
-
-```sh
-# transform FEM with specific documents and specific datadir
-pipenv run ./main.py trans es sources/IBET.json --verbose --document-types germplasm,location,program,observationUnit,study,trial,ontology,observationVariable,datadiscovery --data-dir ./sandbox
-```
-
-**Transformation templating documentation :** see test_templating.py
-
-### III.3. Load/index into Elasticsearch (Deprecated!)
-
-To load/index Elasticsearch documents, simply run:
-
-```sh
-python3 main.py load elasticsearch --data-dir {datadir} --document-types {documenttypes} {datasource.json}
-```
-
-Where `{datasource.json}` is the path to the data source configuration file (ex: `sources/VIB.json`) and `{documenttypes}` the list of document type to index (ex: `study,datadiscovery`).
-
-Some example command run:
-
-```sh
-# Load BrAPI VIB to Elasticsearch documents
-$ python3 main.py load elasticsearch sources/VIB.json
-```
-
-
-```sh
-# Load BrAPI VIB and NIB to Elasticsearch documents (from /tmp/data)
-$ python3 main.py load es --data-dir /tmp/data sources/VIB.json sources/NIB.json
+# Extracting VIB and NIB to /tmp/data/json/VIB and /tmp/data/json/NIB
+$ pipenv run ./main.py extract --data-dir /tmp/data sources/VIB.json sources/NIB.json
 ```

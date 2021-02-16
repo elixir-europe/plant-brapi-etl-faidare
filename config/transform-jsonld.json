@@ -55,6 +55,16 @@
       "@type": "Location",
       "@context": "linked-data/Location.jsonld",
       "brapi-name": "locations"
+    },
+    "ontology": {
+      "@type": "Ontology",
+      "@context": "linked-data/Ontology.jsonld",
+      "brapi-name": "ontology"
+    },
+    "contact": {
+      "@type": "Contact",
+      "@context": "linked-data/Contact.jsonld",
+      "brapi-name": "contact"
     }
   }
 }
