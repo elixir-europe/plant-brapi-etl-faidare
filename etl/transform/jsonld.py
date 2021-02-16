@@ -142,7 +142,7 @@ def main(config):
         institution_jsonld_dir = get_folder_path([jsonld_dir, institution_name], recreate=True)
 
         # Partial function application
-        uri_base = institution['uri_base'] if 'uri_base' in institution else institution['brapi_url']
+        uri_base = institution['brapi:endpointUrl']
         institution_add_jsonld = functools.partial(add_jsonld, uri_base, entities)
 
         transform_folder(institution_add_jsonld, institution_json_dir, institution_jsonld_dir)
