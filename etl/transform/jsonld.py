@@ -14,7 +14,7 @@ from etl.common.utils import get_file_path, get_folder_path, join_url_path, pool
 
 # Generate URI
 def generate_uri(uri_base, entity_brapi_name, object_id):
-    encoded_id = urllib.quote_plus(object_id.encode('utf-8'))
+    encoded_id = urllib.parse.quote_plus(object_id.encode('utf-8'))
     return join_url_path(uri_base, entity_brapi_name, encoded_id)
 
 
@@ -27,7 +27,10 @@ def add_pui(uri_base, entity_metadata, data, flat_entity=False):
         id_field = entity_metadata['id']
         if pui_field not in data and id_field in data:
             raw_id = data[id_field]
-            generate_entity_uri = functools.partial(generate_uri, uri_base, entity_metadata['brapi_name'])
+            brapi_name = entity_metadata.get('brapi_name')
+            if not entity_metadata.get('brapi_name'):
+                brapi_name = 'default_brapi_name_for_pui_generation'
+            generate_entity_uri = functools.partial(generate_uri, uri_base, brapi_name)
 
             if flat_entity:
                 data_ids = raw_id if isinstance(raw_id, list) else [raw_id]
@@ -100,7 +103,7 @@ def transform_folder(institution_add_jsonld, json_dir, jsonld_dir):
     # List of options
     options = list()
     for file_name in os.listdir(json_dir):
-        matches = re.search('(\D+)(\d+).json', file_name)
+        matches = re.search('(\D+)(\d*).json', file_name)
         if matches:
             (entity_name, index) = matches.groups()
 
