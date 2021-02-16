@@ -62,10 +62,35 @@ Here is an example of data source description:
 
 The `@id` field contains the URI identifying the data source (we use the URL of the official web site for convinience), the `schema:identifier` contains a short identifier for this data source, the `schema:name` contains the display name and `brapi:endpoint` contains the URL of the BrAPI endpoint.
 
-The BrAPI endpoint must implement the required calls (also listed in `./config/extract-brapi.json`):
-- /brapi/v1/studies-search (in GET or POST)
-- /brapi/v1/studies/{id} 
-- /brapi/v1/studies/{id}/germplasm
+### BrAPI endpoints requirements
+Current BrAPI version: 1.3.
+Backward compatibility with 1.2 is ensured to a certain extent.
+
+The BrAPI endpoint must implement the required calls (also listed in `./config/entities/` json files, note that the first element of each "call" array is the recomended implementation):
+**Mandatory**:
+- /brapi/v1/calls GET
+- /brapi/v1/studies GET
+- /brapi/v1/studies/{studyDbId} 
+
+**Recommended**:
+- /brapi/v1/germplasm GET
+- /brapi/v1/germplasm/{germplasmDbId} GET
+- /brapi/v1/variables GET
+- /brapi/v1/locations GET
+- /brapi/v1/locations/{locationDbId} GET
+- /brapi/v1/studies/{studyDbId}/germplasm GET
+- /brapi/v1/studies/{studyDbId}/observationvariables GET
+- /brapi/v1/trials GET
+- /brapi/v1/trials/{trialDbId} GET
+
+**Optional**:
+- /brapi/v1/germplasm/{germplasmDbId}/attributes GET
+- /brapi/v1/germplasm/{germplasmDbId}/pedigree GET
+- /brapi/v1/programs GET
+
+**Experimental**:
+- /brapi/v1/observationunits GET (backward compatibility with phenotype-search) 
+- /brapi/v1/studies/{studyDbId}/observationunits GET
 
 See [`README-elasticsearch.md`](README-elasticsearch.md) for specific details on BrAPI to elasticsearch ETL.
 
