@@ -133,7 +133,8 @@ def main(config):
     institutions = config['sources']
     for institution_name in institutions:
         institution = institutions[institution_name]
-        if not institution.get('active'):
+        # skip institutions aka sources with "active": false
+        if 'active' in institution and (not institution.get('active')):
             continue
         institution_json_dir = get_folder_path([json_dir, institution_name])
         if not os.path.exists(institution_json_dir):
