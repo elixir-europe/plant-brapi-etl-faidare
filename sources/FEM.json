@@ -7,7 +7,7 @@
   "@id": "https://www.fmach.it",
   "schema:identifier": "FEM",
   "schema:name": "FEM PhenoDB",
-  "brapi:endpointUrl": "http://51.145.230.169:8081/brapi/v1/",
+  "brapi:endpointUrl": "http://brapi.fmach.it:8081/brapi/v1/",
 
   "implemented-calls": [
     "GET germplasm",
