@@ -21,6 +21,7 @@
             {
               "{replace}":{
                 "possible_terms": [
+                  "", null,
                   "Phenotypes", "Phenotyping", "Field Experiement",
                   "Greenhouse (29\u00baC/20\u00baC)", "Green house",
                   "Growth chamber", "Phenotyping Study", "Provenance trial",
