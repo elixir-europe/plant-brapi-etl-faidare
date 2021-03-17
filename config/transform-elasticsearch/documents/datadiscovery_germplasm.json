@@ -4,8 +4,12 @@
 
   "document-transform": {
     "@type": [ "Germplasm" ],
+    "entryType": [ "Germplasm" ],
     "@id": "{.germplasmPUI}",
+    "identifier": "{.germplasmPUI}",
+    "name": "{.germplasmName}",
 
+    "accessionHolder": "{.holdingInstitute.instituteName}",
     "schema:includedInDataCatalog": "{.source}",
     "schema:identifier": "{.germplasmDbId}",
     "schema:name": {
@@ -16,6 +20,7 @@
       ]
     },
     "schema:url": "{.documentationURL}",
+    "url": "{.documentationURL}",
     "schema:description": {
       "{join}": [
         "\"",
@@ -28,6 +33,28 @@
         " managed by {.holdingInstitute.instituteName}",
         ".",
         " {.comment}"
+      ]
+    },
+    "description": {
+      "{join}": [
+        "\"",
+        { "{or}": ["{.germplasmName}", "{.defaultDisplayName}"] },
+        "\" is a",
+        " {.genus + .species + .subtaxa}",
+        " ({.commonCropName})",
+        " accession",
+        " (number: \"{.accessionNumber}\")",
+        " managed by {.holdingInstitute.instituteName}",
+        ".",
+        " {.comment}"
+      ]
+    },
+
+    "species": {
+      "{or}": [
+        "{.genusSpecies}",
+        "{.genus}",
+        "{.species}"
       ]
     },
 
