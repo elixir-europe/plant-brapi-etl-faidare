@@ -132,43 +132,41 @@ def validate_documents(document_tuples, validation_schemas, logger):
     logger.debug(f"Validated {document_count} documents.")
 
 
-def generate_bulk_headers(document_tuples):
+def dump_in_json_files(source_dir, logger, documents_tuples):
     """
-    Consumes an iterable of document type and document tuples and produces an iterable of tuples
-    (of bulk index header and document)
+    Consumes an iterable of document tuples
     """
-    for document_type, document in document_tuples:
-        document_id = document['@id']
-        bulk_header = {'index': {'_type': document_type, '_id': document_id}}
-        yield bulk_header, document
+    logger.debug("Saving documents to json files...")
 
-
-def dump_in_bulk_files(source_bulk_dir, logger, documents_tuples):
-    """
-    Consumes an iterable of header and document tuples and dump into the JSONSplitStore
-    """
-    logger.debug("Saving documents to bulk files...")
-
-    json_stores = dict()
+    json_list = list()
     document_count = 0
     for document_header, document in documents_tuples:
-        document_type = document_header['index']['_type']
-        if document_type not in json_stores:
-            json_stores[document_type] = JSONSplitStore(source_bulk_dir, document_type)
-
-        json_store = json_stores[document_type]
+        json_list.append(document)
 
         document_count += 1
         if is_checkpoint(document_count):
             logger.debug(f"checkpoint: {document_count} documents saved")
 
-        # Dump batch of headers and documents in bulk file
-        json_store.dump(document_header, document)
+    save_json(document_count, source_dir, json_list)
 
-    # Close all json stores
-    for json_store in json_stores.values():
-        json_store.close()
-    logger.debug(f"Total of {document_count} documents saved in bulk files.")
+    logger.debug(f"Total of {document_count} documents saved in json files.")
+
+
+def save_json(document_count, source_dir, json_list):
+    file_number = 1
+    saved_documents = 0
+    if document_count <= 1000:
+        with open(source_dir +'.json', 'w') as f:
+            json.dump(json_list, f, ensure_ascii=False)
+        f.close()
+
+    else:
+        while saved_documents < document_count:
+            with open(source_dir + '-' + str(file_number) + '.json', 'w') as f:
+                json.dump(json_list[saved_documents:file_number*10000], f, ensure_ascii=False)
+            f.close()
+            file_number += 1
+            saved_documents += 10000
 
 
 def get_document_configs_by_entity(document_configs):
@@ -273,11 +271,8 @@ def transform_source(source, transform_config, source_json_dir, source_bulk_dir,
         # Validate the document schemas
         validated_documents = validate_documents(documents, validation_schemas, logger)
 
-        # Generate Elasticsearch bulk headers before each documents
-        documents_with_headers = generate_bulk_headers(validated_documents)
-
-        # Write the documents in bulk files
-        dump_in_bulk_files(source_bulk_dir, logger, documents_with_headers)
+        # Write the documents in jsonfiles
+        dump_in_json_files(source_bulk_dir, logger, validated_documents)
         # shutil.rmtree(tmp_index_dir, ignore_errors=True)
 
         logger.info(f"SUCCEEDED Transforming BrAPI {source_name}.")
