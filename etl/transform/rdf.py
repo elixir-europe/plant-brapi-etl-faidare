@@ -12,15 +12,16 @@ from etl.common.utils import get_folder_path, get_file_path, pool_worker
 
 def transform_to_rdf(options):
     jsonld_path, rdf_path = options
-
+    print(" jsonld_path "+ jsonld_path + " rdf_path " + rdf_path)
     graph = Graph()
     # Read each jsonld line as new graph
     with open(jsonld_path, 'r') as jsonld_file:
-        graph.parse(data=jsonld_file.read().decode('utf-8'), format='json-ld')
+        graph.parse(data=jsonld_file.read(), format='json-ld')
 
     # Write turtle file
-    with open(rdf_path, 'w') as rdf_file:
-        rdf_file.write(graph.serialize(format='turtle'))
+    graph.serialize(format='turtle', encoding='utf8', destination=rdf_path)
+    #with open(rdf_path, 'w') as rdf_file:
+        #rdf_file.write(graph.serialize(format='turtle', encoding='utf8', destination=None))
 
 
 def transform_folder(jsonld_dir, rdf_dir):
@@ -28,7 +29,7 @@ def transform_folder(jsonld_dir, rdf_dir):
 
     options = list()
     for file_name in os.listdir(jsonld_dir):
-        matches = re.search('(\D+)(\d+).jsonld', file_name)
+        matches = re.search('(\D+)(\d*).jsonld', file_name)
         if matches:
             (entity_name, index) = matches.groups()
 
@@ -36,7 +37,7 @@ def transform_folder(jsonld_dir, rdf_dir):
             dest_path = get_file_path([rdf_dir, entity_name], ext=str(index) + '.ttl')
 
             options.append([src_path, dest_path])
-
+        print (file_name)
     # Run transform_to_rdf on a thread pool
     pool_worker(transform_to_rdf, options)
 
@@ -72,4 +73,3 @@ def main(config):
         transform_folder(institution_jsonld_dir, institution_rdf_dir)
 
         transform_brapi_model(model_path, institution_rdf_dir)
-
