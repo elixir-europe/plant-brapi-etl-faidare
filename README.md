@@ -95,3 +95,6 @@ The BrAPI endpoint must implement the required calls (also listed in `./config/e
 See [`README-elasticsearch.md`](README-elasticsearch.md) for specific details on BrAPI to elasticsearch ETL.
 
 See [`README-virtuoso.md`](README-virtuoso.md) for specific details on BrAPI to virtuoso ETL.
+
+Commands for Trial extract:
+time pipenv run ./main.py extract_trial sources/URGI.json --data-dir ./publish --trialDbId 'dXJuOlVSR0kvdHJpYWwvNg=='

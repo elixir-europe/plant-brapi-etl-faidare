@@ -24,6 +24,13 @@ def parse_cli_arguments(config):
     add_common_args(config, parser)
     parser_actions = parser.add_subparsers(help='Actions')
 
+
+    # Extract a single trial
+    parser_extract_trial = add_sub_parser(config, parser_actions, 'extract_trial', aliases='trial', help_message='Extract one trial from BrAPI a endpoint')
+    parser_extract_trial.set_defaults(extract_trial=True)
+    parser_extract_trial.add_argument('--trialDbId',  required=True)
+
+
     # Extract
     parser_extract = add_sub_parser(config, parser_actions, 'extract', help_message='Extract data from BrAPI endpoints')
     parser_extract.set_defaults(extract=True)
@@ -57,27 +64,6 @@ def parse_cli_arguments(config):
     parser_load.set_defaults(load=True)
     load_targets = parser_load.add_subparsers(help='load targets')
 
-    # Load Elasticsearch
-    load_elasticsearch = add_sub_parser(
-        config, load_targets, 'elasticsearch', aliases=['es'],
-        help_message='Load JSON bulk file into ElasticSearch')
-    default_es_config = config['load-elasticsearch']['config']
-    load_elasticsearch.add_argument('--index-template', default=default_es_config['index-template'],
-                                    help='Elasticsearch index name template (default is \'{}\')'.format(
-                                        default_es_config['index-template']))
-    load_elasticsearch.add_argument('-d', '--document-types', type=str,
-                                    help='list of document types you want to index')
-    load_elasticsearch.add_argument('--host', default='localhost',
-                                    help='Elasticsearch HTTP server host (default is \'{}\')'.format(default_es_config['host']))
-    load_elasticsearch.add_argument('--port', default='9200', type=int,
-                                    help='Elasticsearch HTTP server port (default is \'{}\')'.format(default_es_config['port']))
-    load_elasticsearch.set_defaults(load_elasticsearch=True)
-
-    ## Load Virtuoso
-    # load_virtuoso = add_sub_parser(
-    #    config, load_targets, 'virtuoso',
-    #    help='Load RDF into virtuoso')
-    # load_virtuoso.set_defaults(load_virtuoso=True)
 
     if len(sys.argv) == 1:
         parser.print_help()

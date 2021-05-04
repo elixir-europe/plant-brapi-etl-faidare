@@ -4,6 +4,7 @@ import signal
 import sys
 
 import etl.extract.brapi
+import etl.extract.brapi_trial
 import etl.load.elasticsearch
 import etl.load.virtuoso
 import etl.transform.elasticsearch
@@ -40,6 +41,9 @@ def main():
     # Execute ETL actions based on CLI arguments:
     if 'extract' in options or 'etl_es' in options or 'etl_virtuoso' in options:
         etl.extract.brapi.main(config)
+
+    if 'extract_trial' in options:
+        etl.extract.brapi_trial.main(config)
 
     if 'transform_elasticsearch' in options or 'etl_es' in options:
         etl.transform.elasticsearch.main(config)

@@ -34,7 +34,7 @@
       "@type": "@id"
     },
 
-    "studyPUI": {
+    "studyDbId": {
       "@id": "brapi:hasStudy",
       "@type": "@id"
     },

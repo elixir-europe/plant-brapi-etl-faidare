@@ -1,4 +1,3 @@
-
 import os
 import shutil
 import threading
@@ -19,6 +18,7 @@ urllib3.disable_warnings()
 
 class BrokenLink(Exception):
     pass
+
 
 class EndPointError(Exception):
     pass
@@ -98,13 +98,14 @@ def fetch_details(options):
 
     # -----------------------------------------------------------------
     # Detect bugy endpoints that returns several studies instead of one.
-    if "expect-single-result" in detail_call_group and detail_call_group["expect-single-result"] and 'data' in details and len(details['data'])!=1:
+    if "expect-single-result" in detail_call_group and detail_call_group[
+        "expect-single-result"] and 'data' in details and len(details['data']) != 1:
         logger.debug(f"More than one results for {detail_call}")
         raise EndPointError(f"More than one results for {detail_call}")
     if 'data' in details and len(details['data']) == 1:
         details = details['data'][0]
     # -----------------------------------------------------------------
-    
+
     return entity_name, [details]
 
 
@@ -130,7 +131,7 @@ def list_object(options):
 
     if trial_db_id:
         # we don't list all trials but get a single one through details
-        call = get_implemented_call(source, entity['detail'], {"trialDbId":  trial_db_id })
+        call = get_implemented_call(source, entity['detail'], {"trialDbId": trial_db_id})
     else:
         call = get_implemented_call(source, entity['list'])
 
@@ -146,13 +147,13 @@ def fetch_trial(source, logger, entities, pool, trial_db_id):
     Fetch entities list for all entities
     """
     args = list()
-    #for (entity_name, entity) in entities.items():
+    # for (entity_name, entity) in entities.items():
     #    args.append((source, logger, entity, trial_db_id))
     args.append((source, logger, entities["trial"], trial_db_id))
     fetch_all_in_store(entities, list_object, args, pool)
 
 
-def     fetch_all_links(source, logger, entities):
+def fetch_all_links(source, logger, entities):
     """
     Link objects across entities.
      - Internal: link an object (ex: study) to another using an identifier inside the JSON object
@@ -167,6 +168,7 @@ def     fetch_all_links(source, logger, entities):
             continue
 
         for link in entity['links']:
+            print("fetching links for " + str(link))
             for (object_id, object) in entity['store'].items():
                 linked_entity_name = link['entity']
                 linked_entity = entities[linked_entity_name]
