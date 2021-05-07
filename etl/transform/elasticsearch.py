@@ -138,35 +138,40 @@ def dump_in_json_files(source_dir, logger, documents_tuples):
     """
     logger.debug("Saving documents to json files...")
 
-    json_list = list()
+    json_dict = dict()
     document_count = 0
     for document_header, document in documents_tuples:
-        json_list.append(document)
+
+        if document_header not in json_dict:
+            json_dict[document_header] = []
+
+        json_dict[document_header].append(document)
 
         document_count += 1
         if is_checkpoint(document_count):
             logger.debug(f"checkpoint: {document_count} documents saved")
 
-    save_json(document_count, source_dir, json_list)
+    save_json(source_dir, json_dict)
 
     logger.debug(f"Total of {document_count} documents saved in json files.")
 
 
-def save_json(document_count, source_dir, json_list):
-    file_number = 1
-    saved_documents = 0
-    if document_count <= 1000:
-        with open(source_dir +'.json', 'w') as f:
-            json.dump(json_list, f, ensure_ascii=False)
-        f.close()
-
-    else:
-        while saved_documents < document_count:
-            with open(source_dir + '-' + str(file_number) + '.json', 'w') as f:
-                json.dump(json_list[saved_documents:file_number*10000], f, ensure_ascii=False)
+def save_json(source_dir, json_dict):
+    for type, document in json_dict.items():
+        if len(document) < 10000:
+            with open(source_dir + "/" + type +'.json', 'w') as f:
+                json.dump(document, f, ensure_ascii=False)
             f.close()
-            file_number += 1
-            saved_documents += 10000
+
+        else:
+            file_number = 1
+            saved_documents = 0
+            while saved_documents < len(document):
+                with open(source_dir + "/" + type + '-' + str(file_number) + '.json', 'w') as f:
+                    json.dump(document[saved_documents:file_number*10000], f, ensure_ascii=False)
+                f.close()
+                file_number += 1
+                saved_documents += 10000
 
 
 def get_document_configs_by_entity(document_configs):
