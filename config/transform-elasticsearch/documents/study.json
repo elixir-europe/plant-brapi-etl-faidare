@@ -2,6 +2,45 @@
   "document-type": "study",
   "source-entity": "study",
   "document-transform": {
+    "@type": {
+      "{list}": [
+        {
+          "{or}": [
+            {
+              "{replace}":{
+                "possible_terms": [
+                  "Genotyping", "Genotyping Study",
+                  "allele size", "genotype"
+                ]
+              },
+              "{with}": {
+                "replaced_by": "Genotyping Study"
+              }
+            },
+            {
+              "{replace}":{
+                "possible_terms": [
+                  "", null,
+                  "Phenotypes", "Phenotyping", "Field Experiement",
+                  "Greenhouse (29\u00baC/20\u00baC)", "Green house",
+                  "Growth chamber", "Phenotyping Study", "Provenance trial",
+                  "Half sibling progeny trial", "Clonal trial", "Progeny trial",
+                  "Other", "Provenance and half sibling progeny trial",
+                  "Species comparison", "Seed orchard", "Demonstration test",
+                  "Full sibling progeny trial", "Juveniles comparison",
+                  "Clonal archiva, clone bank", "Conservation plot",
+                  "Biomasse test - sylvabiom", "Response study", "raw"
+                ]
+              },
+              "{with}": {
+                "replaced_by": "Phenotyping Study"
+              }
+            },
+            "Study"
+          ]
+        }
+      ]
+    },
     "schema:url": "{.documentationURL}",
     "schema:includedInDataCatalog": "{.source}",
     "studyName": {
