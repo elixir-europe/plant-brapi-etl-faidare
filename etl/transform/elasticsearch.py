@@ -132,9 +132,9 @@ def validate_documents(document_tuples, validation_schemas, logger):
     logger.debug(f"Validated {document_count} documents.")
 
 
-def dump_in_json_files(source_dir, logger, documents_tuples):
+def dump_clean_in_json_files(source_dir, logger, documents_tuples):
     """
-    Consumes an iterable of document tuples
+    Consumes an iterable of document tuples and clean email
     """
     logger.debug("Saving documents to json files...")
 
@@ -146,6 +146,13 @@ def dump_in_json_files(source_dir, logger, documents_tuples):
             json_dict[document_header] = []
 
         json_dict[document_header].append(document)
+
+        if "contact" in document:
+            old_mail = document["contact"]["email"]
+            if old_mail is not None:
+                safe_mail = old_mail.replace('@', '_')
+                document["contact"]["email"] = safe_mail
+        json_list.append(document)
 
         document_count += 1
         if is_checkpoint(document_count):
@@ -277,7 +284,7 @@ def transform_source(source, transform_config, source_json_dir, source_bulk_dir,
         validated_documents = validate_documents(documents, validation_schemas, logger)
 
         # Write the documents in jsonfiles
-        dump_in_json_files(source_bulk_dir, logger, validated_documents)
+        dump_clean_in_json_files(source_bulk_dir, logger, validated_documents)
         # shutil.rmtree(tmp_index_dir, ignore_errors=True)
 
         logger.info(f"SUCCEEDED Transforming BrAPI {source_name}.")
