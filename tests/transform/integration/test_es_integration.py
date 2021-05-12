@@ -31,6 +31,11 @@ class MyTestCase(unittest.TestCase):
         self.assertTrue(os.path.exists(self._actual_data_dir+"VIB.json"))
         self.assertTrue(os.path.exists(self._actual_data_dir+"/VIB/germplasm.json"))
         self.assertTrue(os.path.exists(self._actual_data_dir+"/VIB/study.json"))
+        self.assertTrue(os.path.exists(self._actual_data_dir+"/VIB/contact.json"))
+        self.assertTrue(os.path.exists(self._actual_data_dir+"/VIB/datadiscovery.json"))
+        self.assertTrue(os.path.exists(self._actual_data_dir+"/VIB/location.json"))
+        self.assertTrue(os.path.exists(self._actual_data_dir+"/VIB/observationVariable.json"))
+        self.assertTrue(os.path.exists(self._actual_data_dir+"/VIB/trial.json"))
 
 
     def test_all_germplasms_generated(self):
@@ -39,6 +44,61 @@ class MyTestCase(unittest.TestCase):
             actual_vib = json.load(actual_vib_f)
 
         with open(self._expected_data_dir+"VIB_germplasm_expected.json") as expected_vib_f:
+            expected_vib = json.load(expected_vib_f)
+
+        self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
+
+
+    def test_all_datadiscovery_generated(self):
+        self.assertTrue(True)
+        with open(self._actual_data_dir+"/VIB/datadiscovery.json") as actual_vib_f:
+            actual_vib = json.load(actual_vib_f)
+
+        with open(self._expected_data_dir+"VIB_datadiscovery_expected.json") as expected_vib_f:
+            expected_vib = json.load(expected_vib_f)
+
+        self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
+
+
+    def test_all_locations_generated(self):
+        self.assertTrue(True)
+        with open(self._actual_data_dir+"/VIB/location.json") as actual_vib_f:
+            actual_vib = json.load(actual_vib_f)
+
+        with open(self._expected_data_dir+"VIB_location_expected.json") as expected_vib_f:
+            expected_vib = json.load(expected_vib_f)
+
+        self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
+
+
+    def test_all_observationVariables_generated(self):
+        self.assertTrue(True)
+        with open(self._actual_data_dir+"/VIB/observationVariable.json") as actual_vib_f:
+            actual_vib = json.load(actual_vib_f)
+
+        with open(self._expected_data_dir+"VIB_observation_variable_expected.json") as expected_vib_f:
+            expected_vib = json.load(expected_vib_f)
+
+        self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
+
+
+    def test_all_studys_generated(self):
+        self.assertTrue(True)
+        with open(self._actual_data_dir+"/VIB/study.json") as actual_vib_f:
+            actual_vib = json.load(actual_vib_f)
+
+        with open(self._expected_data_dir+"VIB_study_expected.json") as expected_vib_f:
+            expected_vib = json.load(expected_vib_f)
+
+        self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
+
+
+    def test_all_trials_generated(self):
+        self.assertTrue(True)
+        with open(self._actual_data_dir+"/VIB/trial.json") as actual_vib_f:
+            actual_vib = json.load(actual_vib_f)
+
+        with open(self._expected_data_dir+"VIB_trial_expected.json") as expected_vib_f:
             expected_vib = json.load(expected_vib_f)
 
         self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
@@ -54,8 +114,6 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
 
 
-    def test_toto(self):
-        self.assertEqual(1,1)
 
 
 
