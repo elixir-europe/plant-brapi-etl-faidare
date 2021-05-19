@@ -3,7 +3,6 @@ import subprocess
 import os
 import json
 from deepdiff import DeepDiff
-from etl.transform.uri import read_json_lines
 
 
 class MyTestCase(unittest.TestCase):
@@ -113,11 +112,3 @@ class MyTestCase(unittest.TestCase):
 
         self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
 
-
-
-
-
-#if __name__ == '__main__':
-#    unittest.main()
-
-#("pipenv run ./main.py trans es --data-dir sandbox/ sources/VIB.json sources/NIB.json")
