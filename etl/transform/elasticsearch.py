@@ -165,20 +165,14 @@ def dump_clean_in_json_files(source_dir, logger, documents_tuples):
 
 def save_json(source_dir, json_dict):
     for type, document in json_dict.items():
-        if len(document) < 10000:
-            with open(source_dir + "/" + type +'.json', 'w') as f:
-                json.dump(document, f, ensure_ascii=False)
+        file_number = 1
+        saved_documents = 0
+        while saved_documents < len(document):
+            with open(source_dir + "/" + type + '-' + str(file_number) + '.json', 'w') as f:
+                json.dump(document[saved_documents:file_number*10000], f, ensure_ascii=False)
             f.close()
-
-        else:
-            file_number = 1
-            saved_documents = 0
-            while saved_documents < len(document):
-                with open(source_dir + "/" + type + '-' + str(file_number) + '.json', 'w') as f:
-                    json.dump(document[saved_documents:file_number*10000], f, ensure_ascii=False)
-                f.close()
-                file_number += 1
-                saved_documents += 10000
+            file_number += 1
+            saved_documents += 10000
 
 
 def get_document_configs_by_entity(document_configs):
