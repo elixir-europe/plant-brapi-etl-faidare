@@ -28,6 +28,11 @@
       "@context": "linked-data/Germplasm.jsonld",
       "brapi-name": "germplasm"
     },
+    "germplasmMcpd": {
+      "@type": "GermplasmMcpd",
+      "@context": "linked-data/GermplasmMcpd.jsonld",
+      "brapi-name": "germplasmMcpd"
+    },
     "observationUnit": {
       "@type": "ObservationUnit",
       "@context": "linked-data/ObservationUnit.jsonld",

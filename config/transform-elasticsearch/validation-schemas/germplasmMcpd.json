@@ -1,0 +1,29 @@
+{
+  "type": "object",
+  "properties": {
+     "@id": {
+      "type": "string",
+      "format": "uri"
+    },
+    "schema:includedInDataCatalog": {
+      "type": "string",
+      "format": "uri"
+    },
+    "schema:url": {
+      "type": "string",
+      "format": "url"
+    },
+
+    "germplasmDbId": {
+      "type": "string"
+    },
+    "germplasmName": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "germplasmDbId",
+    "@id",
+    "schema:includedInDataCatalog"
+  ]
+}
