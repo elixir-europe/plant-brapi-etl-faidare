@@ -187,6 +187,16 @@
         "brapi@",
         "{.source}"
       ]
-    }
+    },
+    "holdingInstitute": {
+      "{join}": [
+        "{.holdingInstitute.organisation}",
+        "{.instituteName}"
+      ]
+    },
+    "biologicalStatus": "{.biologicalStatusOfAccessionCode}",
+    "geneticNature": "{.geneticNature}",
+    "countryOfOrigin": "{.countryOfOriginCode}",
+    "taxonGroup": "{.genus}"
   }
 }
