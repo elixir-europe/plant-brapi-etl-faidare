@@ -28,18 +28,18 @@ class MyTestCase(unittest.TestCase):
         self.assertIsNotNone(self._actual_data_dir)
         self.assertTrue(os.path.exists(self._actual_data_dir))
         self.assertTrue(os.path.exists(self._actual_data_dir+"VIB.json"))
-        self.assertTrue(os.path.exists(self._actual_data_dir+"/VIB/germplasm.json"))
-        self.assertTrue(os.path.exists(self._actual_data_dir+"/VIB/study.json"))
-        self.assertTrue(os.path.exists(self._actual_data_dir+"/VIB/contact.json"))
-        self.assertTrue(os.path.exists(self._actual_data_dir+"/VIB/datadiscovery.json"))
-        self.assertTrue(os.path.exists(self._actual_data_dir+"/VIB/location.json"))
-        self.assertTrue(os.path.exists(self._actual_data_dir+"/VIB/observationVariable.json"))
-        self.assertTrue(os.path.exists(self._actual_data_dir+"/VIB/trial.json"))
+        self.assertTrue(os.path.exists(self._actual_data_dir+"/VIB/germplasm-1.json"))
+        self.assertTrue(os.path.exists(self._actual_data_dir+"/VIB/study-1.json"))
+        self.assertTrue(os.path.exists(self._actual_data_dir+"/VIB/contact-1.json"))
+        self.assertTrue(os.path.exists(self._actual_data_dir+"/VIB/datadiscovery-1.json"))
+        self.assertTrue(os.path.exists(self._actual_data_dir+"/VIB/location-1.json"))
+        self.assertTrue(os.path.exists(self._actual_data_dir+"/VIB/observationVariable-1.json"))
+        self.assertTrue(os.path.exists(self._actual_data_dir+"/VIB/trial-1.json"))
 
 
     def test_all_germplasms_generated(self):
         self.assertTrue(True)
-        with open(self._actual_data_dir+"/VIB/germplasm.json") as actual_vib_f:
+        with open(self._actual_data_dir+"VIB/germplasm-1.json") as actual_vib_f:
             actual_vib = json.load(actual_vib_f)
 
         with open(self._expected_data_dir+"VIB_germplasm_expected.json") as expected_vib_f:
@@ -50,7 +50,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_all_datadiscovery_generated(self):
         self.assertTrue(True)
-        with open(self._actual_data_dir+"/VIB/datadiscovery.json") as actual_vib_f:
+        with open(self._actual_data_dir+"VIB/datadiscovery-1.json") as actual_vib_f:
             actual_vib = json.load(actual_vib_f)
 
         with open(self._expected_data_dir+"VIB_datadiscovery_expected.json") as expected_vib_f:
@@ -61,7 +61,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_all_locations_generated(self):
         self.assertTrue(True)
-        with open(self._actual_data_dir+"/VIB/location.json") as actual_vib_f:
+        with open(self._actual_data_dir+"VIB/location-1.json") as actual_vib_f:
             actual_vib = json.load(actual_vib_f)
 
         with open(self._expected_data_dir+"VIB_location_expected.json") as expected_vib_f:
@@ -72,7 +72,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_all_observationVariables_generated(self):
         self.assertTrue(True)
-        with open(self._actual_data_dir+"/VIB/observationVariable.json") as actual_vib_f:
+        with open(self._actual_data_dir+"VIB/observationVariable-1.json") as actual_vib_f:
             actual_vib = json.load(actual_vib_f)
 
         with open(self._expected_data_dir+"VIB_observation_variable_expected.json") as expected_vib_f:
@@ -83,7 +83,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_all_studys_generated(self):
         self.assertTrue(True)
-        with open(self._actual_data_dir+"/VIB/study.json") as actual_vib_f:
+        with open(self._actual_data_dir+"VIB/study-1.json") as actual_vib_f:
             actual_vib = json.load(actual_vib_f)
 
         with open(self._expected_data_dir+"VIB_study_expected.json") as expected_vib_f:
@@ -94,7 +94,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_all_trials_generated(self):
         self.assertTrue(True)
-        with open(self._actual_data_dir+"/VIB/trial.json") as actual_vib_f:
+        with open(self._actual_data_dir+"VIB/trial-1.json") as actual_vib_f:
             actual_vib = json.load(actual_vib_f)
 
         with open(self._expected_data_dir+"VIB_trial_expected.json") as expected_vib_f:
