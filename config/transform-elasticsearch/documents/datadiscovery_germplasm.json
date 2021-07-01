@@ -46,15 +46,9 @@
         " {.comment}"
       ]
     },
-
     "species": {
-      "{or}": [
-        "{.genusSpecies}",
-        "{.genus}",
-        "{.species}"
-      ]
+      "{join}": ["{.genus + .species}"]
     },
-
     "germplasm": {
       "cropName": {
         "{list}": [

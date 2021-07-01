@@ -135,11 +135,7 @@
       ]
     },
     "species": {
-      "{or}": [
-        "{.germplasmURIs => .genus + .species + .subtaxa}",
-        "{.germplasmURIs => .genus + .species}",
-        "{.germplasmURIs => .genus}"
-      ]
+      "{join}" : ["{.germplasmURIs => .genus + .species}"]
     },
     "germplasm": {
       "cropName": {
@@ -197,6 +193,8 @@
     "biologicalStatus": "{.biologicalStatusOfAccessionCode}",
     "geneticNature": "{.geneticNature}",
     "countryOfOrigin": "{.countryOfOriginCode}",
-    "taxonGroup": "{.genus}"
+    "taxonGroup": {
+      "{flatten_distinct}": "{.germplasmURIs => .genus}"
+    }
   }
 }
