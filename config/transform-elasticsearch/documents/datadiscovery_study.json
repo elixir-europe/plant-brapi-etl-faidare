@@ -195,6 +195,11 @@
     "countryOfOrigin": "{.countryOfOriginCode}",
     "taxonGroup": {
       "{flatten_distinct}": "{.germplasmURIs => .genus}"
+    },
+    "observationVariableIds": {
+      "{flatten_distinct}": [
+        "{.observationVariableDbIds}"
+      ]
     }
   }
 }
