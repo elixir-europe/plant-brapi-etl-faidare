@@ -85,7 +85,13 @@ def transform_to_jsonld(options):
     data_list = []
     with open(json_path, 'r') as json_file:
         for line in json_file:
-            data = json.loads(line)
+            data = ""
+            try:
+                data = json.loads(line)
+            except ValueError:
+                print ("Error in file" + json_path + " line : " + line)
+                print (ValueError.args)
+
 
             # Annotate json object with JSON-LD's @id, @context and @type
             entity_add_jsonld(data)
