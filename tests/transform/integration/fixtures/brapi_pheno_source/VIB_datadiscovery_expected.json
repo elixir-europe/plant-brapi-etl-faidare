@@ -1,0 +1,513 @@
+[
+  {
+    "trialDbId": "dXJuOlZJQi90cmlhbC8y",
+    "startDate": "2012-05-01",
+    "studyType": "Phenotyping Study",
+    "studyDbId": "dXJuOlZJQi9zdHVkeS9WSUJfc3R1ZHlfX181NQ==",
+    "trialName": "RIL_8-way_Field_trial",
+    "name": "Enrico Pe field trial",
+    "endDate": "2012-08-01",
+    "locationDbId": "dXJuOlZJQi9sb2NhdGlvbi81",
+    "locationName": "Field trial",
+    "active": false,
+    "source": "VIB",
+    "documentationURL": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/55",
+    "studyName": "Enrico Pe field trial",
+    "studyDescription": "Short description of the experimental design, possibly including statistical design.",
+    "germplasmDbIds": [
+      "dXJuOlZJQi9nZXJtcGxhc20vWmVhX1ZJQl9SSUxfOFdfRVAzM18yMF9fXzExODQ="
+    ],
+    "observationVariableDbIds": [
+      "216",
+      "215",
+      "217",
+      "218"
+    ],
+    "locationDbIds": [
+      "dXJuOlZJQi9sb2NhdGlvbi81"
+    ],
+    "trialDbIds": [
+      "dXJuOlZJQi90cmlhbC8y"
+    ],
+    "studyURI": "urn:VIB/study/VIB_study___55",
+    "@type": "study",
+    "@id": "urn:VIB/study/VIB_study___55",
+    "schema:includedInDataCatalog": "http://pippa.psb.ugent.be",
+    "schema:identifier": "dXJuOlZJQi9zdHVkeS9WSUJfc3R1ZHlfX181NQ==",
+    "schema:name": "Enrico Pe field trial",
+    "trialURI": "urn:VIB/trial/2",
+    "locationURI": "urn:VIB/location/5",
+    "germplasmURIs": [
+      "urn:VIB/germplasm/Zea_VIB_RIL_8W_EP33_20___1184"
+    ],
+    "locationURIs": [
+      "urn:VIB/location/5"
+    ],
+    "trialURIs": [
+      "urn:VIB/trial/2"
+    ],
+    "entryType": "Phenotyping Study",
+    "schema:url": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/55",
+    "url": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/55",
+    "description": "Enrico Pe field trial is a Phenotyping Study conducted from 2012-05-01 to 2012-08-01 in Belgium. Short description of the experimental design, possibly including statistical design.",
+    "species": [
+      "Zea mays"
+    ],
+    "germplasm": {
+      "cropName": [
+        "Maize",
+        "Zea",
+        "Zea mays"
+      ],
+      "accession": [
+        "RIL_8W_EP33_20",
+        "1184"
+      ]
+    },
+    "trait": {
+      "observationVariableIds": [
+        "216",
+        "215",
+        "217",
+        "218"
+      ]
+    },
+    "node": "VIB",
+    "databaseName": "brapi@VIB"
+  },
+  {
+    "trialDbId": "dXJuOlZJQi90cmlhbC8z",
+    "startDate": "2013-06-25",
+    "studyType": "Phenotyping Study",
+    "studyDbId": "dXJuOlZJQi9zdHVkeS9WSUJfc3R1ZHlfX180Ng==",
+    "trialName": "RIL_8-way_growth_chamber",
+    "name": "RIL 8-way  batch 7",
+    "endDate": "2013-07-22",
+    "locationDbId": "dXJuOlZJQi9sb2NhdGlvbi8x",
+    "locationName": "growth chamber",
+    "active": false,
+    "source": "VIB",
+    "documentationURL": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/46",
+    "studyName": "RIL 8-way  batch 7",
+    "studyDescription": "Short description of the experimental design, possibly including statistical design.",
+    "germplasmDbIds": [
+      "dXJuOlZJQi9nZXJtcGxhc20vWmVhX1ZJQl9SSUxfOFdfNTlSSUw4d2F5X19fMTYw"
+    ],
+    "observationVariableDbIds": [
+      "65",
+      "66",
+      "50",
+      "54",
+      "52",
+      "186",
+      "188",
+      "60",
+      "71",
+      "195"
+    ],
+    "locationDbIds": [
+      "dXJuOlZJQi9sb2NhdGlvbi8x"
+    ],
+    "trialDbIds": [
+      "dXJuOlZJQi90cmlhbC8z"
+    ],
+    "studyURI": "urn:VIB/study/VIB_study___46",
+    "@type": "study",
+    "@id": "urn:VIB/study/VIB_study___46",
+    "schema:includedInDataCatalog": "http://pippa.psb.ugent.be",
+    "schema:identifier": "dXJuOlZJQi9zdHVkeS9WSUJfc3R1ZHlfX180Ng==",
+    "schema:name": "RIL 8-way  batch 7",
+    "trialURI": "urn:VIB/trial/3",
+    "locationURI": "urn:VIB/location/1",
+    "germplasmURIs": [
+      "urn:VIB/germplasm/Zea_VIB_RIL_8W_59RIL8way___160"
+    ],
+    "locationURIs": [
+      "urn:VIB/location/1"
+    ],
+    "trialURIs": [
+      "urn:VIB/trial/3"
+    ],
+    "entryType": "Phenotyping Study",
+    "schema:url": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/46",
+    "url": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/46",
+    "description": "RIL 8-way  batch 7 is a Phenotyping Study conducted from 2013-06-25 to 2013-07-22 in Belgium. Short description of the experimental design, possibly including statistical design.",
+    "species": [
+      "Zea mays"
+    ],
+    "germplasm": {
+      "cropName": [
+        "Maize",
+        "Zea",
+        "Zea mays"
+      ],
+      "accession": [
+        "RIL_8W_59 RIL 8-way ",
+        "160"
+      ]
+    },
+    "trait": {
+      "observationVariableIds": [
+        "65",
+        "66",
+        "50",
+        "54",
+        "52",
+        "186",
+        "188",
+        "60",
+        "71",
+        "195"
+      ]
+    },
+    "node": "VIB",
+    "databaseName": "brapi@VIB"
+  },
+  {
+    "trialDbId": "dXJuOlZJQi90cmlhbC8z",
+    "startDate": "2013-08-20",
+    "studyType": "Phenotyping Study",
+    "studyDbId": "dXJuOlZJQi9zdHVkeS9WSUJfc3R1ZHlfX180OA==",
+    "trialName": "RIL_8-way_growth_chamber",
+    "name": "RIL 8-way  batch 9",
+    "endDate": "2013-09-16",
+    "locationDbId": "dXJuOlZJQi9sb2NhdGlvbi8x",
+    "locationName": "growth chamber",
+    "active": false,
+    "source": "VIB",
+    "documentationURL": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/48",
+    "studyName": "RIL 8-way  batch 9",
+    "studyDescription": "Short description of the experimental design, possibly including statistical design.",
+    "germplasmDbIds": [
+      "dXJuOlZJQi9nZXJtcGxhc20vWmVhX1ZJQl9SSUxfOFdfNzVSSUw4d2F5X19fMTgz",
+      "dXJuOlZJQi9nZXJtcGxhc20vWmVhX1ZJQl9SSUxfOFdfODFSSUw4d2F5X19fMTc3"
+    ],
+    "observationVariableDbIds": [
+      "65",
+      "66",
+      "50",
+      "54",
+      "52",
+      "186",
+      "188",
+      "60",
+      "71",
+      "195"
+    ],
+    "locationDbIds": [
+      "dXJuOlZJQi9sb2NhdGlvbi8x"
+    ],
+    "trialDbIds": [
+      "dXJuOlZJQi90cmlhbC8z"
+    ],
+    "studyURI": "urn:VIB/study/VIB_study___48",
+    "contacts": [
+      {
+        "contactDbId": "dXJuOlZJQi9jb250YWN0LzVmNGU1NTA5",
+        "email": "bob_bob.com",
+        "instituteName": "The BrAPI Institute",
+        "name": "Bob Robertson",
+        "orcid": "http://orcid.org/0000-0001-8640-1750",
+        "type": "PI",
+        "contactURI": "urn:VIB/contact/5f4e5509"
+      }
+    ],
+    "@type": "study",
+    "@id": "urn:VIB/study/VIB_study___48",
+    "schema:includedInDataCatalog": "http://pippa.psb.ugent.be",
+    "schema:identifier": "dXJuOlZJQi9zdHVkeS9WSUJfc3R1ZHlfX180OA==",
+    "schema:name": "RIL 8-way  batch 9",
+    "trialURI": "urn:VIB/trial/3",
+    "locationURI": "urn:VIB/location/1",
+    "germplasmURIs": [
+      "urn:VIB/germplasm/Zea_VIB_RIL_8W_75RIL8way___183",
+      "urn:VIB/germplasm/Zea_VIB_RIL_8W_81RIL8way___177"
+    ],
+    "locationURIs": [
+      "urn:VIB/location/1"
+    ],
+    "trialURIs": [
+      "urn:VIB/trial/3"
+    ],
+    "entryType": "Phenotyping Study",
+    "schema:url": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/48",
+    "url": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/48",
+    "description": "RIL 8-way  batch 9 is a Phenotyping Study conducted from 2013-08-20 to 2013-09-16 in Belgium. Short description of the experimental design, possibly including statistical design.",
+    "species": [
+      "Zea mays"
+    ],
+    "germplasm": {
+      "cropName": [
+        "Maize",
+        "Zea",
+        "Zea mays"
+      ],
+      "accession": [
+        "RIL_8W_75 RIL 8-way ",
+        "RIL_8W_81 RIL 8-way ",
+        "183",
+        "177"
+      ]
+    },
+    "trait": {
+      "observationVariableIds": [
+        "65",
+        "66",
+        "50",
+        "54",
+        "52",
+        "186",
+        "188",
+        "60",
+        "71",
+        "195"
+      ]
+    },
+    "node": "VIB",
+    "databaseName": "brapi@VIB"
+  },
+  {
+    "countryOfOriginCode": "BE",
+    "instituteCode": "VIB",
+    "accessionNumber": "1184",
+    "defaultDisplayName": "RIL_8W_EP33_20",
+    "germplasmDbId": "dXJuOlZJQi9nZXJtcGxhc20vWmVhX1ZJQl9SSUxfOFdfRVAzM18yMF9fXzExODQ=",
+    "germplasmName": "RIL_8W_EP33_20",
+    "commonCropName": "Maize",
+    "instituteName": "VIB",
+    "species": "Zea",
+    "genus": "Zea",
+    "source": "VIB",
+    "studyDbIds": [
+      "dXJuOlZJQi9zdHVkeS9WSUJfc3R1ZHlfX181NQ=="
+    ],
+    "germplasmURI": "urn:VIB/germplasm/Zea_VIB_RIL_8W_EP33_20___1184",
+    "@type": [
+      "Germplasm"
+    ],
+    "@id": "urn:VIB/germplasm/Zea_VIB_RIL_8W_EP33_20___1184",
+    "schema:includedInDataCatalog": "http://pippa.psb.ugent.be",
+    "schema:identifier": "dXJuOlZJQi9nZXJtcGxhc20vWmVhX1ZJQl9SSUxfOFdfRVAzM18yMF9fXzExODQ=",
+    "schema:name": "RIL_8W_EP33_20",
+    "studyURIs": [
+      "urn:VIB/study/VIB_study___55"
+    ],
+    "entryType": "Germplasm",
+    "name": "RIL_8W_EP33_20",
+    "schema:description": "\"RIL_8W_EP33_20\" is a Zea mays (Maize) accession (number: \"1184\").",
+    "description": "RIL_8W_EP33_20 is a Zea mays (Maize) accession (number: 1184).",
+    "germplasm": {
+      "cropName": [
+        "Maize",
+        "Zea",
+        "Zea mays"
+      ],
+      "accession": [
+        "RIL_8W_EP33_20",
+        "1184"
+      ]
+    },
+    "trait": {
+      "observationVariableIds": [
+        "216",
+        "215",
+        "217",
+        "218"
+      ]
+    },
+    "node": "VIB",
+    "databaseName": "brapi@VIB"
+  },
+  {
+    "countryOfOriginCode": "BE",
+    "instituteCode": "VIB",
+    "accessionNumber": "160",
+    "defaultDisplayName": "RIL_8W_59 RIL 8-way ",
+    "germplasmDbId": "dXJuOlZJQi9nZXJtcGxhc20vWmVhX1ZJQl9SSUxfOFdfNTlSSUw4d2F5X19fMTYw",
+    "germplasmName": "RIL_8W_59 RIL 8-way ",
+    "commonCropName": "Maize",
+    "instituteName": "VIB",
+    "species": "Zea",
+    "genus": "Zea",
+    "source": "VIB",
+    "studyDbIds": [
+      "dXJuOlZJQi9zdHVkeS9WSUJfc3R1ZHlfX181NQ==",
+      "dXJuOlZJQi9zdHVkeS9WSUJfc3R1ZHlfX180Ng=="
+    ],
+    "germplasmURI": "urn:VIB/germplasm/Zea_VIB_RIL_8W_59RIL8way___160",
+    "@type": [
+      "Germplasm"
+    ],
+    "@id": "urn:VIB/germplasm/Zea_VIB_RIL_8W_59RIL8way___160",
+    "schema:includedInDataCatalog": "http://pippa.psb.ugent.be",
+    "schema:identifier": "dXJuOlZJQi9nZXJtcGxhc20vWmVhX1ZJQl9SSUxfOFdfNTlSSUw4d2F5X19fMTYw",
+    "schema:name": "RIL_8W_59 RIL 8-way ",
+    "studyURIs": [
+      "urn:VIB/study/VIB_study___55",
+      "urn:VIB/study/VIB_study___46"
+    ],
+    "entryType": "Germplasm",
+    "name": "RIL_8W_59 RIL 8-way ",
+    "schema:description": "\"RIL_8W_59 RIL 8-way \" is a Zea mays (Maize) accession (number: \"160\").",
+    "description": "RIL_8W_59 RIL 8-way  is a Zea mays (Maize) accession (number: 160).",
+    "germplasm": {
+      "cropName": [
+        "Maize",
+        "Zea",
+        "Zea mays"
+      ],
+      "accession": [
+        "RIL_8W_59 RIL 8-way ",
+        "160"
+      ]
+    },
+    "trait": {
+      "observationVariableIds": [
+        "216",
+        "215",
+        "217",
+        "218",
+        "65",
+        "66",
+        "50",
+        "54",
+        "52",
+        "186",
+        "188",
+        "60",
+        "71",
+        "195"
+      ]
+    },
+    "node": "VIB",
+    "databaseName": "brapi@VIB"
+  },
+  {
+    "countryOfOriginCode": "BE",
+    "instituteCode": "VIB",
+    "accessionNumber": "183",
+    "defaultDisplayName": "RIL_8W_75 RIL 8-way ",
+    "germplasmDbId": "dXJuOlZJQi9nZXJtcGxhc20vWmVhX1ZJQl9SSUxfOFdfNzVSSUw4d2F5X19fMTgz",
+    "germplasmName": "RIL_8W_75 RIL 8-way ",
+    "commonCropName": "Maize",
+    "instituteName": "VIB",
+    "species": "Zea",
+    "genus": "Zea",
+    "source": "VIB",
+    "studyDbIds": [
+      "dXJuOlZJQi9zdHVkeS9WSUJfc3R1ZHlfX180OA==",
+      "dXJuOlZJQi9zdHVkeS9WSUJfc3R1ZHlfX181NQ=="
+    ],
+    "germplasmURI": "urn:VIB/germplasm/Zea_VIB_RIL_8W_75RIL8way___183",
+    "@type": [
+      "Germplasm"
+    ],
+    "@id": "urn:VIB/germplasm/Zea_VIB_RIL_8W_75RIL8way___183",
+    "schema:includedInDataCatalog": "http://pippa.psb.ugent.be",
+    "schema:identifier": "dXJuOlZJQi9nZXJtcGxhc20vWmVhX1ZJQl9SSUxfOFdfNzVSSUw4d2F5X19fMTgz",
+    "schema:name": "RIL_8W_75 RIL 8-way ",
+    "studyURIs": [
+      "urn:VIB/study/VIB_study___48",
+      "urn:VIB/study/VIB_study___55"
+    ],
+    "entryType": "Germplasm",
+    "name": "RIL_8W_75 RIL 8-way ",
+    "schema:description": "\"RIL_8W_75 RIL 8-way \" is a Zea mays (Maize) accession (number: \"183\").",
+    "description": "RIL_8W_75 RIL 8-way  is a Zea mays (Maize) accession (number: 183).",
+    "germplasm": {
+      "cropName": [
+        "Maize",
+        "Zea",
+        "Zea mays"
+      ],
+      "accession": [
+        "RIL_8W_75 RIL 8-way ",
+        "183"
+      ]
+    },
+    "trait": {
+      "observationVariableIds": [
+        "65",
+        "66",
+        "50",
+        "54",
+        "52",
+        "186",
+        "188",
+        "60",
+        "71",
+        "195",
+        "216",
+        "215",
+        "217",
+        "218"
+      ]
+    },
+    "node": "VIB",
+    "databaseName": "brapi@VIB"
+  },
+  {
+    "countryOfOriginCode": "BE",
+    "instituteCode": "VIB",
+    "accessionNumber": "177",
+    "defaultDisplayName": "RIL_8W_81 RIL 8-way ",
+    "germplasmDbId": "dXJuOlZJQi9nZXJtcGxhc20vWmVhX1ZJQl9SSUxfOFdfODFSSUw4d2F5X19fMTc3",
+    "germplasmName": "RIL_8W_81 RIL 8-way ",
+    "commonCropName": "Maize",
+    "instituteName": "VIB",
+    "species": "Zea",
+    "genus": "Zea",
+    "source": "VIB",
+    "studyDbIds": [
+      "dXJuOlZJQi9zdHVkeS9WSUJfc3R1ZHlfX180OA==",
+      "dXJuOlZJQi9zdHVkeS9WSUJfc3R1ZHlfX181NQ=="
+    ],
+    "germplasmURI": "urn:VIB/germplasm/Zea_VIB_RIL_8W_81RIL8way___177",
+    "@type": [
+      "Germplasm"
+    ],
+    "@id": "urn:VIB/germplasm/Zea_VIB_RIL_8W_81RIL8way___177",
+    "schema:includedInDataCatalog": "http://pippa.psb.ugent.be",
+    "schema:identifier": "dXJuOlZJQi9nZXJtcGxhc20vWmVhX1ZJQl9SSUxfOFdfODFSSUw4d2F5X19fMTc3",
+    "schema:name": "RIL_8W_81 RIL 8-way ",
+    "studyURIs": [
+      "urn:VIB/study/VIB_study___48",
+      "urn:VIB/study/VIB_study___55"
+    ],
+    "entryType": "Germplasm",
+    "name": "RIL_8W_81 RIL 8-way ",
+    "schema:description": "\"RIL_8W_81 RIL 8-way \" is a Zea mays (Maize) accession (number: \"177\").",
+    "description": "RIL_8W_81 RIL 8-way  is a Zea mays (Maize) accession (number: 177).",
+    "germplasm": {
+      "cropName": [
+        "Maize",
+        "Zea",
+        "Zea mays"
+      ],
+      "accession": [
+        "RIL_8W_81 RIL 8-way ",
+        "177"
+      ]
+    },
+    "trait": {
+      "observationVariableIds": [
+        "65",
+        "66",
+        "50",
+        "54",
+        "52",
+        "186",
+        "188",
+        "60",
+        "71",
+        "195",
+        "216",
+        "215",
+        "217",
+        "218"
+      ]
+    },
+    "node": "VIB",
+    "databaseName": "brapi@VIB"
+  }
+]
