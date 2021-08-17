@@ -143,11 +143,13 @@ def dump_clean_in_json_files(source_dir, logger, documents_tuples):
     for document_header, document in documents_tuples:
 
         # Hide email
-        if "contact" in document:
-            old_mail = document["contact"]["email"]
-            if old_mail is not None:
-                safe_mail = old_mail.replace('@', '_')
-                document["contact"]["email"] = safe_mail
+        if ("email" in document):
+                document["email"]= document["email"].replace('@', '_')
+
+        if ("contacts" in document):
+            for contact in document["contacts"]:
+                if "email" in contact :
+                    contact["email"]= contact["email"].replace('@', '_')
 
         if document_header not in json_dict:
             json_dict[document_header] = []

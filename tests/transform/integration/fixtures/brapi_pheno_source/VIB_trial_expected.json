@@ -1,4 +1,4 @@
-[    
+[
     {
         "publications": [
             {
@@ -90,7 +90,7 @@
             {
                 "institutionName": "Institute of Life Sciences, Scuola Superiore Sant’Anna, Pisa, Italy",
                 "type": "Corresponding author",
-                "email": "marioenrico.pe@santannapisa.it",
+                "email": "marioenrico.pe_santannapisa.it",
                 "orcid": "0000-0001-6197-2282",
                 "name": "Mario Enrico Pè",
                 "contactDbId": "dXJuOlZJQi9jb250YWN0LzMxOTE5MDk0NTA=",
@@ -240,6 +240,17 @@
                 "trialDbIds": [
                     "dXJuOlZJQi90cmlhbC8z"
                 ],
+                "contacts": [
+                    {
+                        "contactDbId": "dXJuOlZJQi9jb250YWN0LzVmNGU1NTA5",
+                        "email": "bob@bob.com",
+                        "instituteName": "The BrAPI Institute",
+                        "name": "Bob Robertson",
+                        "orcid": "http://orcid.org/0000-0001-8640-1750",
+                        "type": "PI",
+                        "contactURI": "urn:VIB/contact/5f4e5509"
+                    }
+                ],
                 "studyURI": "urn:VIB/study/VIB_study___48",
                 "@type": "study",
                 "@id": "urn:VIB/study/VIB_study___48",
@@ -318,7 +329,7 @@
             {
                 "institutionName": "VIB - Center for Plant Systems Biology",
                 "type": "Author",
-                "email": "joke.baute@vib.be",
+                "email": "joke.baute_vib.be",
                 "orcid": "0000-0003-0507-6904",
                 "name": "Joke Baute",
                 "contactDbId": "dXJuOlZJQi9jb250YWN0LzI2MDE1MjQ3NDU=",
@@ -338,7 +349,7 @@
             {
                 "institutionName": "VIB - Center for Plant Systems Biology",
                 "type": "Corresponding author",
-                "email": "dirk.inze@ugent.vib.be",
+                "email": "dirk.inze_ugent.vib.be",
                 "orcid": "0000-0002-3217-8407",
                 "name": "Dirk Inzé",
                 "contactDbId": "dXJuOlZJQi9jb250YWN0LzI1NjQyMDE4NDg=",
@@ -358,7 +369,7 @@
             {
                 "institutionName": "VIB - Center for Plant Systems Biology",
                 "type": "Collecting data",
-                "email": "joblo@psb.vib-ugent.be",
+                "email": "joblo_psb.vib-ugent.be",
                 "orcid": "0000-0003-0047-4380",
                 "name": "Jolien De Block",
                 "contactDbId": "dXJuOlZJQi9jb250YWN0LzM3MjgyNzExOTI=",

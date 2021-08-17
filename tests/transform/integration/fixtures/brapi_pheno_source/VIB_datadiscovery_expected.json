@@ -201,6 +201,17 @@
       "dXJuOlZJQi90cmlhbC8z"
     ],
     "studyURI": "urn:VIB/study/VIB_study___48",
+    "contacts": [
+      {
+        "contactDbId": "dXJuOlZJQi9jb250YWN0LzVmNGU1NTA5",
+        "email": "bob_bob.com",
+        "instituteName": "The BrAPI Institute",
+        "name": "Bob Robertson",
+        "orcid": "http://orcid.org/0000-0001-8640-1750",
+        "type": "PI",
+        "contactURI": "urn:VIB/contact/5f4e5509"
+      }
+    ],
     "@type": "study",
     "@id": "urn:VIB/study/VIB_study___48",
     "schema:includedInDataCatalog": "http://pippa.psb.ugent.be",

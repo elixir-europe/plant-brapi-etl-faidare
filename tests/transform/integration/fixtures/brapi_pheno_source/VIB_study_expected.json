@@ -1,163 +1,174 @@
 [
-    {
-        "trialDbId": "dXJuOlZJQi90cmlhbC8y",
-        "startDate": "2012-05-01",
-        "studyType": "Phenotyping Study",
-        "studyDbId": "dXJuOlZJQi9zdHVkeS9WSUJfc3R1ZHlfX181NQ==",
-        "trialName": "RIL_8-way_Field_trial",
-        "name": "Enrico Pe field trial",
-        "endDate": "2012-08-01",
-        "locationDbId": "dXJuOlZJQi9sb2NhdGlvbi81",
-        "locationName": "Field trial",
-        "active": false,
-        "source": "VIB",
-        "documentationURL": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/55",
-        "studyName": "Enrico Pe field trial",
-        "studyDescription": "Short description of the experimental design, possibly including statistical design.",
-        "germplasmDbIds": [
-            "dXJuOlZJQi9nZXJtcGxhc20vWmVhX1ZJQl9SSUxfOFdfRVAzM18yMF9fXzExODQ="
-        ],
-        "observationVariableDbIds": [
-            "216",
-            "215",
-            "217",
-            "218"
-        ],
-        "locationDbIds": [
-            "dXJuOlZJQi9sb2NhdGlvbi81"
-        ],
-        "trialDbIds": [
-            "dXJuOlZJQi90cmlhbC8y"
-        ],
-        "studyURI": "urn:VIB/study/VIB_study___55",
-        "@type": "study",
-        "@id": "urn:VIB/study/VIB_study___55",
-        "schema:includedInDataCatalog": "http://pippa.psb.ugent.be",
-        "schema:identifier": "VIB_study___55",
-        "schema:name": "Enrico Pe field trial",
-        "trialURI": "urn:VIB/trial/2",
-        "locationURI": "urn:VIB/location/5",
-        "germplasmURIs": [
-            "urn:VIB/germplasm/Zea_VIB_RIL_8W_EP33_20___1184"
-        ],
-        "locationURIs": [
-            "urn:VIB/location/5"
-        ],
-        "trialURIs": [
-            "urn:VIB/trial/2"
-        ],
-        "schema:url": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/55"
-    },
-    {
-        "trialDbId": "dXJuOlZJQi90cmlhbC8z",
-        "startDate": "2013-06-25",
-        "studyType": "Phenotyping Study",
-        "studyDbId": "dXJuOlZJQi9zdHVkeS9WSUJfc3R1ZHlfX180Ng==",
-        "trialName": "RIL_8-way_growth_chamber",
-        "name": "RIL 8-way  batch 7",
-        "endDate": "2013-07-22",
-        "locationDbId": "dXJuOlZJQi9sb2NhdGlvbi8x",
-        "locationName": "growth chamber",
-        "active": false,
-        "source": "VIB",
-        "documentationURL": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/46",
-        "studyName": "RIL 8-way  batch 7",
-        "studyDescription": "Short description of the experimental design, possibly including statistical design.",
-        "germplasmDbIds": [
-            "dXJuOlZJQi9nZXJtcGxhc20vWmVhX1ZJQl9SSUxfOFdfNTlSSUw4d2F5X19fMTYw"
-        ],
-        "observationVariableDbIds": [
-            "65",
-            "66",
-            "50",
-            "54",
-            "52",
-            "186",
-            "188",
-            "60",
-            "71",
-            "195"
-        ],
-        "locationDbIds": [
-            "dXJuOlZJQi9sb2NhdGlvbi8x"
-        ],
-        "trialDbIds": [
-            "dXJuOlZJQi90cmlhbC8z"
-        ],
-        "studyURI": "urn:VIB/study/VIB_study___46",
-        "@type": "study",
-        "@id": "urn:VIB/study/VIB_study___46",
-        "schema:includedInDataCatalog": "http://pippa.psb.ugent.be",
-        "schema:identifier": "VIB_study___46",
-        "schema:name": "RIL 8-way  batch 7",
-        "trialURI": "urn:VIB/trial/3",
-        "locationURI": "urn:VIB/location/1",
-        "germplasmURIs": [
-            "urn:VIB/germplasm/Zea_VIB_RIL_8W_59RIL8way___160"
-        ],
-        "locationURIs": [
-            "urn:VIB/location/1"
-        ],
-        "trialURIs": [
-            "urn:VIB/trial/3"
-        ],
-        "schema:url": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/46"
-    },
-    {
-        "trialDbId": "dXJuOlZJQi90cmlhbC8z",
-        "startDate": "2013-08-20",
-        "studyType": "Phenotyping Study",
-        "studyDbId": "dXJuOlZJQi9zdHVkeS9WSUJfc3R1ZHlfX180OA==",
-        "trialName": "RIL_8-way_growth_chamber",
-        "name": "RIL 8-way  batch 9",
-        "endDate": "2013-09-16",
-        "locationDbId": "dXJuOlZJQi9sb2NhdGlvbi8x",
-        "locationName": "growth chamber",
-        "active": false,
-        "source": "VIB",
-        "documentationURL": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/48",
-        "studyName": "RIL 8-way  batch 9",
-        "studyDescription": "Short description of the experimental design, possibly including statistical design.",
-        "germplasmDbIds": [
-            "dXJuOlZJQi9nZXJtcGxhc20vWmVhX1ZJQl9SSUxfOFdfNzVSSUw4d2F5X19fMTgz",
-            "dXJuOlZJQi9nZXJtcGxhc20vWmVhX1ZJQl9SSUxfOFdfODFSSUw4d2F5X19fMTc3"
-        ],
-        "observationVariableDbIds": [
-            "65",
-            "66",
-            "50",
-            "54",
-            "52",
-            "186",
-            "188",
-            "60",
-            "71",
-            "195"
-        ],
-        "locationDbIds": [
-            "dXJuOlZJQi9sb2NhdGlvbi8x"
-        ],
-        "trialDbIds": [
-            "dXJuOlZJQi90cmlhbC8z"
-        ],
-        "studyURI": "urn:VIB/study/VIB_study___48",
-        "@type": "study",
-        "@id": "urn:VIB/study/VIB_study___48",
-        "schema:includedInDataCatalog": "http://pippa.psb.ugent.be",
-        "schema:identifier": "VIB_study___48",
-        "schema:name": "RIL 8-way  batch 9",
-        "trialURI": "urn:VIB/trial/3",
-        "locationURI": "urn:VIB/location/1",
-        "germplasmURIs": [
-            "urn:VIB/germplasm/Zea_VIB_RIL_8W_75RIL8way___183",
-            "urn:VIB/germplasm/Zea_VIB_RIL_8W_81RIL8way___177"
-        ],
-        "locationURIs": [
-            "urn:VIB/location/1"
-        ],
-        "trialURIs": [
-            "urn:VIB/trial/3"
-        ],
-        "schema:url": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/48"
-    }
+  {
+    "trialDbId": "dXJuOlZJQi90cmlhbC8y",
+    "startDate": "2012-05-01",
+    "studyType": "Phenotyping Study",
+    "studyDbId": "dXJuOlZJQi9zdHVkeS9WSUJfc3R1ZHlfX181NQ==",
+    "trialName": "RIL_8-way_Field_trial",
+    "name": "Enrico Pe field trial",
+    "endDate": "2012-08-01",
+    "locationDbId": "dXJuOlZJQi9sb2NhdGlvbi81",
+    "locationName": "Field trial",
+    "active": false,
+    "source": "VIB",
+    "documentationURL": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/55",
+    "studyName": "Enrico Pe field trial",
+    "studyDescription": "Short description of the experimental design, possibly including statistical design.",
+    "germplasmDbIds": [
+      "dXJuOlZJQi9nZXJtcGxhc20vWmVhX1ZJQl9SSUxfOFdfRVAzM18yMF9fXzExODQ="
+    ],
+    "observationVariableDbIds": [
+      "216",
+      "215",
+      "217",
+      "218"
+    ],
+    "locationDbIds": [
+      "dXJuOlZJQi9sb2NhdGlvbi81"
+    ],
+    "trialDbIds": [
+      "dXJuOlZJQi90cmlhbC8y"
+    ],
+    "studyURI": "urn:VIB/study/VIB_study___55",
+    "@type": "study",
+    "@id": "urn:VIB/study/VIB_study___55",
+    "schema:includedInDataCatalog": "http://pippa.psb.ugent.be",
+    "schema:identifier": "VIB_study___55",
+    "schema:name": "Enrico Pe field trial",
+    "trialURI": "urn:VIB/trial/2",
+    "locationURI": "urn:VIB/location/5",
+    "germplasmURIs": [
+      "urn:VIB/germplasm/Zea_VIB_RIL_8W_EP33_20___1184"
+    ],
+    "locationURIs": [
+      "urn:VIB/location/5"
+    ],
+    "trialURIs": [
+      "urn:VIB/trial/2"
+    ],
+    "schema:url": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/55"
+  },
+  {
+    "trialDbId": "dXJuOlZJQi90cmlhbC8z",
+    "startDate": "2013-06-25",
+    "studyType": "Phenotyping Study",
+    "studyDbId": "dXJuOlZJQi9zdHVkeS9WSUJfc3R1ZHlfX180Ng==",
+    "trialName": "RIL_8-way_growth_chamber",
+    "name": "RIL 8-way  batch 7",
+    "endDate": "2013-07-22",
+    "locationDbId": "dXJuOlZJQi9sb2NhdGlvbi8x",
+    "locationName": "growth chamber",
+    "active": false,
+    "source": "VIB",
+    "documentationURL": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/46",
+    "studyName": "RIL 8-way  batch 7",
+    "studyDescription": "Short description of the experimental design, possibly including statistical design.",
+    "germplasmDbIds": [
+      "dXJuOlZJQi9nZXJtcGxhc20vWmVhX1ZJQl9SSUxfOFdfNTlSSUw4d2F5X19fMTYw"
+    ],
+    "observationVariableDbIds": [
+      "65",
+      "66",
+      "50",
+      "54",
+      "52",
+      "186",
+      "188",
+      "60",
+      "71",
+      "195"
+    ],
+    "locationDbIds": [
+      "dXJuOlZJQi9sb2NhdGlvbi8x"
+    ],
+    "trialDbIds": [
+      "dXJuOlZJQi90cmlhbC8z"
+    ],
+    "studyURI": "urn:VIB/study/VIB_study___46",
+    "@type": "study",
+    "@id": "urn:VIB/study/VIB_study___46",
+    "schema:includedInDataCatalog": "http://pippa.psb.ugent.be",
+    "schema:identifier": "VIB_study___46",
+    "schema:name": "RIL 8-way  batch 7",
+    "trialURI": "urn:VIB/trial/3",
+    "locationURI": "urn:VIB/location/1",
+    "germplasmURIs": [
+      "urn:VIB/germplasm/Zea_VIB_RIL_8W_59RIL8way___160"
+    ],
+    "locationURIs": [
+      "urn:VIB/location/1"
+    ],
+    "trialURIs": [
+      "urn:VIB/trial/3"
+    ],
+    "schema:url": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/46"
+  },
+  {
+    "trialDbId": "dXJuOlZJQi90cmlhbC8z",
+    "startDate": "2013-08-20",
+    "studyType": "Phenotyping Study",
+    "studyDbId": "dXJuOlZJQi9zdHVkeS9WSUJfc3R1ZHlfX180OA==",
+    "trialName": "RIL_8-way_growth_chamber",
+    "name": "RIL 8-way  batch 9",
+    "endDate": "2013-09-16",
+    "locationDbId": "dXJuOlZJQi9sb2NhdGlvbi8x",
+    "locationName": "growth chamber",
+    "active": false,
+    "source": "VIB",
+    "documentationURL": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/48",
+    "studyName": "RIL 8-way  batch 9",
+    "studyDescription": "Short description of the experimental design, possibly including statistical design.",
+    "germplasmDbIds": [
+      "dXJuOlZJQi9nZXJtcGxhc20vWmVhX1ZJQl9SSUxfOFdfNzVSSUw4d2F5X19fMTgz",
+      "dXJuOlZJQi9nZXJtcGxhc20vWmVhX1ZJQl9SSUxfOFdfODFSSUw4d2F5X19fMTc3"
+    ],
+    "observationVariableDbIds": [
+      "65",
+      "66",
+      "50",
+      "54",
+      "52",
+      "186",
+      "188",
+      "60",
+      "71",
+      "195"
+    ],
+    "locationDbIds": [
+      "dXJuOlZJQi9sb2NhdGlvbi8x"
+    ],
+    "trialDbIds": [
+      "dXJuOlZJQi90cmlhbC8z"
+    ],
+    "contacts": [
+      {
+        "contactDbId": "dXJuOlZJQi9jb250YWN0LzVmNGU1NTA5",
+        "email": "bob_bob.com",
+        "instituteName": "The BrAPI Institute",
+        "name": "Bob Robertson",
+        "orcid": "http://orcid.org/0000-0001-8640-1750",
+        "type": "PI",
+        "contactURI": "urn:VIB/contact/5f4e5509"
+      }
+    ],
+    "studyURI": "urn:VIB/study/VIB_study___48",
+    "@type": "study",
+    "@id": "urn:VIB/study/VIB_study___48",
+    "schema:includedInDataCatalog": "http://pippa.psb.ugent.be",
+    "schema:identifier": "VIB_study___48",
+    "schema:name": "RIL 8-way  batch 9",
+    "trialURI": "urn:VIB/trial/3",
+    "locationURI": "urn:VIB/location/1",
+    "germplasmURIs": [
+      "urn:VIB/germplasm/Zea_VIB_RIL_8W_75RIL8way___183",
+      "urn:VIB/germplasm/Zea_VIB_RIL_8W_81RIL8way___177"
+    ],
+    "locationURIs": [
+      "urn:VIB/location/1"
+    ],
+    "trialURIs": [
+      "urn:VIB/trial/3"
+    ],
+    "schema:url": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/48"
+  }
 ]

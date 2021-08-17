@@ -7,18 +7,19 @@ from deepdiff import DeepDiff
 
 class MyTestCase(unittest.TestCase):
 
-    _are_file_generated = False
+    #_are_file_generated = False
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(self):
         self._current_path = os.path.dirname(__file__)
         self._root_dir = os.path.normpath(os.path.join(self._current_path, "../../../"))
-        if not self._are_file_generated:
-            result = subprocess.run([self._root_dir + "/main.py", "trans",
-                                     "es",
-                                     self._root_dir + "/tests/transform/integration/fixtures/VIB.json",
-                                     "--data-dir",
-                                     self._root_dir + "/tests/transform/integration/fixtures/brapi_pheno_source"])
-            self._are_file_generated = True
+        #if not self._are_file_generated:
+        result = subprocess.run([self._root_dir + "/main.py", "trans",
+                                    "es",
+                                    self._root_dir + "/tests/transform/integration/fixtures/VIB.json",
+                                    "--data-dir",
+                                    self._root_dir + "/tests/transform/integration/fixtures/brapi_pheno_source"])
+            #self._are_file_generated = True
 
         self._actual_data_dir =  self._root_dir + "/tests/transform/integration/fixtures/brapi_pheno_source/json-bulk/"
         self._expected_data_dir =  self._root_dir + "/tests/transform/integration/fixtures/brapi_pheno_source/"
@@ -38,7 +39,7 @@ class MyTestCase(unittest.TestCase):
 
 
     def test_all_germplasms_generated(self):
-        self.assertTrue(True)
+
         with open(self._actual_data_dir+"VIB/germplasm-1.json") as actual_vib_f:
             actual_vib = json.load(actual_vib_f)
 
@@ -49,7 +50,7 @@ class MyTestCase(unittest.TestCase):
 
 
     def test_all_datadiscovery_generated(self):
-        self.assertTrue(True)
+
         with open(self._actual_data_dir+"VIB/datadiscovery-1.json") as actual_vib_f:
             actual_vib = json.load(actual_vib_f)
 
@@ -60,7 +61,7 @@ class MyTestCase(unittest.TestCase):
 
 
     def test_all_locations_generated(self):
-        self.assertTrue(True)
+
         with open(self._actual_data_dir+"VIB/location-1.json") as actual_vib_f:
             actual_vib = json.load(actual_vib_f)
 
@@ -71,7 +72,7 @@ class MyTestCase(unittest.TestCase):
 
 
     def test_all_observationVariables_generated(self):
-        self.assertTrue(True)
+
         with open(self._actual_data_dir+"VIB/observationVariable-1.json") as actual_vib_f:
             actual_vib = json.load(actual_vib_f)
 
@@ -82,7 +83,7 @@ class MyTestCase(unittest.TestCase):
 
 
     def test_all_studys_generated(self):
-        self.assertTrue(True)
+
         with open(self._actual_data_dir+"VIB/study-1.json") as actual_vib_f:
             actual_vib = json.load(actual_vib_f)
 
@@ -93,7 +94,7 @@ class MyTestCase(unittest.TestCase):
 
 
     def test_all_trials_generated(self):
-        self.assertTrue(True)
+
         with open(self._actual_data_dir+"VIB/trial-1.json") as actual_vib_f:
             actual_vib = json.load(actual_vib_f)
 
@@ -102,13 +103,12 @@ class MyTestCase(unittest.TestCase):
 
         self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
 
+    def test_all_contacts_generated(self):
 
-    def test_json_files_equals(self):
-        with open(self._actual_data_dir+"VIB.json") as actual_vib_f:
+        with open(self._actual_data_dir+"VIB/contact-1.json") as actual_vib_f:
             actual_vib = json.load(actual_vib_f)
 
-        with open(self._expected_data_dir+"VIB_expected.json") as expected_vib_f:
+        with open(self._expected_data_dir+"VIB_contact_expected.json") as expected_vib_f:
             expected_vib = json.load(expected_vib_f)
 
         self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
-
