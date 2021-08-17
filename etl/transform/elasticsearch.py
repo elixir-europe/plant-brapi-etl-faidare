@@ -132,15 +132,24 @@ def validate_documents(document_tuples, validation_schemas, logger):
     logger.debug(f"Validated {document_count} documents.")
 
 
-def dump_in_json_files(source_dir, logger, documents_tuples):
+def dump_clean_in_json_files(source_dir, logger, documents_tuples):
     """
-    Consumes an iterable of document tuples
+    Consumes an iterable of document tuples and clean email
     """
     logger.debug("Saving documents to json files...")
 
     json_dict = dict()
     document_count = 0
     for document_header, document in documents_tuples:
+
+        # Hide email
+        if ("email" in document):
+                document["email"]= document["email"].replace('@', '_')
+
+        if ("contacts" in document):
+            for contact in document["contacts"]:
+                if "email" in contact :
+                    contact["email"]= contact["email"].replace('@', '_')
 
         if document_header not in json_dict:
             json_dict[document_header] = []
@@ -158,20 +167,14 @@ def dump_in_json_files(source_dir, logger, documents_tuples):
 
 def save_json(source_dir, json_dict):
     for type, document in json_dict.items():
-        if len(document) < 10000:
-            with open(source_dir + "/" + type +'.json', 'w') as f:
-                json.dump(document, f, ensure_ascii=False)
+        file_number = 1
+        saved_documents = 0
+        while saved_documents < len(document):
+            with open(source_dir + "/" + type + '-' + str(file_number) + '.json', 'w') as f:
+                json.dump(document[saved_documents:file_number*10000], f, ensure_ascii=False)
             f.close()
-
-        else:
-            file_number = 1
-            saved_documents = 0
-            while saved_documents < len(document):
-                with open(source_dir + "/" + type + '-' + str(file_number) + '.json', 'w') as f:
-                    json.dump(document[saved_documents:file_number*10000], f, ensure_ascii=False)
-                f.close()
-                file_number += 1
-                saved_documents += 10000
+            file_number += 1
+            saved_documents += 10000
 
 
 def get_document_configs_by_entity(document_configs):
@@ -277,7 +280,7 @@ def transform_source(source, transform_config, source_json_dir, source_bulk_dir,
         validated_documents = validate_documents(documents, validation_schemas, logger)
 
         # Write the documents in jsonfiles
-        dump_in_json_files(source_bulk_dir, logger, validated_documents)
+        dump_clean_in_json_files(source_bulk_dir, logger, validated_documents)
         # shutil.rmtree(tmp_index_dir, ignore_errors=True)
 
         logger.info(f"SUCCEEDED Transforming BrAPI {source_name}.")
