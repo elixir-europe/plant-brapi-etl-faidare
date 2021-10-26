@@ -86,13 +86,15 @@
     },
     "holdingInstitute": {
       "{join}": [
-        "{.holdingInstitute.organisation}",
-        "{.instituteName}"
-      ]
+        { "{or}": ["{.holdingInstitute.organisation}", "{.instituteName}"] }
+     ]
     },
     "biologicalStatus": "{.biologicalStatusOfAccessionCode}",
     "geneticNature": "{.geneticNature}",
     "countryOfOrigin": "{.countryOfOriginCode}",
-    "taxonGroup": "{.genus}"
+    "taxonGroup": {
+      "{flatten_distinct}": ["{.genus}"]
+    },
+    "groupId": "{.groupId}"
   }
 }
