@@ -177,6 +177,14 @@
         ]
       }
     },
+    "germplasmList": {
+      "{flatten_distinct}": [
+        "{.germplasmURIs => .panel.name}",
+        "{.germplasmURIs => .collection.name}",
+        "{.germplasmURIs => .population.name}",
+        "{.germplasmURIs => .holdingGenbank.instituteName}"
+      ]
+    },
     "node": "{.source}",
     "databaseName": {
       "{join}": [
@@ -186,20 +194,22 @@
     },
     "holdingInstitute": {
       "{join}": [
-        "{.holdingInstitute.organisation}",
-        "{.instituteName}"
+        { "{or}": ["{.holdingInstitute.organisation}", "{.instituteName}"] }
       ]
     },
     "biologicalStatus": "{.biologicalStatusOfAccessionCode}",
     "geneticNature": "{.geneticNature}",
     "countryOfOrigin": "{.countryOfOriginCode}",
     "taxonGroup": {
-      "{flatten_distinct}": "{.germplasmURIs => .genus}"
+      "{flatten_distinct}": [
+        "{.germplasmURIs => .genus}"
+      ]
     },
     "observationVariableIds": {
       "{flatten_distinct}": [
         "{.observationVariableDbIds}"
       ]
-    }
+    },
+    "groupId": "{.groupId}"
   }
 }
