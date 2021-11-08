@@ -7,7 +7,7 @@
     "@id": "{.germplasmPUI}",
     "identifier": "{.germplasmPUI}",
     "name": "{.germplasmName}",
-
+    "accessionNumber": "{.accessionNumber}",
     "schema:includedInDataCatalog": "{.source}",
     "schema:identifier": "{.germplasmDbId}",
     "schema:name": {
@@ -95,6 +95,14 @@
     "taxonGroup": {
       "{flatten_distinct}": ["{.genus}"]
     },
-    "groupId": "{.groupId}"
+    "groupId": "{.groupId}",
+    "germplasmList": {
+      "{flatten_distinct}": [
+        "{.panel.name}",
+        "{.collection.name}",
+        "{.population.name}",
+        "{.holdingGenbank.instituteName}"
+      ]
+    }
   }
 }
