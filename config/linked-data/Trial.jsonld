@@ -2,15 +2,16 @@
   "@context": {
     "xsd": "http://www.w3.org/2001/XMLSchema#",
     "brapi": "https://brapi.org/rdf/",
+    "ppeo": "http://purl.org/ppeo/PPEO.owl#",
 
-    "Trial": "brapi:Trial",
+    "Trial": "ppeo:trial",
     "Program": "brapi:Program",
 
     "trialPUI": "@id",
-    "trialDbId": "brapi:hasDatabaseIdentifier",
-    "trialName": "brapi:hasName",
-    "startDate": "brapi:hasStartDate",
-    "endDate": "brapi:hasEndDate",
+    "trialDbId": "ppeo:hasDatabaseId",
+    "trialName": "ppeo:hasName",
+    "startDate": "ppeo:hasStartDateTime",
+    "endDate": "brapi:hasEndDateTime",
     "active": "brapi:hasActive",
 
     "programPUI": {
@@ -18,7 +19,7 @@
       "@type": "@id"
     },
 
-    "studies": "brapi:hasStudy",
+    "studyDbIds": "brapi:hasStudy",
     "studyPUI": "@id"
   }
 }

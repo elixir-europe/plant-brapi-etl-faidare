@@ -2,6 +2,7 @@
   "@context": {
     "xsd": "http://www.w3.org/2001/XMLSchema#",
     "brapi": "https://brapi.org/rdf/",
+    "ppeo": "http://purl.org/ppeo/PPEO.owl#",
 
     "Program": "brapi:Program",
 

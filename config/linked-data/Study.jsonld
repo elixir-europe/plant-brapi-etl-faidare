@@ -2,36 +2,35 @@
   "@context": {
     "xsd": "http://www.w3.org/2001/XMLSchema#",
     "brapi": "https://brapi.org/rdf/",
+    "ppeo": "http://purl.org/ppeo/PPEO.owl#",
 
-    "Study": "brapi:Study",
-    "Trial": "brapi:Trial",
-    "Location": "brapi:Location",
+    "Study": "ppeo:study",
+    "Trial": "ppeo:investigation",
+    "Location": "ppeo:location",
 
     "studyPUI": "@id",
-    "studyDbId": "brapi:hasDatabaseIdentifier",
-    "studyName": "brapi:hasName",
-    "name": "brapi:hasName",
+    "studyDbId": "ppeo:hasDatabaseId",
+    "studyName": "ppeo:hasName",
+    "name": "ppeo:hasName",
     "studyType": "brapi:hasType",
-    "seasons": "brapi:hasSeason",
-    "studyDescription": "brapi:hasDescription",
-    "license": "brapi:hasLicense",
-    "startDate": "brapi:hasStartDate",
-    "endDate": "brapi:hasEndDate",
+    "seasons": "ppeo:hasSeason",
+    "studyDescription": "ppeo:hasDescription",
+    "license": "ppeo:hasLicense",
+    "startDate": "ppeo:hasStartDateTime",
+    "endDate": "ppeo:hasEndDateTime",
     "active": "brapi:isActive",
-
-    "trialPUI": {
-      "@id": "brapi:hasTrial",
+    "trialDbIds": {
+      "@id": "ppeo:investigation",
       "@type": "@id"
     },
-
     "locationPUI": {
       "@id": "brapi:hasLocation",
       "@type": "@id"
     },
-
     "germplasmPUI": {
       "@id": "brapi:hasGermplasm",
       "@type": "@id"
-    }
+    },
+    "germplasmDbIds": "brapi:hasGermplasm"
   }
 }
