@@ -6,10 +6,10 @@
     "Program": "brapi:Program",
 
     "programPUI": "@id",
-    "programDbId": "brapi:hasDatabaseIdentifier",
-    "name": "brapi:hasName",
-    "abbreviation": "brapi:hasAbbreviation",
-    "objective": "brapi:hasObjective",
-    "leadPerson": "brapi:hasLeadPerson"
+    "programDbId": "ppeo:hasIdentifier",
+    "name": "ppeo:hasName",
+    "abbreviation": "ppeo:hasAbbreviation",
+    "objective": "ppeo:hasDescription",
+    "leadPerson": "ppeo:hasPersonWithRole"
   }
 }

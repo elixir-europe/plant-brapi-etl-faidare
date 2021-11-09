@@ -1,25 +1,25 @@
 {
   "@context": {
     "xsd": "http://www.w3.org/2001/XMLSchema#",
-    "brapi": "https://brapi.org/rdf/",
+    "ppeo": "http://purl.org/ppeo/PPEO.owl#",
 
-    "Location": "brapi:Location",
+    "Location": "ppeo:hasLocation",
 
     "locationPUI": "@id",
-    "locationDbId": "brapi:hasDatabaseIdentifier",
+    "locationDbId": "ppeo:hasDatabaseId",
 
-    "name": "brapi:hasName",
-    "abreviation": "brapi:hasAbreviation",
-    "locationType": "brapi:hasType",
+    "name": "ppeo:hasName",
+    "abreviation": "ppeo:hasInstituteCode",
+    "locationType": "ppeo:hasType",
 
-    "countryCode": "brapi:hasCountryCode",
-    "countryName": "brapi:hasCountryName",
+    "countryCode": "ppeo:hasCountryCode",
+    "countryName": "ppeo:hasCountry",
 
-    "instituteName": "brapi:hasInstituteName",
-    "instituteAdress": "brapi:hasInstituteAdress",
+    "instituteName": "ppeo:hasInstituteCode",
+    "instituteAdress": "ppeo:hasAddress",
 
-    "latitude": "brapi:hasLatitude",
-    "longitude": "brapi:hasLongitude",
-    "altitude": "brapi:hasAltitude"
+    "latitude": "ppeo:hasLatitude",
+    "longitude": "ppeo:hasLongitude",
+    "altitude": "ppeo:hasAltitude"
   }
 }
