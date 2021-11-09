@@ -5,9 +5,9 @@
 
     "Contact": "ppeo:person",
 
-    "contactDbId": "@id",
+    "contactPUI": "@id",
 
-    "contactName": "ppeo:hasName"
+    "name": "ppeo:hasName"
 
   }
 }
