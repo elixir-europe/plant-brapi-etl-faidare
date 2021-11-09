@@ -1,13 +1,13 @@
 {
   "@context": {
     "xsd": "http://www.w3.org/2001/XMLSchema#",
-    "brapi": "https://brapi.org/rdf/",
+    "ppeo": "http://purl.org/ppeo/PPEO.owl#",
 
-    "Contact": "brapi:Contact",
+    "Contact": "ppeo:person",
 
     "contactDbId": "@id",
 
-    "contactName": "brapi:hasName"
+    "contactName": "ppeo:hasName"
 
   }
 }
