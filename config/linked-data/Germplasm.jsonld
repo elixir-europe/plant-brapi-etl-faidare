@@ -2,21 +2,23 @@
   "@context": {
     "xsd": "http://www.w3.org/2001/XMLSchema#",
     "brapi": "https://brapi.org/rdf/",
+    "ppeo": "http://purl.org/ppeo/PPEO.owl#",
 
-    "Germplasm": "brapi:Germplasm",
+    "Germplasm": "ppeo:biological_material",
     "Donor": "brapi:Donor",
 
     "germplasmPUI": "@id",
-    "germplasmDbId": "brapi:hasDatabaseIdentifier",
-    "accessionNumber": "brapi:hasAccessionNumber",
-    "genus": "brapi:hasGenus",
-    "species": "brapi:hasSpecies",
-    "speciesAuthority": "brapi:hasSpeciesAuthority",
-    "subtaxa": "brapi:hasSubtaxa",
-    "subtaxaAuthority": "brapi:hasSubtaxaAuthority",
-    "countryOfOriginCode": "brapi:hasCountryOfOriginCode",
-    "instituteCode": "brapi:hasInstituteCode",
-    "instituteName": "brapi:hasInstituteName",
+    "germplasmDbId": "ppeo:hasDatabaseId",
+    "accessionNumber": "ppeo:hasGermplasmAccessionNumber",
+    "germplasmName": "ppeo:hasName",
+    "genus": "ppeo:hasGenus",
+    "species": "ppeo:hasSpecies",
+    "speciesAuthority": "ppeo:hasSpeciesAuthority",
+    "subtaxa": "ppeo:hasSubtaxon",
+    "subtaxaAuthority": "ppeo:hasSubtaxonAuthority",
+    "countryOfOriginCode": "ppeo:hasCountryOfOrigin",
+    "instituteCode": "ppeo:hasInstituteCode",
+    "instituteName": "ppeo:hasInstituteName",
     "biologicalStatusOfAccessionCode": "brapi:hasBiologicalStatusOfAccessionCode",
     "collectingOrAcquisitionSourceCode": "brapi:hasCollectingOrAcquisitionSourceCode",
     "typeOfGermplasmStorageCode": "brapi:hasTypeOfGermplasmStorageCode",
@@ -33,13 +35,8 @@
       "@id": "brapi:isDerivedFromGermplasm",
       "@type": "@id"
     },
-
     "taxonIds": {
-      "@id": "brapi:hasTaxon",
-      "@type": "@id"
-    },
-    "ncbiTaxon": {
-      "@id": "brapi:hasTaxon",
+      "@id": "ppeo:hasTaxonIdentifier",
       "@type": "@id"
     }
 
