@@ -7,7 +7,7 @@
 
     "contactDbId": "@id",
 
-    "contactName": "brapi:hasName",
+    "contactName": "brapi:hasName"
 
   }
 }

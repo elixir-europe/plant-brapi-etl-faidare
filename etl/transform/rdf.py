@@ -12,12 +12,12 @@ from etl.common.utils import get_folder_path, get_file_path, pool_worker
 
 def transform_to_rdf(options):
     jsonld_path, rdf_path = options
-    print(" jsonld_path "+ jsonld_path + " rdf_path " + rdf_path)
     graph = Graph()
     # Read each jsonld line as new graph
     with open(jsonld_path, 'r') as jsonld_file:
-        graph.parse(data=jsonld_file.read(), format='json-ld')
-
+        print(" jsonld_path "+ jsonld_path + " rdf_path " + rdf_path)
+        graph.parse(data=jsonld_file.read(), format="json-ld")
+    #graph.parse(data=jsonld_path, format="json-ld")
     # Write turtle file
     graph.serialize(format='turtle', encoding='utf8', destination=rdf_path)
     #with open(rdf_path, 'w') as rdf_file:
@@ -72,4 +72,4 @@ def main(config):
 
         transform_folder(institution_jsonld_dir, institution_rdf_dir)
 
-        transform_brapi_model(model_path, institution_rdf_dir)
+        #transform_brapi_model(model_path, institution_rdf_dir)

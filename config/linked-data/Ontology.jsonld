@@ -7,7 +7,7 @@
 
     "ontologyDbId": "@id",
 
-    "ontologyName": "brapi:hasName",
+    "ontologyName": "brapi:hasName"
 
   }
 }
