@@ -3,7 +3,7 @@ import unittest
 from etl.common.templating import resolve, parse_template
 
 data_0 = {"refURIs": [1, 2, 3, '4', 5], "foo": [1, 2, 3], "genus": "Zea", "species": "mays", "falseField": False, "studyTypeName": "gnomic"}
-data_1 = {"a": "a", "genus": "Zea", "species": "Zea mays"}
+data_1 = {"a": "a", "genus": "Zea", "species": "Zea mays", "source": "URGI"}
 data_2 = {"a": "b", "g": {"genus": "Populus"}}
 data_3 = {"a": "b", "g": {"genus": "Triticum", "species": "Triticum aestivum"}}
 data_4 = {"g": {"genus": "Triticum", "species": "aestivum"}}
@@ -129,7 +129,7 @@ class TestResolve(unittest.TestCase):
         expected = "foo123foo123"
         self.assertEqual(actual, expected)
 
-    def test_resolve_if1(self):
+    def test_resolve_if1(self):# this test is supicious, it passes whatever the value of "foo" in `"{if}": "foo"` maybe because "foo" is truthy
         template = parse_template({"{if}": "foo", "{then}": "then"})
         actual = resolve(template, data_0, data_index)
         expected = "then"
@@ -157,6 +157,24 @@ class TestResolve(unittest.TestCase):
         template = parse_template({"{if}": "{.falseField}", "{then}": "bar", "{else}": "else"})
         actual = resolve(template, data_0, data_index)
         expected = "else"
+        self.assertEqual(actual, expected)
+
+    def test_resolve_if6(self):
+        template = parse_template({"{if}": "{.studyTypeName}", "{then}": "{.studyTypeName}"})
+        actual = resolve(template, data_0, data_index)
+        expected = "gnomic"
+        self.assertEqual(actual, expected)
+
+    def test_resolve_if6_ko(self):
+        template = parse_template({"{if}": "{.studyTypeName}", "{then}": "{.studyTypeName}"})
+        actual = resolve(template, data_0, data_index)
+        expected = "gnomicus"
+        self.assertNotEqual(actual, expected)
+
+    def test_resolve_if7(self):
+        template = parse_template({"{if}": {"{equals}":["{.source}", "URGI"]}, "{then}": "gotcha", "{else}": "{.source}"})
+        actual = resolve(template, data_1, data_index)
+        expected = "URGI"
         self.assertEqual(actual, expected)
 
     def test_resolve_replace_with(self):

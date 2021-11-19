@@ -177,6 +177,11 @@ def resolve_or_template(template, data, data_index):
         initial
     )
 
+def resolve_equals_template(template, data, data_index):
+    elements = template.get('{equals}')
+    initial = False
+    return elements[0] == elements[1]
+
 
 def resolve_map_template(template, data, data_index):
     elements = template.get('{map}')
@@ -218,7 +223,8 @@ def resolve(parsed_template, data, data_index):
             '{lark}': resolve_field_value_template,
             '{map}': resolve_map_template,
             '{merge}': resolve_merge_template,
-            '{replace}': resolve_replace_with_template
+            '{replace}': resolve_replace_with_template,
+            '{equals}': resolve_equals_template
         }
         for key, evaluator in evaluable_templates.items():
             if key in parsed_template:
