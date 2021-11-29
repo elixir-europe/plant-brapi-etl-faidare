@@ -6,6 +6,7 @@ import traceback
 from copy import deepcopy
 
 import urllib3
+import urllib.request
 from multiprocessing.pool import ThreadPool
 
 from etl.common.brapi import BreedingAPIIterator, get_implemented_calls, get_implemented_call
@@ -274,6 +275,11 @@ def extract_source(source, entities, config, output_dir):
         entity['store'].clear()
 
 
+def extract_statics_files(source, output_dir):
+    local_filename = urllib.request.urlretrieve(source["brapi:static-file-repository-url"] + "/germplasm.json", output_dir +"/germplasm.json")
+    local_filename2 = urllib.request.urlretrieve(source["brapi:static-file-repository-url"] + "/study.json", output_dir +"/study.json")
+
+
 def main(config):
     entities = config["extract-brapi"]["entities"]
     for (entity_name, entity) in entities.items():
@@ -284,9 +290,7 @@ def main(config):
 
     threads = list()
     for source_name in sources:
-        if source_name == 'EVA':
-            print("# INFO: EVA data can't be extracted, EVA Skipped ..")
-            continue
+        
         source_json_dir = get_folder_path([json_dir, source_name], recreate=True)
         source_json_dir_failed = source_json_dir + '-failed'
         if os.path.exists(source_json_dir_failed):
@@ -294,13 +298,16 @@ def main(config):
 
         source = deepcopy(sources[source_name])
         entities_copy = deepcopy(entities)
-
-        thread = threading.Thread(target=extract_source,
-                                  args=(source, entities_copy, config, source_json_dir))
-        thread.daemon = True
-        thread.start()
-        threads.append(thread)
-
+        if "brapi:endpointUrl" in sources[source_name]:
+            thread = threading.Thread(target=extract_source,
+                                      args=(source, entities_copy, config, source_json_dir))
+            thread.daemon = True
+            thread.start()
+            threads.append(thread)
+        
+        elif "brapi:static-file-repository-url" in sources[source_name]:
+            extract_statics_files(sources[source_name], source_json_dir)
+        
     for thread in threads:
         while thread.isAlive():
             thread.join(500)
