@@ -275,9 +275,20 @@ def extract_source(source, entities, config, output_dir):
         entity['store'].clear()
 
 
-def extract_statics_files(source, output_dir):
-    local_filename = urllib.request.urlretrieve(source["brapi:static-file-repository-url"] + "/germplasm.json", output_dir +"/germplasm.json")
-    local_filename2 = urllib.request.urlretrieve(source["brapi:static-file-repository-url"] + "/study.json", output_dir +"/study.json")
+def extract_statics_files(source, output_dir, entities, config):
+
+    source_name = source['schema:identifier']
+    action = 'extract-' + source_name
+    log_file = get_file_path([config['log-dir'], action], ext='.log', recreate=True)
+    logger = create_logger(action, log_file, config['options']['verbose'])
+
+    logger.info("Downloading files from {}...".format(source_name))
+    for document_type in entities:
+        try:
+            local_filename = urllib.request.urlretrieve(source["brapi:static-file-repository-url"] + "/" + document_type + ".json", output_dir + "/" + document_type + ".json")
+            logger.info("Extracting BrAPI {}.json".format(document_type))
+        except :
+            continue
 
 
 def main(config):
@@ -306,7 +317,7 @@ def main(config):
             threads.append(thread)
         
         elif "brapi:static-file-repository-url" in sources[source_name]:
-            extract_statics_files(sources[source_name], source_json_dir)
+            extract_statics_files(sources[source_name], source_json_dir, entities, config)
         
     for thread in threads:
         while thread.isAlive():
