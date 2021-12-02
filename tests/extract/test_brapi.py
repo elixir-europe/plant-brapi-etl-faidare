@@ -6,6 +6,10 @@ from etl.extract.brapi import extract_statics_files
 
 class MyTestCase(unittest.TestCase):
     def test_extract_statics_files(self):
+        config = {
+            "log-dir": "./log",
+            "options": { "verbose": True}
+        }
         source = {
             "@context": {
                 "schema": "http://schema.org/",
@@ -19,7 +23,8 @@ class MyTestCase(unittest.TestCase):
             "brapi:studyType": "Genotyping"
         }
         temp_dir = tempfile.TemporaryDirectory()
-        extract_statics_files(source, temp_dir.name)
+        entities = ["germplasm", "study"]
+        extract_statics_files(source, temp_dir.name, entities, config)
         files = os.listdir(temp_dir.name)
         print(files)
         self.assertTrue("germplasm.json" in files)
