@@ -8,6 +8,7 @@ from copy import deepcopy
 import urllib3
 import urllib.request
 from multiprocessing.pool import ThreadPool
+import json
 
 from etl.common.brapi import BreedingAPIIterator, get_implemented_calls, get_implemented_call
 from etl.common.brapi import get_identifier
@@ -286,7 +287,16 @@ def extract_statics_files(source, output_dir, entities, config):
     for document_type in entities:
         try:
             local_filename = urllib.request.urlretrieve(source["brapi:static-file-repository-url"] + "/" + document_type + ".json", output_dir + "/" + document_type + ".json")
+
+            with open(output_dir + "/" + document_type + ".json", 'r') as f:
+                json_data = json.load(f)
+            with open(output_dir + "/" + document_type + ".json", 'w') as outfile:
+                for entry in json_data:
+                    json.dump(entry, outfile)
+                    outfile.write('\n')
+
             logger.info("Extracting BrAPI {}.json".format(document_type))
+
         except :
             continue
 
