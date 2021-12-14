@@ -135,11 +135,7 @@
       ]
     },
     "species": {
-      "{or}": [
-        "{.germplasmURIs => .genus + .species + .subtaxa}",
-        "{.germplasmURIs => .genus + .species}",
-        "{.germplasmURIs => .genus}"
-      ]
+      "{join}" : ["{.germplasmURIs => .genus + .species}"]
     },
     "germplasm": {
       "cropName": {
@@ -186,6 +182,23 @@
       "{join}": [
         "brapi@",
         "{.source}"
+      ]
+    },
+    "holdingInstitute": {
+      "{join}": [
+        "{.holdingInstitute.organisation}",
+        "{.instituteName}"
+      ]
+    },
+    "biologicalStatus": "{.biologicalStatusOfAccessionCode}",
+    "geneticNature": "{.geneticNature}",
+    "countryOfOrigin": "{.countryOfOriginCode}",
+    "taxonGroup": {
+      "{flatten_distinct}": "{.germplasmURIs => .genus}"
+    },
+    "observationVariableIds": {
+      "{flatten_distinct}": [
+        "{.observationVariableDbIds}"
       ]
     }
   }

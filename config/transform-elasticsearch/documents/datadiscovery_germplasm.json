@@ -3,7 +3,6 @@
   "source-entity": "germplasm",
 
   "document-transform": {
-    "@type": [ "Germplasm" ],
     "entryType": "Germplasm",
     "@id": "{.germplasmPUI}",
     "identifier": "{.germplasmPUI}",
@@ -47,15 +46,9 @@
         " {.comment}"
       ]
     },
-
     "species": {
-      "{or}": [
-        "{.genusSpecies}",
-        "{.genus}",
-        "{.species}"
-      ]
+      "{join}": ["{.genus + .species}"]
     },
-
     "germplasm": {
       "cropName": {
         "{list}": [
@@ -84,19 +77,22 @@
         ]
       }
     },
-    "trait": {
-      "observationVariableIds": {
-        "{flatten_distinct}": [
-          "{.studyURIs => .observationVariableDbIds}"
-        ]
-      }
-    },
     "node": "{.source}",
     "databaseName": {
       "{join}": [
         "brapi@",
         "{.source}"
       ]
-    }
+    },
+    "holdingInstitute": {
+      "{join}": [
+        "{.holdingInstitute.organisation}",
+        "{.instituteName}"
+      ]
+    },
+    "biologicalStatus": "{.biologicalStatusOfAccessionCode}",
+    "geneticNature": "{.geneticNature}",
+    "countryOfOrigin": "{.countryOfOriginCode}",
+    "taxonGroup": "{.genus}"
   }
 }
