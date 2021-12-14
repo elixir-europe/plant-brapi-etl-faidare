@@ -1,77 +1,146 @@
 {
   "document-type": "datadiscovery",
   "source-entity": "study",
-
   "document-transform": {
-    "@type": {
-      "{list}": [
+    "entryType": {
+      "{or}": [
         {
-          "{or}": [
-            {
-              "{replace}":{
-                "possible_terms": [
-                  "Genotyping", "Genotyping Study",
-                  "allele size", "genotype"
-                ]
-              },
-              "{with}": {
-                "replaced_by": "Genotyping Study"
-              }
-            },
-            {
-              "{replace}":{
-                "possible_terms": [
-                  "Phenotypes", "Phenotyping", "Field Experiement",
-                  "Greenhouse (29\u00baC/20\u00baC)", "Green house",
-                  "Growth chamber", "Phenotyping Study", "Provenance trial",
-                  "Half sibling progeny trial", "Clonal trial", "Progeny trial",
-                  "Other", "Provenance and half sibling progeny trial",
-                  "Species comparison", "Seed orchard", "Demonstration test",
-                  "Full sibling progeny trial", "Juveniles comparison",
-                  "Clonal archiva, clone bank", "Conservation plot",
-                  "Biomasse test - sylvabiom", "Response study", "raw"
-                ]
-              },
-              "{with}": {
-                "replaced_by": "Phenotyping Study"
-              }
-            },
-            "Study"
-          ]
-        }
+          "{replace}": {
+            "possible_terms": [
+              "Genotyping",
+              "Genotyping Study",
+              "allele size",
+              "genotype"
+            ]
+          },
+          "{with}": {
+            "replaced_by": "Genotyping Study"
+          }
+        },
+        {
+          "{replace}": {
+            "possible_terms": [
+              "",
+              null,
+              "Phenotypes",
+              "Phenotyping",
+              "Field Experiement",
+              "Greenhouse (29\u00baC/20\u00baC)",
+              "Green house",
+              "Growth chamber",
+              "Phenotyping Study",
+              "Provenance trial",
+              "Half sibling progeny trial",
+              "Clonal trial",
+              "Progeny trial",
+              "Other",
+              "Provenance and half sibling progeny trial",
+              "Species comparison",
+              "Seed orchard",
+              "Demonstration test",
+              "Full sibling progeny trial",
+              "Juveniles comparison",
+              "Clonal archiva, clone bank",
+              "Conservation plot",
+              "Biomasse test - sylvabiom",
+              "Response study",
+              "raw"
+            ]
+          },
+          "{with}": {
+            "replaced_by": "Phenotyping Study"
+          }
+        },
+        "Study"
       ]
     },
     "@id": "{.studyPUI}",
-
+    "identifier": "{.studyPUI}",
     "schema:includedInDataCatalog": "{.source}",
     "schema:identifier": "{.studyDbId}",
     "schema:name": {
-      "{or}": ["{.studyName}", "{.name}"]
+      "{or}": [
+        "{.studyName}",
+        "{.name}"
+      ]
+    },
+    "name": {
+      "{or}": [
+        "{.studyName}",
+        "{.name}"
+      ]
     },
     "schema:url": "{.documentationURL}",
-    "schema:description": {
+    "url": "{.documentationURL}",
+    "description": {
       "{join}": [
-        "\"",
-        { "{or}": ["{.studyName}", "{.name}"] },
-        "\" is a ",
-        { "{or}": ["{.studyTypeName}", "{.studyType}", "study"] },
-        { "{or}": [" conducted from {.startDate} to {.endDate}", " running since {.startDate}"] },
-        { "{or}": [
-          { "{join}": [
-            " (seasons: ", {"{join}": ["{.seasons.season}", "{.seasons.year}"], "{separator}": ", "}, ")"],
-            "{accept_none}": false },
-          { "{join}": [" (seasons: ", {"{join}": "{.seasons}", "{separator}": ", "}, ")"], "{accept_none}": false }
-        ]},
-        { "{or}": [
-          " in {.locationURI => .locationName} ({.locationURI => .countryName})",
-          " in {.locationURI => .countryName}"
-        ]},
+        {
+          "{or}": [
+            "{.studyName}",
+            "{.name}"
+          ]
+        },
+        " is a ",
+        {
+          "{or}": [
+            "{.studyTypeName}",
+            "{.studyType}",
+            "study"
+          ]
+        },
+        {
+          "{or}": [
+            " conducted from {.startDate} to {.endDate}",
+            " running since {.startDate}"
+          ]
+        },
+        {
+          "{or}": [
+            {
+              "{join}": [
+                " (seasons: ",
+                {
+                  "{join}": [
+                    "{.seasons.season}",
+                    "{.seasons.year}"
+                  ],
+                  "{separator}": ", "
+                },
+                ")"
+              ],
+              "{accept_none}": false
+            },
+            {
+              "{join}": [
+                " (seasons: ",
+                {
+                  "{join}": "{.seasons}",
+                  "{separator}": ", "
+                },
+                ")"
+              ],
+              "{accept_none}": false
+            }
+          ]
+        },
+        {
+          "{or}": [
+            " in {.locationURI => .locationName} ({.locationURI => .countryName})",
+            " in {.locationURI => .countryName}"
+          ]
+        },
         ". this study is part of the {.programName} program",
         ".",
         " {.studyDescription}"
       ]
     },
-
+    "species": {
+      "{or}": [
+        "{.germplasmURIs => .genus + .species + .subtaxa}",
+        "{.germplasmURIs => .genus + .species}",
+        "{.germplasmURIs => .genus}"
+      ]
+    },
     "germplasm": {
       "cropName": {
         "{list}": [
@@ -81,7 +150,12 @@
           "{.germplasmURIs => .genus + .species}",
           "{.germplasmURIs => .genus + .species + .subtaxa}",
           "{.germplasmURIs => .taxonSynonyms}"
-        ], "{transform}": ["capitalize", "flatten", "distinct"]
+        ],
+        "{transform}": [
+          "capitalize",
+          "flatten",
+          "distinct"
+        ]
       },
       "germplasmList": {
         "{flatten_distinct}": [
@@ -100,13 +174,19 @@
         ]
       }
     },
-
     "trait": {
       "observationVariableIds": {
         "{flatten_distinct}": [
           "{.observationVariableDbIds}"
         ]
       }
+    },
+    "node": "{.source}",
+    "databaseName": {
+      "{join}": [
+        "brapi@",
+        "{.source}"
+      ]
     }
   }
 }

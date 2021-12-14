@@ -4,7 +4,10 @@
 
   "document-transform": {
     "@type": [ "Germplasm" ],
+    "entryType": "Germplasm",
     "@id": "{.germplasmPUI}",
+    "identifier": "{.germplasmPUI}",
+    "name": "{.germplasmName}",
 
     "schema:includedInDataCatalog": "{.source}",
     "schema:identifier": "{.germplasmDbId}",
@@ -16,6 +19,7 @@
       ]
     },
     "schema:url": "{.documentationURL}",
+    "url": "{.documentationURL}",
     "schema:description": {
       "{join}": [
         "\"",
@@ -28,6 +32,27 @@
         " managed by {.holdingInstitute.instituteName}",
         ".",
         " {.comment}"
+      ]
+    },
+    "description": {
+      "{join}": [
+        { "{or}": ["{.germplasmName}", "{.defaultDisplayName}"] },
+        " is a",
+        " {.genus + .species + .subtaxa}",
+        " ({.commonCropName})",
+        " accession",
+        " (number: {.accessionNumber})",
+        " managed by {.holdingInstitute.instituteName}",
+        ".",
+        " {.comment}"
+      ]
+    },
+
+    "species": {
+      "{or}": [
+        "{.genusSpecies}",
+        "{.genus}",
+        "{.species}"
       ]
     },
 
@@ -65,6 +90,13 @@
           "{.studyURIs => .observationVariableDbIds}"
         ]
       }
+    },
+    "node": "{.source}",
+    "databaseName": {
+      "{join}": [
+        "brapi@",
+        "{.source}"
+      ]
     }
   }
 }
