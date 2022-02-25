@@ -78,7 +78,7 @@ def is_checkpoint(n):
     return n > 0 and n % 10000 == 0
 
 
-def generate_elasticsearch_document(options):
+def generate_elasticsearch_document_larck(options):
     document_type, document_transform, uri_data_index, data_json = options
     document = json.loads(data_json)
     if document_transform:
@@ -105,7 +105,7 @@ def generate_elasticsearch_documents(restricted_documents, document_configs_by_e
                     continue
                 document_transform = document_config.get('document-transform')
                 document_count += 1
-                yield generate_elasticsearch_document((document_type, document_transform, uri_data_index, data_json))
+                yield generate_elasticsearch_document_larck((document_type, document_transform, uri_data_index, data_json))
         uri_index.close()
     logger.debug(f"Generated {document_count} documents.")
 
