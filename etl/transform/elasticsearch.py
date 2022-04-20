@@ -163,10 +163,6 @@ def dump_clean_in_json_files(source_dir, source_name, logger, documents_tuples):
         if ("source" not in document):
             document["source"] = source_name
 
-        if document["@type"] == "germplasm":
-            if "source" == "URGI":
-                document["url"] = "https://urgi.versailles.inra.fr/faidare/germplasm?id=" + document["germplasmDbId"]
-
         document_count += 1
         if is_checkpoint(document_count):
             logger.debug(f"checkpoint: {document_count} documents saved")
