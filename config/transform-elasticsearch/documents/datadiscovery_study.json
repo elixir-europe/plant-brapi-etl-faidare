@@ -54,13 +54,8 @@
         "Study"
       ]
     },
-    "accessionNumber": {
-      "{flatten_distinct}": [
-        "{.germplasmURIs => .accessionNumber}"
-      ]
-    },
     "@id": "{.studyPUI}",
-    "identifier": "{.studyPUI}",
+    "identifier": "{.studyDbId}",
     "schema:includedInDataCatalog": "{.source}",
     "schema:identifier": "{.studyDbId}",
     "schema:name": {
@@ -134,13 +129,14 @@
             " in {.locationURI => .countryName}"
           ]
         },
-        ". this study is part of the {.programName} program",
+        ". This study is part of the {.programName} program",
         ".",
         " {.studyDescription}"
       ]
     },
     "species": {
-      "{join}" : ["{.germplasmURIs => .genus + .species}"]
+      "{join}" : ["{.germplasmURIs => .genus + .species}"],
+      "{separator}": " "
     },
     "germplasm": {
       "cropName": {
@@ -182,14 +178,6 @@
         ]
       }
     },
-    "germplasmList": {
-      "{flatten_distinct}": [
-        "{.germplasmURIs => .panel.name}",
-        "{.germplasmURIs => .collection.name}",
-        "{.germplasmURIs => .population.name}",
-        "{.germplasmURIs => .holdingGenbank.instituteName}"
-      ]
-    },
     "node": "{.source}",
     "databaseName": {
       "{join}": [
@@ -199,22 +187,27 @@
     },
     "holdingInstitute": {
       "{join}": [
-        { "{or}": ["{.holdingInstitute.organisation}", "{.instituteName}"] }
+        "{.holdingInstitute.organisation} {.instituteName}"
       ]
     },
     "biologicalStatus": "{.biologicalStatusOfAccessionCode}",
     "geneticNature": "{.geneticNature}",
     "countryOfOrigin": "{.countryOfOriginCode}",
     "taxonGroup": {
-      "{flatten_distinct}": [
-        "{.germplasmURIs => .genus}"
-      ]
+      "{flatten_distinct}": "{.germplasmURIs => .genus}"
     },
     "observationVariableIds": {
       "{flatten_distinct}": [
         "{.observationVariableDbIds}"
       ]
     },
-    "groupId": "{.groupId}"
+    "germplasmList": {
+      "{flatten_distinct}": [
+        "{.germplasmURIs => .panel.name}",
+        "{.germplasmURIs => .collection.name}",
+        "{.germplasmURIs => .population.name}",
+        "{.germplasmURIs => .holdingGenbank.instituteName}"
+      ]
+    }
   }
 }

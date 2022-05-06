@@ -5,9 +5,9 @@
   "document-transform": {
     "entryType": "Germplasm",
     "@id": "{.germplasmPUI}",
-    "identifier": "{.germplasmPUI}",
+    "identifier": "{.germplasmDbId}",
     "name": "{.germplasmName}",
-    "accessionNumber": "{.accessionNumber}",
+
     "schema:includedInDataCatalog": "{.source}",
     "schema:identifier": "{.germplasmDbId}",
     "schema:name": {
@@ -47,7 +47,8 @@
       ]
     },
     "species": {
-      "{join}": ["{.genus + .species}"]
+      "{join}": ["{.genus + .species }"],
+      "{separator}": " "
     },
     "germplasm": {
       "cropName": {
@@ -86,16 +87,13 @@
     },
     "holdingInstitute": {
       "{join}": [
-        { "{or}": ["{.holdingInstitute.organisation}", "{.instituteName}"] }
-     ]
+        "{.holdingInstitute.organisation} {.instituteName}"
+      ]
     },
     "biologicalStatus": "{.biologicalStatusOfAccessionCode}",
     "geneticNature": "{.geneticNature}",
     "countryOfOrigin": "{.countryOfOriginCode}",
-    "taxonGroup": {
-      "{flatten_distinct}": ["{.genus}"]
-    },
-    "groupId": "{.groupId}",
+    "taxonGroup": "{.genus}",
     "germplasmList": {
       "{flatten_distinct}": [
         "{.panel.name}",
