@@ -93,6 +93,14 @@
     "biologicalStatus": "{.biologicalStatusOfAccessionCode}",
     "geneticNature": "{.geneticNature}",
     "countryOfOrigin": "{.countryOfOriginCode}",
-    "taxonGroup": "{.genus}"
+    "taxonGroup": "{.genus}",
+    "germplasmList": {
+      "{flatten_distinct}": [
+        "{.panel.name}",
+        "{.collection.name}",
+        "{.population.name}",
+        "{.holdingGenbank.instituteName}"
+      ]
+    }
   }
 }

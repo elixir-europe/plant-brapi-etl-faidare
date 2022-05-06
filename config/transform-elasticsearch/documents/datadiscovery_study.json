@@ -200,6 +200,14 @@
       "{flatten_distinct}": [
         "{.observationVariableDbIds}"
       ]
+    },
+    "germplasmList": {
+      "{flatten_distinct}": [
+        "{.germplasmURIs => .panel.name}",
+        "{.germplasmURIs => .collection.name}",
+        "{.germplasmURIs => .population.name}",
+        "{.germplasmURIs => .holdingGenbank.instituteName}"
+      ]
     }
   }
 }
