@@ -54,11 +54,6 @@
         "Study"
       ]
     },
-    "accessionNumber": {
-      "{flatten_distinct}": [
-        "{.germplasmURIs => .accessionNumber}"
-      ]
-    },
     "@id": "{.studyPUI}",
     "identifier": "{.studyDbId}",
     "schema:includedInDataCatalog": "{.source}",
