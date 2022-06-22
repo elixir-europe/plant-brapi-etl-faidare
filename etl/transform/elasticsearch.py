@@ -3,6 +3,8 @@ import traceback
 from logging import Logger
 import json
 import glob
+import gzip
+import shutil
 from xml.sax import saxutils as su
 
 import jsonschema
@@ -179,7 +181,10 @@ def save_json(source_dir, json_dict):
         while saved_documents < len(document):
             with open(source_dir + "/" + type + '-' + str(file_number) + '.json', 'w') as f:
                 json.dump(document[saved_documents:file_number*10000], f, ensure_ascii=False)
-            f.close()
+            with open(source_dir + "/" + type + '-' + str(file_number) + '.json', 'rb') as f:
+                with gzip.open(source_dir + "/" + type + '-' + str(file_number) + '.json.gz', 'wb') as f_out:
+                    shutil.copyfileobj(f, f_out)
+            os.remove(source_dir + "/" + type + '-' + str(file_number) + '.json')
             file_number += 1
             saved_documents += 10000
 
