@@ -86,8 +86,7 @@
     },
     "holdingInstitute": {
       "{join}": [
-        "{.holdingInstitute.organisation}",
-        "{.instituteName}"
+        "{.holdingInstitute.organisation} {.instituteName}"
       ]
     },
     "biologicalStatus": "{.biologicalStatusOfAccessionCode}",

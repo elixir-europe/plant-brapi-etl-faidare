@@ -129,7 +129,7 @@
             " in {.locationURI => .countryName}"
           ]
         },
-        ". this study is part of the {.programName} program",
+        ". This study is part of the {.programName} program",
         ".",
         " {.studyDescription}"
       ]
@@ -186,8 +186,7 @@
     },
     "holdingInstitute": {
       "{join}": [
-        "{.holdingInstitute.organisation}",
-        "{.instituteName}"
+        "{.holdingInstitute.organisation} {.instituteName}"
       ]
     },
     "biologicalStatus": "{.biologicalStatusOfAccessionCode}",
