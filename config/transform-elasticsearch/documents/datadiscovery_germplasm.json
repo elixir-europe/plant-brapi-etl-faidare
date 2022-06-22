@@ -5,7 +5,7 @@
   "document-transform": {
     "entryType": "Germplasm",
     "@id": "{.germplasmPUI}",
-    "identifier": "{.germplasmPUI}",
+    "identifier": "{.germplasmDbId}",
     "name": "{.germplasmName}",
 
     "schema:includedInDataCatalog": "{.source}",

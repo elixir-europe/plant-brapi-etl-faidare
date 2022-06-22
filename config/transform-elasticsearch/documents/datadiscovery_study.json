@@ -55,7 +55,7 @@
       ]
     },
     "@id": "{.studyPUI}",
-    "identifier": "{.studyPUI}",
+    "identifier": "{.studyDbId}",
     "schema:includedInDataCatalog": "{.source}",
     "schema:identifier": "{.studyDbId}",
     "schema:name": {
