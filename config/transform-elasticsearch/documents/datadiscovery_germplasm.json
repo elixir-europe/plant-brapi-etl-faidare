@@ -47,7 +47,8 @@
       ]
     },
     "species": {
-      "{join}": ["{.genus + .species}"]
+      "{join}": ["{.genus + .species }"],
+      "{separator}": " "
     },
     "germplasm": {
       "cropName": {

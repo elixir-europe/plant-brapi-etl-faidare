@@ -135,7 +135,8 @@
       ]
     },
     "species": {
-      "{join}" : ["{.germplasmURIs => .genus + .species}"]
+      "{join}" : ["{.germplasmURIs => .genus + .species}"],
+      "{separator}": " "
     },
     "germplasm": {
       "cropName": {
