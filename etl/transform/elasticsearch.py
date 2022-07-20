@@ -288,6 +288,8 @@ def transform_source(source, transform_config, source_json_dir, source_bulk_dir,
             restricted_documents, document_configs_by_entity, uri_data_index, pool, logger
         )
 
+        # Proposition: Call a new method here to generate datadiscovery
+
         # Validate the document schemas
         validated_documents = validate_documents(documents, validation_schemas, logger)
 
