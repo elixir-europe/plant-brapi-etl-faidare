@@ -3,6 +3,8 @@ import traceback
 from logging import Logger
 import json
 import glob
+import gzip
+import shutil
 from xml.sax import saxutils as su
 
 import jsonschema
@@ -132,7 +134,7 @@ def validate_documents(document_tuples, validation_schemas, logger):
     logger.debug(f"Validated {document_count} documents.")
 
 
-def dump_clean_in_json_files(source_dir, logger, documents_tuples):
+def dump_clean_in_json_files(source_dir, source_name, logger, documents_tuples):
     """
     Consumes an iterable of document tuples and clean email
     """
@@ -144,17 +146,24 @@ def dump_clean_in_json_files(source_dir, logger, documents_tuples):
 
         # Hide email
         if ("email" in document):
-                document["email"]= document["email"].replace('@', '_')
+                document["email"] = document["email"].replace('@', '_')
 
         if ("contacts" in document):
             for contact in document["contacts"]:
-                if "email" in contact :
-                    contact["email"]= contact["email"].replace('@', '_')
+                if "email" in contact:
+                    contact["email"] = contact["email"].replace('@', '_')
 
         if document_header not in json_dict:
             json_dict[document_header] = []
 
         json_dict[document_header].append(document)
+
+        if ("node" not in document):
+            document["node"] = source_name
+            document["databaseName"] = "brapi@" + source_name
+
+        if ("source" not in document):
+            document["source"] = source_name
 
         document_count += 1
         if is_checkpoint(document_count):
@@ -172,7 +181,10 @@ def save_json(source_dir, json_dict):
         while saved_documents < len(document):
             with open(source_dir + "/" + type + '-' + str(file_number) + '.json', 'w') as f:
                 json.dump(document[saved_documents:file_number*10000], f, ensure_ascii=False)
-            f.close()
+            with open(source_dir + "/" + type + '-' + str(file_number) + '.json', 'rb') as f:
+                with gzip.open(source_dir + "/" + type + '-' + str(file_number) + '.json.gz', 'wb') as f_out:
+                    shutil.copyfileobj(f, f_out)
+            os.remove(source_dir + "/" + type + '-' + str(file_number) + '.json')
             file_number += 1
             saved_documents += 10000
 
@@ -280,7 +292,7 @@ def transform_source(source, transform_config, source_json_dir, source_bulk_dir,
         validated_documents = validate_documents(documents, validation_schemas, logger)
 
         # Write the documents in jsonfiles
-        dump_clean_in_json_files(source_bulk_dir, logger, validated_documents)
+        dump_clean_in_json_files(source_bulk_dir, source_name, logger, validated_documents)
         # shutil.rmtree(tmp_index_dir, ignore_errors=True)
 
         logger.info(f"SUCCEEDED Transforming BrAPI {source_name}.")

@@ -6,7 +6,9 @@ import traceback
 from copy import deepcopy
 
 import urllib3
+import urllib.request
 from multiprocessing.pool import ThreadPool
+import json
 
 from etl.common.brapi import BreedingAPIIterator, get_implemented_calls, get_implemented_call
 from etl.common.brapi import get_identifier
@@ -274,6 +276,31 @@ def extract_source(source, entities, config, output_dir):
         entity['store'].clear()
 
 
+def extract_statics_files(source, output_dir, entities, config):
+
+    source_name = source['schema:identifier']
+    action = 'extract-' + source_name
+    log_file = get_file_path([config['log-dir'], action], ext='.log', recreate=True)
+    logger = create_logger(action, log_file, config['options']['verbose'])
+
+    logger.info("Downloading files from {}...".format(source_name))
+    for document_type in entities:
+        try:
+            local_filename = urllib.request.urlretrieve(source["brapi:static-file-repository-url"] + "/" + document_type + ".json", output_dir + "/" + document_type + ".json")
+
+            with open(output_dir + "/" + document_type + ".json", 'r') as f:
+                json_data = json.load(f)
+            with open(output_dir + "/" + document_type + ".json", 'w') as outfile:
+                for entry in json_data:
+                    json.dump(entry, outfile)
+                    outfile.write('\n')
+
+            logger.info("Extracting BrAPI {}.json".format(document_type))
+
+        except :
+            continue
+
+
 def main(config):
     entities = config["extract-brapi"]["entities"]
     for (entity_name, entity) in entities.items():
@@ -284,9 +311,7 @@ def main(config):
 
     threads = list()
     for source_name in sources:
-        if source_name == 'EVA':
-            print("# INFO: EVA data can't be extracted, EVA Skipped ..")
-            continue
+        
         source_json_dir = get_folder_path([json_dir, source_name], recreate=True)
         source_json_dir_failed = source_json_dir + '-failed'
         if os.path.exists(source_json_dir_failed):
@@ -294,13 +319,16 @@ def main(config):
 
         source = deepcopy(sources[source_name])
         entities_copy = deepcopy(entities)
-
-        thread = threading.Thread(target=extract_source,
-                                  args=(source, entities_copy, config, source_json_dir))
-        thread.daemon = True
-        thread.start()
-        threads.append(thread)
-
+        if "brapi:endpointUrl" in sources[source_name]:
+            thread = threading.Thread(target=extract_source,
+                                      args=(source, entities_copy, config, source_json_dir))
+            thread.daemon = True
+            thread.start()
+            threads.append(thread)
+        
+        elif "brapi:static-file-repository-url" in sources[source_name]:
+            extract_statics_files(sources[source_name], source_json_dir, entities, config)
+        
     for thread in threads:
         while thread.isAlive():
             thread.join(500)
