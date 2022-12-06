@@ -100,7 +100,8 @@
         "{.collection.name}",
         "{.population.name}",
         "{.holdingGenbank.instituteName}"
-      ]
+      ],
+    "accessionHolder": "{.accessionHolder}"
     }
   }
 }
