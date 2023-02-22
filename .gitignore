@@ -102,3 +102,4 @@ ENV/
 /build-centos6/*.tar.gz
 /sandbox/
 /sandboxSources/
+dist
