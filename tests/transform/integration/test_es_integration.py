@@ -6,9 +6,8 @@ import gzip
 from deepdiff import DeepDiff
 
 
-class MyTestCase(unittest.TestCase):
+class transform_integration_test(unittest.TestCase):
 
-    #_are_file_generated = False
 
     @classmethod
     def setUpClass(self):

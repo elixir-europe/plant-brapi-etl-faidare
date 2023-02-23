@@ -330,5 +330,5 @@ def main(config):
         threads.append(thread)
 
     for thread in threads:
-        while thread.isAlive():
+        while thread.is_alive():
             thread.join(500)
