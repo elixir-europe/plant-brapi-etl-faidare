@@ -150,7 +150,7 @@ class TestUpdateIn(unittest.TestCase):
         value = 0
         expected = {}
         actual = update_in(data, path, value)
-        self.assertEquals(expected, actual)
+        self.assertEqual(expected, actual)
 
     def test_one_level(self):
         data = {}
@@ -158,7 +158,7 @@ class TestUpdateIn(unittest.TestCase):
         value = 0
         expected = {'a': 0}
         actual = update_in(data, path, value)
-        self.assertEquals(expected, actual)
+        self.assertEqual(expected, actual)
 
     def test_multi_levels(self):
         data = {}
@@ -166,7 +166,7 @@ class TestUpdateIn(unittest.TestCase):
         value = 'foo'
         expected = {'a': {'b': {'c': 'foo'}}}
         actual = update_in(data, path, value)
-        self.assertEquals(expected, actual)
+        self.assertEqual(expected, actual)
 
     def test_existing_levels(self):
         data = {'a': {'b': {'c': 'bar'}}}
@@ -174,7 +174,7 @@ class TestUpdateIn(unittest.TestCase):
         value = 'foo'
         expected = {'a': {'b': {'c': 'foo'}}}
         actual = update_in(data, path, value)
-        self.assertEquals(expected, actual)
+        self.assertEqual(expected, actual)
 
     def test_array_levels(self):
         data = {
@@ -198,4 +198,4 @@ class TestUpdateIn(unittest.TestCase):
             ]
         }
         actual = update_in(data, path, value)
-        self.assertEquals(expected, actual)
+        self.assertEqual(expected, actual)

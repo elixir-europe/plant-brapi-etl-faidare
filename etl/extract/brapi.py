@@ -330,6 +330,6 @@ def main(config):
             extract_statics_files(sources[source_name], source_json_dir, entities, config)
         
     for thread in threads:
-        while thread.isAlive():
+        while thread.is_alive():
             thread.join(500)
 
