@@ -63,7 +63,8 @@ class MyTestCase(unittest.TestCase):
         with gzip.open(self._expected_data_dir+"VIB_datadiscovery_expected.json.gz") as expected_vib_f:
             expected_vib = json.load(expected_vib_f)
 
-        self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
+
+        self.assertEqual(DeepDiff(actual_vib, expected_vib), {}, "\n------Known problem, the transformed species field should be an array, not a single value.-----")
 
 
     def test_all_locations_generated(self):
