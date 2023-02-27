@@ -6,7 +6,7 @@ import sys
 import etl.extract.brapi
 import etl.load.elasticsearch
 import etl.load.virtuoso
-import etl.transform.elasticsearch
+import etl.transform.datadiscovery_cards
 import etl.transform.jsonld
 import etl.transform.rdf
 from etl.cli import parse_cli_arguments
@@ -42,7 +42,8 @@ def main():
         etl.extract.brapi.main(config)
 
     if 'transform_elasticsearch' in options or 'etl_es' in options:
-        etl.transform.elasticsearch.main(config)
+        #etl.transform.elasticsearch.main(config)
+        etl.transform.datadiscovery_cards.main(config)
 
     if 'transform_jsonld' in options or 'transform_rdf' in options or 'etl_virtuoso' in options:
         etl.transform.jsonld.main(config)

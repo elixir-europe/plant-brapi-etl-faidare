@@ -145,3 +145,8 @@ $ python3 main.py load elasticsearch sources/VIB.json
 $ python3 main.py load es --data-dir /tmp/data sources/VIB.json sources/NIB.json
 ```
 
+# Developemnts tips
+
+Command for transforming the test data 
+
+`pipenv run main.py trans es sources/VIB.json --data-dir ./tests/transform/integration/fixtures/brapi_pheno_source`
