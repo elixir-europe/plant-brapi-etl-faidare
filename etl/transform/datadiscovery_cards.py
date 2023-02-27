@@ -165,29 +165,25 @@ def get_generated_uri(source: dict, entity: str, data: dict) -> str:
 
 
 def load_input_json(source, doc_types, source_json_dir, config):
-    # initiate dict
-    # foreach transform_config[document-type] load into the initialised dict
-    print (doc_types)
     data_dict = {}
     if source_json_dir:
         #all_files = list_entity_files(source_json_dir)
         #filtered_files = list(filter(lambda x: x[0] in source_entities, all_files))
         for document_type in doc_types:
             input_json_filepath = source_json_dir + "/" + document_type["document-type"] + ".json"
-            data_dict[document_type["document-type"]] = []
+            data_dict[document_type["document-type"]] = {}
             try:
-                with open(input_json_filepath, 'r') as file:
-                    #TODO: Error only the first line is read
-                    line = file.readline()
-                    if line:
-                        data = json.loads(line)
-                        data_dict[document_type["document-type"]].append(data)
+                with open(input_json_filepath, 'r') as json_file:
+                    json_list = list(json_file)
+                    for json_line in json_list:
+                        data = json.loads(json_line)
+                        uri = get_generated_uri(source, document_type["document-type"], data)
+                        data_dict[document_type["document-type"]][uri] = data
     #                    links = get_entity_links(data, 'DbId')
     #                    entity_names = set(map(first, links))
             except FileNotFoundError as e:
                 print("No "+document_type["document-type"]+" in "+source['schema:identifier'])
-
-    print (data_dict)
+    return data_dict
 
 
 def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config):
@@ -232,6 +228,8 @@ def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config
         # TODO: don't load observationUnit, too big and of little interest.
         #  Instead stream and do on the fly transform of the relevant dbId at the end of the process
         current_source_data_dict = load_input_json(source, doc_types, source_json_dir, config)
+
+
 
 
     except Exception as e:
