@@ -140,6 +140,9 @@ def get_generated_uri(source: dict, entity: str, data: dict) -> str:
     Get/Generate URI from BrAPI object or generate one
     """
     pui_field = entity + 'PUI'
+    #TODO: this is going to be problematic since in GnpIS studies are using germplasmDbIb(num) and not germplasmDbIb(DOI)
+    #TODO (cont): consider using a fully generated dbId, using urn, no matter what.
+    #TODO (cont): should be ok, check with Célia, Cyril, Maud, Nico ?
     data_uri = data.get(pui_field)
 
     if data_uri and rfc3987.match(data_uri, rule='URI'):
@@ -170,6 +173,8 @@ def load_input_json(source, doc_types, source_json_dir, config):
         #all_files = list_entity_files(source_json_dir)
         #filtered_files = list(filter(lambda x: x[0] in source_entities, all_files))
         for document_type in doc_types:
+            if document_type["document-type"] == "observationUnit":
+                pass
             input_json_filepath = source_json_dir + "/" + document_type["document-type"] + ".json"
             data_dict[document_type["document-type"]] = {}
             try:
@@ -184,6 +189,25 @@ def load_input_json(source, doc_types, source_json_dir, config):
             except FileNotFoundError as e:
                 print("No "+document_type["document-type"]+" in "+source['schema:identifier'])
     return data_dict
+
+
+def set_dbid_to_uri(current_source_data_dict):
+    #walk all object of the dict, generate uri using new version of get_generated_uri(source, document_type["document-type"], fieldStr)
+    #apply to a list of DbId field to transform
+    #skip observationVariable
+    # be carefull, some fileds are list of ids, note the 's' at the end
+    # TODO: validate this list with output of the curent transformation
+    dbid_to_uri = ["germplasmDbIds", "germplasmdbId", "locationDbId", "studyDbId", "studyDbIds", "trialDbId" ]
+
+    pass
+
+
+def align_formats(current_source_data_dict):
+    pass
+
+
+def generate_datadiscovery(current_source_data_dict):
+    pass
 
 
 def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config):
@@ -228,7 +252,11 @@ def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config
         # TODO: don't load observationUnit, too big and of little interest.
         #  Instead stream and do on the fly transform of the relevant dbId at the end of the process
         current_source_data_dict = load_input_json(source, doc_types, source_json_dir, config)
+        set_dbid_to_uri(current_source_data_dict)
+        align_formats(current_source_data_dict)
+        generate_datadiscovery(current_source_data_dict)
 
+        #TODO: save json from current_source_data_dict with page of reasonable size (10_000 documents per file ? ), gzip
 
 
 
