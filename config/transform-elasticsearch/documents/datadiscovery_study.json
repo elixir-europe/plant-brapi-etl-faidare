@@ -187,6 +187,15 @@
         ]
       }
     },
+    "traitNames": {
+      "{list}": [
+            "{.observationVariableURIs => .observationVariableName + .name + .trait.name}"
+      ],
+      "{transform}": [
+        "flatten",
+        "distinct"
+      ]
+    },
     "node": "{.source}",
     "databaseName": {
       "{join}": [
