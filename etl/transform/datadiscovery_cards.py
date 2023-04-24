@@ -160,7 +160,6 @@ def get_generated_uri(source: dict, entity: str, data: dict) -> str:
         # Generate URI by prepending the original URI with the source identifier
         encoded_uri = urllib.parse.quote(data_uri)
         data_uri = f"urn:{source_id}/{encoded_uri}"
-
     if not rfc3987.match(data_uri, rule='URI'):
         raise Exception(f'Could not get or create a correct URI for "{entity}" object id "{data_id}"'
                         f' (malformed URI: "{data_uri}")')
@@ -188,16 +187,36 @@ def load_input_json(source, doc_types, source_json_dir, config):
     #                    entity_names = set(map(first, links))
             except FileNotFoundError as e:
                 print("No "+document_type["document-type"]+" in "+source['schema:identifier'])
+
     return data_dict
 
 
-def set_dbid_to_uri(current_source_data_dict):
+def set_dbid_to_uri(data_dict,source):
+
+    dbid_to_uri = [("germplasmDbId","germplasm"), ("locationDbId","location"), ("studyDbId","study"), ("trialDbId","trial")]
+    dbids_to_uri = [("germplasmDbIds","germplasm"), ("locationDbIds","location"), ("studyDbIds","study"), ("trialDbIds","trial")]
+
+    for dbids in dbids_to_uri :
+        for data_in in data_dict.values():
+            if len(data_in) > 0:
+                for data_in_fields in data_in.values():
+                    if dbids[0] in data_in_fields:
+                        for data_dbids in range(len(data_in_fields[dbids[0]])):
+                            nimp = (data_dict.get(dbids[1])).get('urn:'+source.get('schema:identifier')+'/'+dbids[1]+'/'+data_in_fields[dbids[0]][data_dbids].replace(':','%3A'))
+                            uri_generated = get_generated_uri(source, dbids[1], nimp)
+                            data_in_fields[dbids[0]][data_dbids] = uri_generated
+    for dbid in dbid_to_uri:
+        for data_in_fields in data_dict[dbid[1]].values():
+            if dbid[0] in data_in_fields:
+                data_in_fields[dbid[0]] = get_generated_uri(source, dbid[1], data_in_fields)
+
+    return data_dict
+
     #walk all object of the dict, generate uri using new version of get_generated_uri(source, document_type["document-type"], fieldStr)
     #apply to a list of DbId field to transform
     #skip observationVariable
-    # be carefull, some fileds are list of ids, note the 's' at the end
+    # be carefull, some fields are list of ids, note the 's' at the end
     # TODO: validate this list with output of the curent transformation
-    dbid_to_uri = ["germplasmDbIds", "germplasmdbId", "locationDbId", "studyDbId", "studyDbIds", "trialDbId" ]
 
     pass
 
@@ -252,7 +271,7 @@ def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config
         # TODO: don't load observationUnit, too big and of little interest.
         #  Instead stream and do on the fly transform of the relevant dbId at the end of the process
         current_source_data_dict = load_input_json(source, doc_types, source_json_dir, config)
-        set_dbid_to_uri(current_source_data_dict)
+        set_dbid_to_uri(current_source_data_dict, source)
         align_formats(current_source_data_dict)
         generate_datadiscovery(current_source_data_dict)
 
