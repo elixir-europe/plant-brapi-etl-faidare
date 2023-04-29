@@ -130,3 +130,20 @@ class transform_integration_test(unittest.TestCase):
             expected_vib = json.load(expected_vib_f)
 
         self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
+
+    def test_germplasNames_generated(self):
+        with gzip.open(self._actual_data_dir+"VIB/datadiscovery-1.json.gz") as actual_vib_f:
+            actual_vib = json.load(actual_vib_f)
+        for document_i in actual_vib:
+            if "studyType" in document_i:
+                self.assertTrue("germplasmNames" in document_i)
+
+    def test_traitNames_generated(self):
+        with gzip.open(self._actual_data_dir+"VIB/datadiscovery-1.json.gz") as actual_vib_f:
+            actual_vib = json.load(actual_vib_f)
+        for document_i in actual_vib:
+            if "studyType" in document_i:
+                self.assertTrue("traitNames" in document_i)
+                self.assertFalse(document_i["observationVariableDbIds"][0] in document_i["traitNames"])
+
+
