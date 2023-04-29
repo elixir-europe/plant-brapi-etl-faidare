@@ -58,6 +58,10 @@
       "{flatten_distinct}": [
         "{.germplasmURIs => .accessionNumber}"
       ]
+    },"germplasmNames": {
+      "{flatten_distinct}": [
+        "{.germplasmURIs => .germplasmName}"
+      ]
     },
     "@id": "{.studyPUI}",
     "identifier": "{.studyDbId}",
@@ -182,6 +186,15 @@
           "{.observationVariableDbIds}"
         ]
       }
+    },
+    "traitNames": {
+      "{list}": [
+            "{.observationVariableURIs => .observationVariableName + .name + .trait.name}"
+      ],
+      "{transform}": [
+        "flatten",
+        "distinct"
+      ]
     },
     "node": "{.source}",
     "databaseName": {
