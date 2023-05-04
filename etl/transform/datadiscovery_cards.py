@@ -189,53 +189,31 @@ def load_input_json(source, doc_types, source_json_dir, config):
                 print("No "+document_type["document-type"]+" in "+source['schema:identifier'])
     return data_dict
 
+def set_dbid_to_uri(data_dict,source):
 
-# def set_dbid_to_uri(data_dict,source):
-#
-#     dbid_by_type = [("germplasmDbId","germplasm"), ("locationDbId","location"), ("studyDbId","study"), ("trialDbId","trial")]
-#     dbids_by_type = [("germplasmDbIds","germplasm"), ("locationDbIds","location"), ("studyDbIds","study"), ("trialDbIds","trial")]
-#
-#     for dbids in dbids_by_type :
-#         for current_doc in data_dict.values():
-#                 for data_in_fields in current_doc.values():
-#                     if dbids[0] in data_in_fields:
-#                         for data_dbids in range(len(data_in_fields[dbids[0]])):
-#                             data_in_fields[dbids[0]][data_dbids] = get_generated_uri(source, dbids[1], ((data_dict.get(dbids[1])).get('urn:'+source.get('schema:identifier')+'/'+dbids[1]+'/'+data_in_fields[dbids[0]][data_dbids].replace(':','%3A'))))
-#
-#     for dbid in dbid_by_type:
-#         for data_in_fields in data_dict[dbid[1]].values():
-#             if dbid[0] in data_in_fields:
-#                 data_in_fields[dbid[0]] = get_generated_uri(source, dbid[1], data_in_fields)
-#
-#     return data_dict
+    dbids_by_type_dict = {"study":[["germplasmDbIds","germplasm"],["locationDbIds","location"],["trialDbIds","trial"]],
+                          "germplasm":[["locationDbIds","location"],["studyDbIds","study"],["trialDbIds","trial"]],
+                          "location":[["studyDbIds","study"],["trialDbIds","trial"]],
+                          "trial":[["germplasmDbIds","germplasm"],["locationDbIds","location"],["studyDbIds","study"]],
+                          "program":[["trialDbIds","trial"],["studyDbIds","study"]],
+                          "study1":[["studyDbId","study"],["germplasmDbId","germplasm"],["locationDbId","location"],["trialDbId","trial"]],
+                          "germplasm1":[["germplasmDbId","germplasm"],["locationDbId","location"],["studyDbId","study"],["trialDbId","trial"]],
+                          "location1":[["locationDbId","location"],["germplasmDbIds","germplasm"]],
+                          "trial1":[["trialDbId","trial"],["germplasmDbid","germplasm"],["locationDbId","location"],["studyDbId","study"]]}
 
-def set_dbid_to_uri2(data_dict,source):
-
-    dbid_by_type = [("germplasmDbId","germplasm"), ("locationDbId","location"), ("studyDbId","study"), ("trialDbId","trial")]
-    dbids_by_type = [("germplasmDbIds","germplasm"), ("locationDbIds","location"), ("studyDbIds","study"), ("trialDbIds","trial")]
-
-    for dbids in dbids_by_type :
-        for current_doc in data_dict.values():
-            for data_in_fields in current_doc.values():
-                if dbids[0] in data_in_fields:
-                    for data_dbids in range(len(data_in_fields[dbids[0]])):
-                        data_in_fields[dbids[0]][data_dbids] = get_generated_uri(source, dbids[1], ((data_dict.get(dbids[1])).get('urn:'+source.get('schema:identifier')+'/'+dbids[1]+'/'+data_in_fields[dbids[0]][data_dbids].replace(':','%3A'))))
-
-    for dbid in dbid_by_type:
-        for current_doc in data_dict.values():
-            for data_in_fields in current_doc.values():
-                if dbid[0] in data_in_fields:
-                    data_in_fields[dbid[0]] = get_generated_uri(source, dbid[1], data_in_fields)
+    for dbid_type, dbids in dbids_by_type_dict.items() :
+        for current_doc in data_dict[dbid_type.strip('1')].values():
+            for dbid in dbids:
+                if dbid[0] in current_doc :
+                    if type(current_doc[dbid[0]]) != list:
+                        current_doc[dbid[0]] = get_generated_uri(source, dbid[1], current_doc)
+                    else :
+                        for data_dbids in range(len(current_doc[dbid[0]])):
+                            current_doc[dbid[0]][data_dbids] = get_generated_uri(source, dbid[1], ((data_dict.get(dbid[1])).get('urn:'+source.get('schema:identifier')+'/'+dbid[1]+'/'+current_doc[dbid[0]][data_dbids].replace(':','%3A'))))
 
     return data_dict
 
-    #walk all object of the dict, generate uri using new version of get_generated_uri(source, document_type["document-type"], fieldStr)
-    #apply to a list of DbId field to transform
-    #skip observationVariable
-    # be carefull, some fields are list of ids, note the 's' at the end
     # TODO: validate this list with output of the curent transformation
-
-    pass
 
 
 def align_formats(current_source_data_dict):
@@ -288,7 +266,7 @@ def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config
         # TODO: don't load observationUnit, too big and of little interest.
         #  Instead stream and do on the fly transform of the relevant dbId at the end of the process
         current_source_data_dict = load_input_json(source, doc_types, source_json_dir, config)
-        set_dbid_to_uri2(current_source_data_dict, source)
+        set_dbid_to_uri(current_source_data_dict, source)
         align_formats(current_source_data_dict)
         generate_datadiscovery(current_source_data_dict)
 
