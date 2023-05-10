@@ -70,6 +70,65 @@ document_types = [
         }
     ]
 
+def is_checkpoint(n):
+    return n > 0 and n % 10000 == 0
+
+def dump_data_dict_in_json_files(source_dir, source_name, logger, documents_tuples):
+    """
+    Consumes an iterable of document tuples and clean email
+    TODO: remplacer document_tuples par le dictionaire de données chargé à partir des fichiers json et dans lequel ont été fait les transformations
+    """
+    logger.debug("Saving documents to json files...")
+
+    json_dict = dict()
+    document_count = 0
+    for document_header, document in documents_tuples:
+
+        # Hide email
+        if ("email" in document):
+            document["email"] = document["email"].replace('@', '_')
+
+        if ("contacts" in document):
+            for contact in document["contacts"]:
+                if "email" in contact:
+                    contact["email"] = contact["email"].replace('@', '_')
+
+        if document_header not in json_dict:
+            json_dict[document_header] = []
+
+        json_dict[document_header].append(document)
+
+        if ("node" not in document):
+            document["node"] = source_name
+            document["databaseName"] = "brapi@" + source_name
+
+        if ("source" not in document):
+            document["source"] = source_name
+
+        document_count += 1
+        if is_checkpoint(document_count):
+            logger.debug(f"checkpoint: {document_count} documents saved")
+
+    save_json(source_dir, json_dict)
+
+    logger.debug(f"Total of {document_count} documents saved in json files.")
+
+
+def save_json(source_dir, json_dict):
+    for type, document in json_dict.items():
+        file_number = 1
+        saved_documents = 0
+        while saved_documents < len(document):
+            with open(source_dir + "/" + type + '-' + str(file_number) + '.json', 'w') as f:
+                json.dump(document[saved_documents:file_number*10000], f, ensure_ascii=False)
+            with open(source_dir + "/" + type + '-' + str(file_number) + '.json', 'rb') as f:
+                with gzip.open(source_dir + "/" + type + '-' + str(file_number) + '.json.gz', 'wb') as f_out:
+                    shutil.copyfileobj(f, f_out)
+            os.remove(source_dir + "/" + type + '-' + str(file_number) + '.json')
+            file_number += 1
+            saved_documents += 10000
+
+
 def remove_html_tags(text):
     """
     Remove html tags from a string
