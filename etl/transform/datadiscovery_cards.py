@@ -70,6 +70,14 @@ document_types = [
         }
     ]
 
+documents_dbid_fields_plus_field_type = {
+    "study":[["germplasmDbIds","germplasm"],["locationDbId","location"],["trialDbIds","trial"],["trialDbId","trial"],["programDbId","program"]],
+    "germplasm":[["locationDbIds","location"],["studyDbIds","study"],["trialDbIds","trial"]],
+    "location":[["studyDbIds","study"],["trialDbIds","trial"]],
+    "trial":[["germplasmDbIds","germplasm"],["locationDbIds","location"],["studyDbIds","study"]],
+    "program":[["trialDbIds","trial"],["studyDbIds","study"]]
+     }
+
 def is_checkpoint(n):
     return n > 0 and n % 10000 == 0
 
@@ -194,7 +202,7 @@ def get_document_configs_by_entity(document_configs):
     return by_entity
 
 
-def get_generated_uri(source: dict, entity: str, data: dict) -> str:
+def get_generated_uri_from_dict(source: dict, entity: str, data: dict) -> str:
     """
     Get/Generate URI from BrAPI object or generate one
     """
@@ -224,6 +232,18 @@ def get_generated_uri(source: dict, entity: str, data: dict) -> str:
                         f' (malformed URI: "{data_uri}")')
     return data_uri
 
+def get_generated_uri_from_str(source: dict, entity: str, data: str) -> str:
+    source_id = urllib.parse.quote(source['schema:identifier'])
+
+    # Generate URI from source id, entity name and data id
+    encoded_entity = urllib.parse.quote(entity)
+    encoded_id = urllib.parse.quote(data)
+    data_uri = f"urn:{source_id}/{encoded_entity}/{encoded_id}"
+
+    if not rfc3987.match(data_uri, rule='URI'):
+        raise Exception(f'Could not get or create a correct URI for "{entity}" object id "{data_id}"'
+                        f' (malformed URI: "{data_uri}")')
+    return data_uri
 
 def load_input_json(source, doc_types, source_json_dir, config):
     data_dict = {}
@@ -240,7 +260,7 @@ def load_input_json(source, doc_types, source_json_dir, config):
                     json_list = list(json_file)
                     for json_line in json_list:
                         data = json.loads(json_line)
-                        uri = get_generated_uri(source, document_type["document-type"], data)
+                        uri = get_generated_uri_from_dict(source, document_type["document-type"], data)
                         data_dict[document_type["document-type"]][uri] = data
     #                    links = get_entity_links(data, 'DbId')
     #                    entity_names = set(map(first, links))
@@ -248,31 +268,22 @@ def load_input_json(source, doc_types, source_json_dir, config):
                 print("No "+document_type["document-type"]+" in "+source['schema:identifier'])
     return data_dict
 
-def set_dbid_to_uri(data_dict,source):
+def transform_data_dict_db_ids(data_dict:dict,source:dict, documents_dbid_fields_plus_field_type:dict):
+    # for each first level of data_dict, apply get_generated_uri to each element filtered by
+    # documents_dbid_fields_plus_field_type
 
-    dbids_by_type_dict = {"study":[["germplasmDbIds","germplasm"],["locationDbIds","location"],["trialDbIds","trial"]],
-                          "germplasm":[["locationDbIds","location"],["studyDbIds","study"],["trialDbIds","trial"]],
-                          "location":[["studyDbIds","study"],["trialDbIds","trial"]],
-                          "trial":[["germplasmDbIds","germplasm"],["locationDbIds","location"],["studyDbIds","study"]],
-                          "program":[["trialDbIds","trial"],["studyDbIds","study"]],
-                          "study1":[["studyDbId","study"],["germplasmDbId","germplasm"],["locationDbId","location"],["trialDbId","trial"]],
-                          "germplasm1":[["germplasmDbId","germplasm"],["locationDbId","location"],["studyDbId","study"],["trialDbId","trial"]],
-                          "location1":[["locationDbId","location"],["germplasmDbIds","germplasm"]],
-                          "trial1":[["trialDbId","trial"],["germplasmDbid","germplasm"],["locationDbId","location"],["studyDbId","study"]]}
-
-    for dbid_type, dbids in dbids_by_type_dict.items() :
-        for current_doc in data_dict[dbid_type.strip('1')].values():
-            for dbid in dbids:
-                if dbid[0] in current_doc :
-                    if type(current_doc[dbid[0]]) != list:
-                        current_doc[dbid[0]] = get_generated_uri(source, dbid[1], current_doc)
-                    else :
-                        for data_dbids in range(len(current_doc[dbid[0]])):
-                            current_doc[dbid[0]][data_dbids] = get_generated_uri(source, dbid[1], ((data_dict.get(dbid[1])).get('urn:'+source.get('schema:identifier')+'/'+dbid[1]+'/'+current_doc[dbid[0]][data_dbids].replace(':','%3A'))))
-
+    for document_type, documents in data_dict.items():
+        for document_id, document in documents.items():
+            document_id_as_uri = get_generated_uri_from_dict(source, document_type, document)
+            document[document_type + 'DbId'] = document_id_as_uri
+            for fields in documents_dbid_fields_plus_field_type[document_type]:
+                if fields[0] in document:
+                    if fields[0].endswith("DbIds"):
+                        field_ids_transformed = map(lambda x: get_generated_uri_from_str(source, fields[1], x), document[fields[0]])
+                        document[fields[0]] = list(field_ids_transformed)
+                    elif fields[0].endswith("DbId"):
+                        document[fields[0]] = get_generated_uri_from_str(source, fields[1], document[fields[0]])
     return data_dict
-
-    # TODO: validate this list with output of the curent transformation
 
 
 def align_formats(current_source_data_dict):
@@ -325,7 +336,7 @@ def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config
         # TODO: don't load observationUnit, too big and of little interest.
         #  Instead stream and do on the fly transform of the relevant dbId at the end of the process
         current_source_data_dict = load_input_json(source, doc_types, source_json_dir, config)
-        set_dbid_to_uri(current_source_data_dict, source)
+        transform_data_dict_db_ids(current_source_data_dict, source, documents_dbid_fields_plus_field_type)
         align_formats(current_source_data_dict)
         generate_datadiscovery(current_source_data_dict)
 
