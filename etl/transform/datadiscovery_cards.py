@@ -81,60 +81,24 @@ documents_dbid_fields_plus_field_type = {
 def is_checkpoint(n):
     return n > 0 and n % 10000 == 0
 
-def dump_data_dict_in_json_files(source_dir, source_name, logger, documents_tuples):
-    """
-    Consumes an iterable of document tuples and clean email
-    TODO: remplacer document_tuples par le dictionaire de données chargé à partir des fichiers json et dans lequel ont été fait les transformations
-    """
+def save_json(source_dir, json_dict, logger):
     logger.debug("Saving documents to json files...")
-
-    json_dict = dict()
-    document_count = 0
-    for document_header, document in documents_tuples:
-
-        # Hide email
-        if ("email" in document):
-            document["email"] = document["email"].replace('@', '_')
-
-        if ("contacts" in document):
-            for contact in document["contacts"]:
-                if "email" in contact:
-                    contact["email"] = contact["email"].replace('@', '_')
-
-        if document_header not in json_dict:
-            json_dict[document_header] = []
-
-        json_dict[document_header].append(document)
-
-        if ("node" not in document):
-            document["node"] = source_name
-            document["databaseName"] = "brapi@" + source_name
-
-        if ("source" not in document):
-            document["source"] = source_name
-
-        document_count += 1
-        if is_checkpoint(document_count):
-            logger.debug(f"checkpoint: {document_count} documents saved")
-
-    save_json(source_dir, json_dict)
-
-    logger.debug(f"Total of {document_count} documents saved in json files.")
-
-
-def save_json(source_dir, json_dict):
-    for type, document in json_dict.items():
+    saved_documents = 0
+    for type, documents in json_dict.items():
         file_number = 1
         saved_documents = 0
-        while saved_documents < len(document):
+        documents_list = documents.values()
+        while saved_documents < len(documents_list):
             with open(source_dir + "/" + type + '-' + str(file_number) + '.json', 'w') as f:
-                json.dump(document[saved_documents:file_number*10000], f, ensure_ascii=False)
+                json.dump(list(documents_list)[saved_documents:file_number*10000], f, ensure_ascii=False)
             with open(source_dir + "/" + type + '-' + str(file_number) + '.json', 'rb') as f:
                 with gzip.open(source_dir + "/" + type + '-' + str(file_number) + '.json.gz', 'wb') as f_out:
                     shutil.copyfileobj(f, f_out)
             os.remove(source_dir + "/" + type + '-' + str(file_number) + '.json')
             file_number += 1
             saved_documents += 10000
+            logger.debug(f"checkpoint: {saved_documents} documents saved")
+    logger.debug(f"Total of {saved_documents} documents saved in json files.")
 
 
 def remove_html_tags(text):
@@ -268,14 +232,37 @@ def load_input_json(source, doc_types, source_json_dir, config):
                 print("No "+document_type["document-type"]+" in "+source['schema:identifier'])
     return data_dict
 
-def transform_data_dict_db_ids(data_dict:dict,source:dict, documents_dbid_fields_plus_field_type:dict):
+
+def simple_transformations(document, source):
+    # Hide email
+    if ("email" in document):
+        document["email"] = document["email"].replace('@', '_')
+
+    if ("contacts" in document):
+        for contact in document["contacts"]:
+            if "email" in contact:
+                contact["email"] = contact["email"].replace('@', '_')
+
+
+    if ("node" not in document):
+        document["node"] = source['schema:name']
+        document["databaseName"] = "brapi@" + source['schema:name']
+
+    if ("source" not in document):
+        document["source"] = source['schema:name']
+
+
+def transform_data_dict_db_ids(data_dict:dict, source:dict, documents_dbid_fields_plus_field_type:dict):
     # for each first level of data_dict, apply get_generated_uri to each element filtered by
     # documents_dbid_fields_plus_field_type
 
     for document_type, documents in data_dict.items():
         for document_id, document in documents.items():
+            # transform documentDbId
             document_id_as_uri = get_generated_uri_from_dict(source, document_type, document)
             document[document_type + 'DbId'] = document_id_as_uri
+            simple_transformations(document, source)
+            # transform other DbIds
             for fields in documents_dbid_fields_plus_field_type[document_type]:
                 if fields[0] in document:
                     if fields[0].endswith("DbIds"):
@@ -314,7 +301,7 @@ def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config
     logger.info("Transforming BrAPI to Elasticsearch documents for " + source_name)
 
 
-    logger.info("Loading data, generating URIs and global identifiers for " + source_name)
+    current_source_data_dict = dict()
 
     try:
         if not os.path.exists(source_json_dir):
@@ -323,26 +310,19 @@ def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config
                 'Please make sure you have run the BrAPI extraction before trying to launch the transformation process.'
             )
 
-# TODO: this should be generalised : detect sources that are not jsonl and turn it into the right format
+        # TODO: this should be generalised : detect sources that are not jsonl and turn it into the right format
         if source_name == 'EVA':
             logger.info("Flattening EVA data...")
             json_to_jsonl(source_json_dir)
             rm_tags(source_json_dir)
 
-
+        logger.info("Loading data, generating URIs and global identifiers for " + source_name)
         # Load each file (aka document type) in a per source hash.
         # structure or the keys: documenttype>documentDbId
         # TODO: call get_generated_uri at load time
         # TODO: don't load observationUnit, too big and of little interest.
         #  Instead stream and do on the fly transform of the relevant dbId at the end of the process
         current_source_data_dict = load_input_json(source, doc_types, source_json_dir, config)
-        transform_data_dict_db_ids(current_source_data_dict, source, documents_dbid_fields_plus_field_type)
-        align_formats(current_source_data_dict)
-        generate_datadiscovery(current_source_data_dict)
-
-        #TODO: save json from current_source_data_dict with page of reasonable size (10_000 documents per file ? ), gzip
-
-
 
     except Exception as e:
         logger.debug(traceback.format_exc())
@@ -351,6 +331,15 @@ def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config
                     "=> Check the logs ({}) and data ({}) for more details."
                     .format(source_name, log_file, failed_dir))
 
+    transform_data_dict_db_ids(current_source_data_dict, source, documents_dbid_fields_plus_field_type)
+    align_formats(current_source_data_dict)
+    generate_datadiscovery(current_source_data_dict)
+
+    #dump_data_dict_in_json_files(source_bulk_dir, source_name, logger, current_source_data_dict)
+    save_json(source_bulk_dir, current_source_data_dict, logger)
+
+
+    #TODO: save json from current_source_data_dict with page of reasonable size (10_000 documents per file ? ), gzip
 
 
 def main(config):
