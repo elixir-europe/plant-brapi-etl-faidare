@@ -7,6 +7,7 @@ import gzip
 import shutil
 import rfc3987
 import urllib.parse
+import base64
 from xml.sax import saxutils as su
 from collections import defaultdict
 import jsonschema
@@ -166,7 +167,7 @@ def get_document_configs_by_entity(document_configs):
     return by_entity
 
 
-def get_generated_uri_from_dict(source: dict, entity: str, data: dict) -> str:
+def get_generated_uri_from_dict(source: dict, entity: str, data: dict, do_base64 = False) -> str:
     """
     Get/Generate URI from BrAPI object or generate one
     """
@@ -194,9 +195,11 @@ def get_generated_uri_from_dict(source: dict, entity: str, data: dict) -> str:
     if not rfc3987.match(data_uri, rule='URI'):
         raise Exception(f'Could not get or create a correct URI for "{entity}" object id "{data_id}"'
                         f' (malformed URI: "{data_uri}")')
+    if do_base64:
+        data_uri = base64.b64encode(data_uri.encode('utf-8')).decode('utf-8')
     return data_uri
 
-def get_generated_uri_from_str(source: dict, entity: str, data: str) -> str:
+def get_generated_uri_from_str(source: dict, entity: str, data: str, do_base64 = False) -> str:
     source_id = urllib.parse.quote(source['schema:identifier'])
 
     # Generate URI from source id, entity name and data id
@@ -205,8 +208,10 @@ def get_generated_uri_from_str(source: dict, entity: str, data: str) -> str:
     data_uri = f"urn:{source_id}/{encoded_entity}/{encoded_id}"
 
     if not rfc3987.match(data_uri, rule='URI'):
-        raise Exception(f'Could not get or create a correct URI for "{entity}" object id "{data_id}"'
+        raise Exception(f'Could not get or create a correct URI for "{entity}" object id "{data}"'
                         f' (malformed URI: "{data_uri}")')
+    if do_base64:
+        data_uri = base64.b64encode(data_uri.encode('utf-8')).decode('utf-8')
     return data_uri
 
 def load_input_json(source, doc_types, source_json_dir, config):
@@ -243,10 +248,9 @@ def simple_transformations(document, source):
             if "email" in contact:
                 contact["email"] = contact["email"].replace('@', '_')
 
-
     if ("node" not in document):
-        document["node"] = source['schema:name']
-        document["databaseName"] = "brapi@" + source['schema:name']
+        document["node"] = source['schema:identifier']
+        document["databaseName"] = "brapi@" + source['schema:identifier']
 
     if ("source" not in document):
         document["source"] = source['schema:name']
@@ -259,17 +263,17 @@ def transform_data_dict_db_ids(data_dict:dict, source:dict, documents_dbid_field
     for document_type, documents in data_dict.items():
         for document_id, document in documents.items():
             # transform documentDbId
-            document_id_as_uri = get_generated_uri_from_dict(source, document_type, document)
-            document[document_type + 'DbId'] = document_id_as_uri
+            document[document_type + 'URI'] = get_generated_uri_from_dict(source, document_type, document)
+            document[document_type + 'DbId'] = get_generated_uri_from_dict(source, document_type, document, True)
             simple_transformations(document, source)
             # transform other DbIds
             for fields in documents_dbid_fields_plus_field_type[document_type]:
                 if fields[0] in document:
                     if fields[0].endswith("DbIds"):
-                        field_ids_transformed = map(lambda x: get_generated_uri_from_str(source, fields[1], x), document[fields[0]])
+                        field_ids_transformed = map(lambda x: get_generated_uri_from_str(source, fields[1], x, True), document[fields[0]])
                         document[fields[0]] = list(field_ids_transformed)
                     elif fields[0].endswith("DbId"):
-                        document[fields[0]] = get_generated_uri_from_str(source, fields[1], document[fields[0]])
+                        document[fields[0]] = get_generated_uri_from_str(source, fields[1], document[fields[0]], True)
     return data_dict
 
 
