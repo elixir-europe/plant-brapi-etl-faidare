@@ -72,7 +72,7 @@ document_types = [
     ]
 
 documents_dbid_fields_plus_field_type = {
-    "study":[["germplasmDbIds","germplasm"],["locationDbId","location"],["trialDbIds","trial"],["trialDbId","trial"],["programDbId","program"]],
+    "study":[["germplasmDbIds","germplasm"],["locationDbId","location"],["locationDbIds","location"],["trialDbIds","trial"],["trialDbId","trial"],["programDbId","program"],["programDbIds","program"]],
     "germplasm":[["locationDbIds","location"],["studyDbIds","study"],["trialDbIds","trial"]],
     "location":[["studyDbIds","study"],["trialDbIds","trial"]],
     "trial":[["germplasmDbIds","germplasm"],["locationDbIds","location"],["studyDbIds","study"]],
@@ -256,12 +256,15 @@ def simple_transformations(document, source):
         document["source"] = source['schema:name']
 
 
-def transform_data_dict_db_ids(data_dict:dict, source:dict, documents_dbid_fields_plus_field_type:dict):
+def transform_source_documents(data_dict:dict, source:dict, documents_dbid_fields_plus_field_type:dict):
     # for each first level of data_dict, apply get_generated_uri to each element filtered by
     # documents_dbid_fields_plus_field_type
 
     for document_type, documents in data_dict.items():
         for document_id, document in documents.items():
+
+            ########## DbId and generation handling ##########
+
             # transform documentDbId
             document[document_type + 'URI'] = get_generated_uri_from_dict(source, document_type, document)
             document[document_type + 'DbId'] = get_generated_uri_from_dict(source, document_type, document, True)
@@ -274,6 +277,10 @@ def transform_data_dict_db_ids(data_dict:dict, source:dict, documents_dbid_field
                         document[fields[0]] = list(field_ids_transformed)
                     elif fields[0].endswith("DbId"):
                         document[fields[0]] = get_generated_uri_from_str(source, fields[1], document[fields[0]], True)
+
+            ########## mapping and transforming fields ##########
+
+
     return data_dict
 
 
@@ -281,7 +288,7 @@ def align_formats(current_source_data_dict):
     pass
 
 
-def generate_datadiscovery(current_source_data_dict):
+def generate_datadiscovery(current_source_data_dict: dict) -> dict:
     pass
 
 
@@ -335,11 +342,11 @@ def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config
                     "=> Check the logs ({}) and data ({}) for more details."
                     .format(source_name, log_file, failed_dir))
 
-    transform_data_dict_db_ids(current_source_data_dict, source, documents_dbid_fields_plus_field_type)
-    align_formats(current_source_data_dict)
+    current_source_data_dict = transform_source_documents(current_source_data_dict, source, documents_dbid_fields_plus_field_type)
+
+
     generate_datadiscovery(current_source_data_dict)
 
-    #dump_data_dict_in_json_files(source_bulk_dir, source_name, logger, current_source_data_dict)
     save_json(source_bulk_dir, current_source_data_dict, logger)
 
 
