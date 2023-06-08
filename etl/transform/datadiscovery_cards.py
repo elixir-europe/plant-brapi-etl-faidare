@@ -20,6 +20,7 @@ from etl.common.templating import resolve, parse_template
 from etl.common.utils import *
 from etl.transform import uri
 from etl.transform.uri import UriIndex
+from etl.transform.transform_cards import do_card_transform
 
 NB_THREADS = max(int(multiprocessing.cpu_count() * 0.75), 2)
 CHUNK_SIZE = 500
@@ -279,6 +280,8 @@ def transform_source_documents(data_dict:dict, source:dict, documents_dbid_field
                         document[fields[0]] = get_generated_uri_from_str(source, fields[1], document[fields[0]], True)
 
             ########## mapping and transforming fields ##########
+            do_card_transform(document)
+
 
 
     return data_dict

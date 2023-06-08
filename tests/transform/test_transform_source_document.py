@@ -24,12 +24,15 @@ fixture_source_data_dict = {
         'urn:BRAPI_TEST/germplasm/abc': {
             'germplasmDbId': 'abc',
             'studyDbIds':
-                ['study1']},
+                ['study1'],
+            "defaultDisplayName": "abc default display name",
+            "germplasmName": "don't touch that one"},
         'urn:BRAPI_TEST/germplasm/1withPUI': {
             'germplasmDbId': '1234',
             'germplasmPUI': 'https://doi.org/1014.1543/345678ZERTYU',
             'studyDbIds':
-                ['study1']},
+                ['study1'],
+            "accessionNumber": "345678ZERTYU"},
         'urn:BRAPI_TEST/germplasm/Zea_VIB_RIL_8W_EP33_20___1184': {
             "countryOfOriginCode": "BE",
             "instituteCode": "VIB",
@@ -114,7 +117,6 @@ fixture_source_data_dict = {
             "active": False,
             'source' : 'BRAPI TEST',
             "documentationURL": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/48",
-            "studyName": "RIL 8-way  batch 9",
             "studyDescription": "Short description of the experimental design, possibly including statistical design.",
             "germplasmDbIds": [
                 "Zea_VIB_RIL_8W_75RIL8way___1184",
@@ -178,6 +180,9 @@ fixture_expected_data_dict = {
                 ['dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvc3R1ZHkx'],
             'germplasmURI' : 'https://doi.org/1014.1543/345678ZERTYU',
             'node' : 'BRAPI_TEST',
+            "accessionNumber": "345678ZERTYU",
+            "germplasmName": "345678ZERTYU",
+            "defaultDisplayName": "345678ZERTYU",
             'databaseName' :'brapi@BRAPI_TEST',
             'source' : 'BRAPI TEST'},
         'urn:BRAPI_TEST/germplasm/Zea_VIB_RIL_8W_EP33_20___1184': {
@@ -191,6 +196,7 @@ fixture_expected_data_dict = {
             "instituteName": "VIB",
             "species": "mays",
             "genus": "Zea",
+            "genusSpecies": "Zea mays",
             'source' : 'BRAPI TEST',
             "studyDbIds": [
                 "dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvVklCX3N0dWR5X19fNDg="
@@ -211,6 +217,7 @@ fixture_expected_data_dict = {
             "instituteName": "VIB",
             "species": "mays",
             "genus": "Zea",
+            "genusSpecies": "Zea mays",
             'source' : 'BRAPI TEST',
             "studyDbIds": [
                 "dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvVklCX3N0dWR5X19fNDg="
@@ -219,7 +226,6 @@ fixture_expected_data_dict = {
             'node' : 'BRAPI_TEST',
             'databaseName' :'brapi@BRAPI_TEST'
     }
-
 },
     'location': {
         'urn:BRAPI_TEST/location/loc1': {
@@ -286,7 +292,6 @@ fixture_expected_data_dict = {
             "studyDbId": "dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvVklCX3N0dWR5X19fNDg=",
             "studyURI": "urn:BRAPI_TEST/study/VIB_study___48",
             "trialName": "RIL_8-way_growth_chamber",
-            "name": "RIL 8-way  batch 9",
             "endDate": "2013-09-16",
             "locationDbId": "dXJuOkJSQVBJX1RFU1QvbG9jYXRpb24vMQ==",
             "locationName": "growth chamber",
@@ -349,7 +354,7 @@ class TestDbidToUri(unittest.TestCase):
 
     maxDiff = None
 
-    def test_generate_valid_uri(self):
+    def test_transform_document(self):
 
 
         data_dict_actual = transform_source_documents(fixture_source_data_dict, test_source, documents_dbid_fields_plus_field_type)

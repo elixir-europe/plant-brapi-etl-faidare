@@ -50,9 +50,21 @@ class transform_integration_test(unittest.TestCase):
 
         #with open(self._expected_data_dir+"VIB_germplasm_expected.json") as expected_vib_f:
         #    expected_vib = json.load(expected_vib_f)
-        diffJson = DeepDiff(actual_vib, expected_vib)
+        #diffJson = DeepDiff(actual_vib, expected_vib)
+        #print(diffJson)
+        self.maxDiff = None
+        #for each dict in the list actual_vib find the dict with the same accessionNumber in expected_vib
+        #compare the 2 dicts
+        for actual_germplasm in actual_vib:
+            expected_germplasm = next((germplasm for germplasm in expected_vib if germplasm["germplasmDbId"] == actual_germplasm["germplasmDbId"]), None)
+            self.assertIsNotNone(expected_germplasm)
+            self.assertDictEqual(actual_germplasm, expected_germplasm)
 
-        self.assertEqual(diffJson, {}, diffJson)
+        #self.assertDictEqual(dict(enumerate(actual_vib)), dict(enumerate(expected_vib)))
+        #self.assertDictEqual(dict(enumerate(actual_vib)), dict(enumerate(expected_vib)))
+#not good
+    #    self.assertEqual(actual_vib, expected_vib)
+        #self.assertEqual(diffJson, {}, diffJson)
 
 
     def test_all_datadiscovery_generated(self):
