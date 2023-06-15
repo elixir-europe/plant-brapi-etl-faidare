@@ -35,13 +35,16 @@ fixture_source_germplasm = {
             "germplasmURI":'urn:VIB/germplasm/Zea_VIB_RIL_8W_EP33_20___1184'
         }
 
+#TODO : need a list terster in study
 fixture_source_study = {
             "trialDbId": "3",
             "startDate": "2013-08-20",
             "studyType": "Phenotyping Study",
-            "studyDbId": "VIB_study___48",
+            "studyDbId": "dXJuOlZJQi9zdHVkeS9WSUJfc3R1ZHlfX180OA==",
+            "studyURI": "urn:VIB/study/VIB_study___48",
             "trialName": "RIL_8-way_growth_chamber",
             "name": "RIL 8-way  batch 9",
+            "studyName": "RIL 8-way  batch 9",
             "endDate": "2013-09-16",
             "locationDbId": "1",
             "locationName": "growth chamber",
@@ -50,8 +53,8 @@ fixture_source_study = {
             "documentationURL": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/48",
             "studyDescription": "Short description of the experimental design, possibly including statistical design.",
             "germplasmDbIds": [
-                "Zea_VIB_RIL_8W_75RIL8way___1184",
-                "Zea_VIB_RIL_8W_81RIL8way___177"
+                "dXJuOkJSQVBJX1RFU1QvZ2VybXBsYXNtL1plYV9WSUJfUklMXzhXX0VQMzNfMjBfX18xMTg0",
+                "dXJuOkJSQVBJX1RFU1QvZ2VybXBsYXNtL1plYV9WSUJfUklMXzhXXzgxUklMOHdheV9fXzE3Nw=="
             ],
             "observationVariableDbIds": [
                 "65",
@@ -66,7 +69,7 @@ fixture_source_study = {
             "contacts": [
                 {
                     "contactDbId": "5f4e5509",
-                    "email": "bob@bob.com",
+                    "email": "bob_bob.com",
                     "instituteName": "The BrAPI Institute",
                     "name": "Bob Robertson",
                     "orcid": "http://orcid.org/0000-0001-8640-1750",
@@ -143,15 +146,7 @@ fixture_expected_study ={
     ],
     "observationVariableDbIds": [
         "65",
-        "66",
-        "50",
-        "54",
-        "52",
-        "186",
-        "188",
-        "60",
-        "71",
-        "195"
+        "66"
     ],
     "locationDbIds": [
         "dXJuOlZJQi9sb2NhdGlvbi8x"
@@ -175,6 +170,7 @@ fixture_expected_study ={
     "@id": "urn:VIB/study/VIB_study___48",
     "schema:includedInDataCatalog": "http://pippa.psb.ugent.be",
     "schema:identifier": "dXJuOlZJQi9zdHVkeS9WSUJfc3R1ZHlfX180OA==",
+    "identifier": "dXJuOlZJQi9zdHVkeS9WSUJfc3R1ZHlfX180OA==",
     "schema:name": "RIL 8-way  batch 9",
     "trialURI": "urn:VIB/trial/3",
     "locationURI": "urn:VIB/location/1",
@@ -211,15 +207,7 @@ fixture_expected_study ={
     "trait": {
         "observationVariableIds": [
             "65",
-            "66",
-            "50",
-            "54",
-            "52",
-            "186",
-            "188",
-            "60",
-            "71",
-            "195"
+            "66"
         ]
     },
     "node": "BRAPI TEST",
@@ -227,7 +215,7 @@ fixture_expected_study ={
     'taxonGroup': 'Zea'
 }
 
-class TestDbidToUri(unittest.TestCase):
+class TestGenerateDataDiscovery(unittest.TestCase):
 
     maxDiff = None
 

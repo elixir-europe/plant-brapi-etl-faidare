@@ -19,6 +19,7 @@ from etl.common.store import JSONSplitStore, list_entity_files
 from etl.common.templating import resolve, parse_template
 from etl.common.utils import *
 from etl.transform import uri
+from etl.transform.generate_datadiscovery import generate_datadiscovery
 from etl.transform.uri import UriIndex
 from etl.transform.transform_cards import do_card_transform
 
@@ -266,7 +267,7 @@ def transform_source_documents(data_dict:dict, source:dict, documents_dbid_field
 
             ########## DbId and generation handling ##########
 
-            # transform documentDbId
+            # transform documentDbId *NB*: the URI field is mandatory in transformed documents
             document[document_type + 'URI'] = get_generated_uri_from_dict(source, document_type, document)
             document[document_type + 'DbId'] = get_generated_uri_from_dict(source, document_type, document, True)
             simple_transformations(document, source)
@@ -282,6 +283,10 @@ def transform_source_documents(data_dict:dict, source:dict, documents_dbid_field
             ########## mapping and transforming fields ##########
             do_card_transform(document)
 
+            ########## generation of data discovery ##########
+            generate_datadiscovery(document, data_dict)
+
+            ########## validate and generate report against datadiscovery and cards JSON ##########
 
 
     return data_dict
@@ -291,8 +296,6 @@ def align_formats(current_source_data_dict):
     pass
 
 
-def generate_datadiscovery(current_source_data_dict: dict) -> dict:
-    pass
 
 
 def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config):
