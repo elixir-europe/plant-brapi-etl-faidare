@@ -23,59 +23,67 @@ CHUNK_SIZE = 500
 
 # TODO : would this be deprecated ?
 document_types = [
-        {
-            "document-type": "germplasm",
-            "source-entity": "germplasm",
-            "mandatory" : True
-        },
-        {
-            "document-type": "germplasmAttribute",
-            "source-entity": "germplasmAttribute"
-        },
-        {
-            "document-type": "germplasmPedigree",
-            "source-entity": "germplasmPedigree"
-        },
-        {
-            "document-type": "germplasmProgeny",
-            "source-entity": "germplasmProgeny"
-        },
-        {
-            "document-type": "location",
-            "source-entity": "location"
-        },
-        {
-            "document-type": "observationUnit",
-            "source-entity": "observationUnit"
-        },
-        {
-            "document-type": "program",
-            "source-entity": "program"
-        },
-        {
-            "document-type": "study",
-            "source-entity": "study"
-        },
-        {
-            "document-type": "trial",
-            "source-entity": "trial"
-        },
-        {
-            "document-type": "observationVariable",
-            "source-entity": "observationVariable"
-        }
-    ]
+    {
+        "document-type": "germplasm",
+        "source-entity": "germplasm",
+        "mandatory": True
+    },
+    {
+        "document-type": "germplasmAttribute",
+        "source-entity": "germplasmAttribute"
+    },
+    {
+        "document-type": "germplasmPedigree",
+        "source-entity": "germplasmPedigree"
+    },
+    {
+        "document-type": "germplasmProgeny",
+        "source-entity": "germplasmProgeny"
+    },
+    {
+        "document-type": "location",
+        "source-entity": "location"
+    },
+    {
+        "document-type": "observationUnit",
+        "source-entity": "observationUnit"
+    },
+    {
+        "document-type": "program",
+        "source-entity": "program"
+    },
+    {
+        "document-type": "study",
+        "source-entity": "study"
+    },
+    {
+        "document-type": "trial",
+        "source-entity": "trial"
+    },
+    {
+        "document-type": "observationVariable",
+        "source-entity": "observationVariable"
+    },
+    {
+        "document-type": "contact",
+        "source-entity": "contact"
+    }
+]
 
 documents_dbid_fields_plus_field_type = {
-    "study":[["germplasmDbIds","germplasm"],["locationDbId","location"],["locationDbIds","location"],["trialDbIds","trial"],["trialDbId","trial"],["programDbId","program"],["programDbIds","program"]],
-    "germplasm":[["locationDbIds","location"],["studyDbIds","study"],["trialDbIds","trial"]],
-    "location":[["studyDbIds","study"],["trialDbIds","trial"]],
-    "trial":[["germplasmDbIds","germplasm"],["locationDbIds","location"],["studyDbIds","study"]],
-    "program":[["trialDbIds","trial"],["studyDbIds","study"]]
-     }
+    "study": [["germplasmDbIds", "germplasm"], ["locationDbId", "location"], ["locationDbIds", "location"],
+              ["trialDbIds", "trial"], ["trialDbId", "trial"], ["programDbId", "program"], ["programDbIds", "program"]],
+    "germplasm": [["locationDbIds", "location"], ["studyDbIds", "study"], ["trialDbIds", "trial"]],
+    "location": [["studyDbIds", "study"], ["trialDbIds", "trial"]],
+    "trial": [["germplasmDbIds", "germplasm"], ["locationDbIds", "location"], ["studyDbIds", "study"]],
+    "program": [["trialDbIds", "trial"], ["studyDbIds", "study"]],
+    "contact": [["trialDbIds", "trial"]]
+}
+
 
 def is_checkpoint(n):
     return n > 0 and n % 10000 == 0
+
 
 def save_json(source_dir, json_dict, logger):
     logger.debug("Saving documents to json files...")
@@ -86,11 +94,12 @@ def save_json(source_dir, json_dict, logger):
         documents_list = documents.values()
         while saved_documents < len(documents_list):
             with open(source_dir + "/" + type + '-' + str(file_number) + '.json', 'w') as f:
-                json.dump(list(documents_list)[saved_documents:file_number*10000], f, ensure_ascii=False)
+                json.dump(list(documents_list)[saved_documents:file_number * 10000], f, ensure_ascii=False)
             with open(source_dir + "/" + type + '-' + str(file_number) + '.json', 'rb') as f:
                 with gzip.open(source_dir + "/" + type + '-' + str(file_number) + '.json.gz', 'wb') as f_out:
                     shutil.copyfileobj(f, f_out)
-            os.remove(source_dir + "/" + type + '-' + str(file_number) + '.json')
+            #TODO: uncomment: for easier testing
+            #os.remove(source_dir + "/" + type + '-' + str(file_number) + '.json')
             file_number += 1
             saved_documents += 10000
             logger.debug(f"checkpoint: {saved_documents} documents saved")
@@ -124,7 +133,7 @@ def json_to_jsonl(source_json_dir):
             with open(json_file) as old_json_file:
                 data = json.load(old_json_file)
         except json.decoder.JSONDecodeError:
-            print("INFO: The file '{}' is already flattened. Removing HTML tags if any .." .format(json_file))
+            print("INFO: The file '{}' is already flattened. Removing HTML tags if any ..".format(json_file))
             continue
         # write the new one (overriding the old json)
         with open(json_file, 'w') as new_json_file:
@@ -165,11 +174,11 @@ def get_document_configs_by_entity(document_configs):
 def load_input_json(source, doc_types, source_json_dir, config):
     data_dict = {}
     if source_json_dir:
-        #all_files = list_entity_files(source_json_dir)
-        #filtered_files = list(filter(lambda x: x[0] in source_entities, all_files))
+        # all_files = list_entity_files(source_json_dir)
+        # filtered_files = list(filter(lambda x: x[0] in source_entities, all_files))
         for document_type in doc_types:
             if document_type["document-type"] == "observationUnit":
-                #TODO: transformstudyDbIds and write them directly to the output file
+                # TODO: transformstudyDbIds and write them directly to the output file
                 # use adapted version of transform source document or extract the inner for loop
                 pass
             input_json_filepath = source_json_dir + "/" + document_type["document-type"] + ".json"
@@ -181,10 +190,10 @@ def load_input_json(source, doc_types, source_json_dir, config):
                         data = json.loads(json_line)
                         uri = get_generated_uri_from_dict(source, document_type["document-type"], data)
                         data_dict[document_type["document-type"]][uri] = data
-    #                    links = get_entity_links(data, 'DbId')
-    #                    entity_names = set(map(first, links))
+            #                    links = get_entity_links(data, 'DbId')
+            #                    entity_names = set(map(first, links))
             except FileNotFoundError as e:
-                print("No "+document_type["document-type"]+" in "+source['schema:identifier'])
+                print("No " + document_type["document-type"] + " in " + source['schema:identifier'])
     return data_dict
 
 
@@ -204,9 +213,11 @@ def simple_transformations(document, source):
 
     if ("source" not in document):
         document["source"] = source['schema:name']
+    document["schema:includedInDataCatalog"] = source["@id"]
+    return document
 
 
-def transform_source_documents(data_dict:dict, source:dict, documents_dbid_fields_plus_field_type:dict):
+def transform_source_documents(data_dict: dict, source: dict, documents_dbid_fields_plus_field_type: dict):
     # for each first level of data_dict, apply get_generated_uri to each element filtered by
     # documents_dbid_fields_plus_field_type
 
@@ -214,28 +225,45 @@ def transform_source_documents(data_dict:dict, source:dict, documents_dbid_field
         for document_id, document in documents.items():
             ########## DbId and generation handling ##########
             # transform documentDbId *NB*: the URI field is mandatory in transformed documents
-            document[document_type + 'URI'] = get_generated_uri_from_dict(source, document_type, document) # this should be URN field rather than URI
+            document["schema:identifier"] = document[document_type + 'DbId']
+            document[document_type + 'URI'] = get_generated_uri_from_dict(source, document_type,
+                                                                          document)  # this should be URN field rather than URI
+
+            document["@id"] = document[document_type + "URI"]
+            document["@type"] = document_type
             document[document_type + 'DbId'] = get_generated_uri_from_dict(source, document_type, document, True)
-            simple_transformations(document, source)
             # transform other DbIds , skip observationVariable
             if document_type in documents_dbid_fields_plus_field_type:
                 for fields in documents_dbid_fields_plus_field_type[document_type]:
                     if fields[0] in document:
                         if fields[0].endswith("DbIds"):
-                            field_ids_transformed = map(lambda x: get_generated_uri_from_str(source, fields[1], x, True), document[fields[0]])
+
+                            #URIs
+                            field_uris_transformed = map(
+                                lambda x: get_generated_uri_from_str(source, fields[1], x, False), document[fields[0]])
+                            document[fields[0].replace("DbIds", "URIs")] = list(field_uris_transformed)
+                            #DbIds
+                            field_ids_transformed = map(
+                                lambda x: get_generated_uri_from_str(source, fields[1], x, True), document[fields[0]])
                             document[fields[0]] = list(field_ids_transformed)
+
                         elif fields[0].endswith("DbId"):
-                            document[fields[0]] = get_generated_uri_from_str(source, fields[1], document[fields[0]], True)
+                            #URI
+                            document[fields[0].replace("DbId", "URI")] = get_generated_uri_from_str(source, fields[1],
+                                                                                                    document[fields[0]],
+                                                                                                    False)
+                            #DbId
+                            document[fields[0]] = get_generated_uri_from_str(source, fields[1], document[fields[0]],
+                                                                             True)
 
             ########## mapping and transforming fields ##########
             do_card_transform(document)
+            document = simple_transformations(document, source) # TODO : in mapping ?
     return data_dict
 
 
 def align_formats(current_source_data_dict):
     pass
-
-
 
 
 def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config):
@@ -253,10 +281,7 @@ def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config
     log_file = get_file_path([config['log-dir'], action], ext='.log', recreate=True)
     logger = create_logger(action, log_file, config['options']['verbose'])
 
-
-
     logger.info("Transforming BrAPI to Elasticsearch documents for " + source_name)
-
 
     current_source_data_dict = dict()
 
@@ -288,23 +313,23 @@ def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config
                     "=> Check the logs ({}) and data ({}) for more details."
                     .format(source_name, log_file, failed_dir))
 
-    current_source_data_dict = transform_source_documents(current_source_data_dict, source, documents_dbid_fields_plus_field_type)
+    current_source_data_dict = transform_source_documents(current_source_data_dict, source,
+                                                          documents_dbid_fields_plus_field_type)
 
     ########## generation of data discovery ##########
+    datadiscovery_document_dict = dict()
+    docKey = 0
     for document_type, documents in current_source_data_dict.items():
         for document_id, document in documents.items():
-            generate_datadiscovery(current_source_data_dict)
-            generate_datadiscovery(document, current_source_data_dict, source)
-
+            docKey += 1
+            datadiscovery_document_dict[docKey] = generate_datadiscovery(document, current_source_data_dict, source)
+    current_source_data_dict['datadiscovery'] = datadiscovery_document_dict
 
     ########## validate and generate report against datadiscovery and cards JSON ##########
 
-
-
     save_json(source_bulk_dir, current_source_data_dict, logger)
 
-
-    #TODO: save json from current_source_data_dict with page of reasonable size (10_000 documents per file ? ), gzip
+    # TODO: save json from current_source_data_dict with page of reasonable size (10_000 documents per file ? ), gzip
 
 
 def main(config):

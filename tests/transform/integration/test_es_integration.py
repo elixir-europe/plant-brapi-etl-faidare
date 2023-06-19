@@ -4,7 +4,7 @@ import os
 import json
 import gzip
 from deepdiff import DeepDiff
-
+from tests.transform.utils import sort_dict_lists
 
 class transform_integration_test(unittest.TestCase):
 
@@ -90,9 +90,8 @@ class transform_integration_test(unittest.TestCase):
         with gzip.open(self._expected_data_dir+"VIB_location_expected.json.gz") as expected_vib_f:
             expected_vib = json.load(expected_vib_f)
 
-        diffJson = DeepDiff(actual_vib, expected_vib)
-
-        self.assertEqual(diffJson, {}, diffJson)
+        self.assertEqual(sort_dict_lists(actual_vib), sort_dict_lists(expected_vib))
+        #self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
 
 
     def test_all_observationVariables_generated(self):
@@ -104,8 +103,9 @@ class transform_integration_test(unittest.TestCase):
         with gzip.open(self._expected_data_dir+"VIB_observation_variable_expected.json.gz") as expected_vib_f:
             expected_vib = json.load(expected_vib_f)
 
-        diffJson = DeepDiff(actual_vib, expected_vib)
-        self.assertEqual(diffJson, {}, diffJson)
+        self.assertEqual(sort_dict_lists(actual_vib), sort_dict_lists(expected_vib))
+        #self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
+
 
 
     def test_all_studys_generated(self):
@@ -117,8 +117,10 @@ class transform_integration_test(unittest.TestCase):
         with gzip.open(self._expected_data_dir+"VIB_study_expected.json.gz") as expected_vib_f:
             expected_vib = json.load(expected_vib_f)
 
-        diffJson = DeepDiff(actual_vib, expected_vib)
-        self.assertEqual(diffJson, {}, diffJson)
+        self.assertEqual(sort_dict_lists(actual_vib), sort_dict_lists(expected_vib))
+        #self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
+        #diffJson = DeepDiff(actual_vib, expected_vib)
+        #self.assertEqual(diffJson, {}, diffJson)
 
 
     def test_all_trials_generated(self):
@@ -130,7 +132,8 @@ class transform_integration_test(unittest.TestCase):
         with gzip.open(self._expected_data_dir+"VIB_trial_expected.json.gz") as expected_vib_f:
             expected_vib = json.load(expected_vib_f)
 
-        self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
+        self.assertEqual(sort_dict_lists(actual_vib), sort_dict_lists(expected_vib))
+        #self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
 
     def test_all_contacts_generated(self):
 
@@ -141,7 +144,13 @@ class transform_integration_test(unittest.TestCase):
         with gzip.open(self._expected_data_dir+"VIB_contact_expected.json.gz") as expected_vib_f:
             expected_vib = json.load(expected_vib_f)
 
-        self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
+        sorted_expected_vib = sorted(expected_vib, key=lambda k: k.get('contactURI'))
+        sorted_actual_vib = sorted(actual_vib, key=lambda k: k.get('contactURI'))
+        sorted_actual_vib = sort_dict_lists(sorted_actual_vib)
+        sorted_expected_vib = sort_dict_lists(sorted_expected_vib)
+
+        self.assertEqual( sorted_expected_vib, sorted_actual_vib)
+        #self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
 
     def test_germplasNames_generated(self):
         with gzip.open(self._actual_data_dir+"VIB/datadiscovery-1.json.gz") as actual_vib_f:
