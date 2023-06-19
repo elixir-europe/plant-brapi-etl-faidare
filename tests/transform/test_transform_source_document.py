@@ -18,13 +18,13 @@ with open('../../sources/TEST.json') as json_file:
 fixture_source_data_dict = {
     'germplasm': {
         'urn:BRAPI_TEST/germplasm/1': {
-            'germplasmDbId': '1',
-            'studyDbIds':
-                ['1', 'study1']},
-        'urn:BRAPI_TEST/germplasm/abc': {
-            'germplasmDbId': 'abc',
-            'studyDbIds':
-                ['study1'],
+            "germplasmDbId": "1",
+            "studyDbIds":
+                ["1", "study1"]},
+        "urn:BRAPI_TEST/germplasm/abc": {
+            "germplasmDbId": "abc",
+            "studyDbIds":
+                ["study1"],
             "defaultDisplayName": "abc default display name",
             "germplasmName": "don't touch that one"},
         'urn:BRAPI_TEST/germplasm/1withPUI': {
@@ -53,9 +53,9 @@ fixture_source_data_dict = {
             "countryOfOriginCode": "BE",
             "instituteCode": "VIB",
             "accessionNumber": "177",
-            "defaultDisplayName": "RIL_8W_81 RIL 8-way ",
+            "defaultDisplayName": "RIL_8W_81 RIL 8-way",
             "germplasmDbId": "Zea_VIB_RIL_8W_81RIL8way___177",
-            "germplasmName": "RIL_8W_81 RIL 8-way ",
+            "germplasmName": "RIL_8W_81 RIL 8-way",
             "commonCropName": "Maize",
             "instituteName": "VIB",
             "species": "mays",
@@ -161,7 +161,7 @@ fixture_expected_data_dict = {
             'germplasmDbId': 'dXJuOkJSQVBJX1RFU1QvZ2VybXBsYXNtLzE=',
             'studyDbIds':['dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvMQ==','dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvc3R1ZHkx'],
             'germplasmURI' : 'urn:BRAPI_TEST/germplasm/1',
-            'node' : 'BRAPI_TEST',
+            'node' : 'BRAPI_TEST_node',
             'databaseName' :'brapi@BRAPI_TEST',
             'source' : 'BRAPI TEST'
         },
@@ -170,7 +170,7 @@ fixture_expected_data_dict = {
             'studyDbIds':
                 ['dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvc3R1ZHkx'],
             'germplasmURI' : 'urn:BRAPI_TEST/germplasm/abc',
-            'node' : 'BRAPI_TEST',
+            'node' : 'BRAPI_TEST_node',
             'databaseName' :'brapi@BRAPI_TEST',
             'source' : 'BRAPI TEST'},
         'urn:BRAPI_TEST/germplasm/1withPUI': {
@@ -179,7 +179,7 @@ fixture_expected_data_dict = {
             'studyDbIds':
                 ['dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvc3R1ZHkx'],
             'germplasmURI' : 'https://doi.org/1014.1543/345678ZERTYU',
-            'node' : 'BRAPI_TEST',
+            'node' : 'BRAPI_TEST_node',
             "accessionNumber": "345678ZERTYU",
             "germplasmName": "345678ZERTYU",
             "defaultDisplayName": "345678ZERTYU",
@@ -202,7 +202,7 @@ fixture_expected_data_dict = {
                 "dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvVklCX3N0dWR5X19fNDg="
             ],
             "germplasmURI": "urn:BRAPI_TEST/germplasm/Zea_VIB_RIL_8W_EP33_20___1184",
-            'node' : 'BRAPI_TEST',
+            'node' : 'BRAPI_TEST_node',
             'databaseName' :'brapi@BRAPI_TEST'
 
         },
@@ -210,9 +210,9 @@ fixture_expected_data_dict = {
             "countryOfOriginCode": "BE",
             "instituteCode": "VIB",
             "accessionNumber": "177",
-            "defaultDisplayName": "RIL_8W_81 RIL 8-way ",
+            "defaultDisplayName": "RIL_8W_81 RIL 8-way",
             "germplasmDbId": "dXJuOkJSQVBJX1RFU1QvZ2VybXBsYXNtL1plYV9WSUJfUklMXzhXXzgxUklMOHdheV9fXzE3Nw==",
-            "germplasmName": "RIL_8W_81 RIL 8-way ",
+            "germplasmName": "RIL_8W_81 RIL 8-way",
             "commonCropName": "Maize",
             "instituteName": "VIB",
             "species": "mays",
@@ -223,8 +223,9 @@ fixture_expected_data_dict = {
                 "dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvVklCX3N0dWR5X19fNDg="
             ],
             "germplasmURI": "urn:BRAPI_TEST/germplasm/Zea_VIB_RIL_8W_81RIL8way___177",
-            'node' : 'BRAPI_TEST',
-            'databaseName' :'brapi@BRAPI_TEST'
+            'node' : 'BRAPI_TEST_node',
+            'databaseName' :'brapi@BRAPI_TEST',
+            "documentationURL": "https://vib.be/RIL_8W_81_RIL_8-way_177"
     }
 },
     'location': {
@@ -234,7 +235,8 @@ fixture_expected_data_dict = {
             'studyDbIds':
                 ['dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvMQ=='],
             'source' : 'BRAPI TEST',
-            'node' : 'BRAPI_TEST',
+            'node' : 'BRAPI_TEST_node',
+            'locationName' : 'Belgium',
             'databaseName' :'brapi@BRAPI_TEST'},
         'urn:BRAPI_TEST/location/2': {
             'locationDbId': 'dXJuOkJSQVBJX1RFU1QvbG9jYXRpb24vMg==',
@@ -242,7 +244,7 @@ fixture_expected_data_dict = {
             'studyDbIds':
                 ['dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvMQ==','dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvc3R1ZHkx'],
             'source' : 'BRAPI TEST',
-            'node' : 'BRAPI_TEST',
+            'node' : 'BRAPI_TEST_node',
             'databaseName' :'brapi@BRAPI_TEST'}},
     'observationUnit': {},
     'program': {
@@ -254,7 +256,7 @@ fixture_expected_data_dict = {
             'studyDbIds':
                 ['dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvMQ=='],
             'source' : 'BRAPI TEST',
-            'node' : 'BRAPI_TEST',
+            'node' : 'BRAPI_TEST_node',
             'databaseName' :'brapi@BRAPI_TEST'}},
     'study': {
         'urn:BRAPI_TEST/study/1': {
@@ -269,7 +271,7 @@ fixture_expected_data_dict = {
             'programDbIds':
                 ['dXJuOkJSQVBJX1RFU1QvcHJvZ3JhbS9vaG0='],
             'source' : 'BRAPI TEST',
-            'node' : 'BRAPI_TEST',
+            'node' : 'BRAPI_TEST_node',
             'databaseName' :'brapi@BRAPI_TEST'},
         'urn:BRAPI_TEST/study/study1': {
             'studyDbId': 'dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvc3R1ZHkx',
@@ -283,7 +285,7 @@ fixture_expected_data_dict = {
             'programDbIds':
                 ['dXJuOkJSQVBJX1RFU1QvcHJvZ3JhbS9vaG0='],
             'source' : 'BRAPI TEST',
-            'node' : 'BRAPI_TEST',
+            'node' : 'BRAPI_TEST_node',
             'databaseName' :'brapi@BRAPI_TEST'},
         'urn:BRAPI_TEST/study/VIB_study___48': {
             "trialDbId": "dXJuOkJSQVBJX1RFU1QvdHJpYWwvMw==",
@@ -324,7 +326,7 @@ fixture_expected_data_dict = {
                     "type": "PI"
                 }
             ],
-            'node' : 'BRAPI_TEST',
+            'node' : 'BRAPI_TEST_node',
             'databaseName' :'brapi@BRAPI_TEST'
         }
     },
@@ -336,7 +338,7 @@ fixture_expected_data_dict = {
                 ['dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvMQ==', 'dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvc3R1ZHkx'],
             'programDbIds': ['ohm'],
             'source' : 'BRAPI TEST',
-            'node' : 'BRAPI_TEST',
+            'node' : 'BRAPI_TEST_node',
             'databaseName' :'brapi@BRAPI_TEST'},
         'urn:BRAPI_TEST/trial/trial1': {
             'trialDbId': 'dXJuOkJSQVBJX1RFU1QvdHJpYWwvdHJpYWwx',
@@ -344,8 +346,70 @@ fixture_expected_data_dict = {
             'studyDbIds':
                 ['dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvMQ=='],
             'source' : 'BRAPI TEST',
-            'node' : 'BRAPI_TEST',
+            'node' : 'BRAPI_TEST_node',
             'databaseName' :'brapi@BRAPI_TEST'
+        }
+    },
+    'observationVariable': {
+        'urn:BRAPI_TEST/observationVariable/65': {
+                "institution": "VIB",
+                "name": "leafLength",
+                "observationVariableDbId": "65",
+                "observationVariableName": "LL_65",
+                "ontology_name": "TO:0000135",
+                "scale":
+                    {
+                        "dataType": "numeric",
+                        "decimalPlaces": 2,
+                        "name": "cm",
+                        "validValues":
+                            {
+                                "max": 250,
+                                "min": 0
+                            }
+                    },
+                "source": "VIB",
+                "studyDbIds":
+                    [
+                        "VIB_study___46",
+                        "VIB_study___48"
+                    ],
+                "trait":
+                    {
+                        "description": "actual measurements in centimeters of the leaf",
+                        "name": "leafLength",
+                        "traitDbId": "TO:0000135"
+                    }
+        },
+        'urn:BRAPI_TEST/observationVariable/66': {
+            "institution": "VIB",
+            "name": "leafWidth",
+            "observationVariableDbId": "66",
+            "observationVariableName": "LW_66",
+            "ontology_name": "TO:0000370",
+            "scale":
+                {
+                    "dataType": "numeric",
+                    "decimalPlaces": 2,
+                    "name": "cm",
+                    "validValues":
+                        {
+                            "max": 50,
+                            "min": 0
+                        }
+                },
+            "source": "VIB",
+            "studyDbIds":
+                [
+                    "VIB_study___46",
+                    "VIB_study___48"
+                ],
+            "trait":
+                {
+                    "description": "actual measurements, in centimeters of the widest portion of the leaf; to be precise use the children terms leaf lamina width (TO:0002720) or 'leaf sheath width (TO:0002721)",
+                    "name": "leafWidth",
+                    "traitDbId": "TO:0000370"
+                }
         }
     }
 }
