@@ -3,6 +3,7 @@ import re
 from etl.transform.utils import get_generated_uri_from_str
 
 
+#TODO: naive and dull/barely readable implementation. See if a mapping disct could do the trick
 def _generate_datadiscovery_germplasm(document, data_dict):
     datadiscovery_document = document.copy()
     datadiscovery_document["node"] = document.get("node")
@@ -297,7 +298,7 @@ def _get_study_description(document, data_dict):
             location_string = f' in {location["countryName"]}.'
 
     studyDescription = (
-        f'{document["studyName"]} is a {document["studyType"]}'
+        f'{document["studyName"]} is a {document["studyType"] if "studyType" in document else document.get("entryType")}'
         f'{study_date_string}'
         f'{season_date_string}'
         f'{location_string}'
@@ -313,29 +314,29 @@ def _add_linked_traits_info(datadiscovery_document, document, data_dict, source)
         datadiscovery_document["trait"]["observationVariableDbIds"] = []
         datadiscovery_document["traitNames"] = list()
 
-    for observationVariableId in document.get("observationVariableDbIds"):
-        datadiscovery_document["trait"]["observationVariableDbIds"].append(observationVariableId)
+        for observationVariableId in document.get("observationVariableDbIds"):
+            datadiscovery_document["trait"]["observationVariableDbIds"].append(observationVariableId)
 
-        observationVariable = None
-        if observationVariableId in data_dict.get("observationVariable"):
-            observationVariable = data_dict.get("observationVariable").get(observationVariableId)
-        elif get_generated_uri_from_str(source, "observationVariable", observationVariableId) in data_dict.get(
-                "observationVariable"):
-            observationVariable = data_dict.get("observationVariable").get(
-                get_generated_uri_from_str(source, "observationVariable", observationVariableId))
-        else:
-            try:
-                decoded_observationVariableId = base64.b64decode(observationVariableId).decode('utf-8')
-                if decoded_observationVariableId in data_dict.get("observationVariable"):
-                    observationVariable = data_dict.get("observationVariable").get(decoded_observationVariableId)
-            except:
-                pass
+            observationVariable = None
+            if observationVariableId in data_dict.get("observationVariable"):
+                observationVariable = data_dict.get("observationVariable").get(observationVariableId)
+            elif get_generated_uri_from_str(source, "observationVariable", observationVariableId) in data_dict.get(
+                    "observationVariable"):
+                observationVariable = data_dict.get("observationVariable").get(
+                    get_generated_uri_from_str(source, "observationVariable", observationVariableId))
+            else:
+                try:
+                    decoded_observationVariableId = base64.b64decode(observationVariableId).decode('utf-8')
+                    if decoded_observationVariableId in data_dict.get("observationVariable"):
+                        observationVariable = data_dict.get("observationVariable").get(decoded_observationVariableId)
+                except:
+                    pass
 
-        if observationVariable:
-            traitName = " ".join([observationVariable.get("observationVariableName"), observationVariable.get("name")])
-            if observationVariable.get("trait"):
-                traitName = f'{traitName} {observationVariable.get("trait").get("name")}'
-            datadiscovery_document["traitNames"].append(traitName)
+            if observationVariable:
+                traitName = " ".join([observationVariable.get("observationVariableName"), observationVariable.get("name")])
+                if observationVariable.get("trait"):
+                    traitName = f'{traitName} {observationVariable.get("trait").get("name")}'
+                datadiscovery_document["traitNames"].append(traitName)
 
     return datadiscovery_document
 

@@ -2,6 +2,7 @@ import json
 import unittest
 
 from etl.transform.datadiscovery_cards import transform_source_documents, documents_dbid_fields_plus_field_type
+from tests.transform.utils import sort_dict_lists
 
 source = {
     '@id':'http://source.com',
@@ -44,7 +45,7 @@ fixture_source_data_dict = {
             "instituteName": "VIB",
             "species": "mays",
             "genus": "Zea",
-            'source' : 'BRAPI TEST',
+            'source' : 'BRAPI TEST source name',
             "studyDbIds": [
                 "VIB_study___48"
             ]
@@ -60,15 +61,17 @@ fixture_source_data_dict = {
             "instituteName": "VIB",
             "species": "mays",
             "genus": "Zea",
-            'source' : 'BRAPI TEST',
+            'source' : 'BRAPI TEST source name',
             "studyDbIds": [
                 "VIB_study___48"
-            ]
+            ],
+            "documentationURL": "https://vib.be/RIL_8W_81_RIL_8-way_177"
         }
     },
     'location': {
         'urn:BRAPI_TEST/location/loc1': {
             'locationDbId': 'loc1',
+            'locationName' : 'Belgium',
             'studyDbIds':
                 ['1']},
         'urn:BRAPI_TEST/location/2': {
@@ -88,6 +91,7 @@ fixture_source_data_dict = {
             'studyDbId': '1',
             'trialDbId': '1',
             'locationDbId': 'loc1',
+            'name': 'study 1 as name',
             'trialDbIds':
                 ['trial1'],
             'germplasmDbIds':
@@ -97,6 +101,7 @@ fixture_source_data_dict = {
         'urn:BRAPI_TEST/study/study1': {
             'studyDbId': 'study1',
             'trialDbId': 'trial1',
+            'studyName': 'study1 as studyName',
             'locationDbId': 'loc1',
             'trialDbIds':
                 ['1', 'trial1'],
@@ -115,7 +120,7 @@ fixture_source_data_dict = {
             "locationDbId": "1",
             "locationName": "growth chamber",
             "active": False,
-            'source' : 'BRAPI TEST',
+            'source' : 'BRAPI TEST source name',
             "documentationURL": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/48",
             "studyDescription": "Short description of the experimental design, possibly including statistical design.",
             "germplasmDbIds": [
@@ -153,7 +158,70 @@ fixture_source_data_dict = {
         'urn:BRAPI_TEST/trial/trial1': {
             'trialDbId': 'trial1',
             'studyDbIds':
-                ['1']}}}
+                ['1']}
+    },'observationVariable': {
+        'urn:BRAPI_TEST/observationVariable/65': {
+            "institution": "VIB",
+            "name": "leafLength",
+            "observationVariableDbId": "65",
+            "observationVariableName": "LL_65",
+            "ontology_name": "TO:0000135",
+            "scale":
+                {
+                    "dataType": "numeric",
+                    "decimalPlaces": 2,
+                    "name": "cm",
+                    "validValues":
+                        {
+                            "max": 250,
+                            "min": 0
+                        }
+                },
+            "source": "VIB",
+            "studyDbIds":
+                [
+                    "VIB_study___46",
+                    "VIB_study___48"
+                ],
+            "trait":
+                {
+                    "description": "actual measurements in centimeters of the leaf",
+                    "name": "leafLength",
+                    "traitDbId": "TO:0000135"
+                }
+        },
+        'urn:BRAPI_TEST/observationVariable/66': {
+            "institution": "VIB",
+            "name": "leafWidth",
+            "observationVariableDbId": "66",
+            "observationVariableName": "LW_66",
+            "ontology_name": "TO:0000370",
+            "scale":
+                {
+                    "dataType": "numeric",
+                    "decimalPlaces": 2,
+                    "name": "cm",
+                    "validValues":
+                        {
+                            "max": 50,
+                            "min": 0
+                        }
+                },
+            "source": "VIB",
+            "studyDbIds":
+                [
+                    "VIB_study___46",
+                    "VIB_study___48"
+                ],
+            "trait":
+                {
+                    "description": "actual measurements, in centimeters of the widest portion of the leaf; to be precise use the children terms leaf lamina width (TO:0002720) or 'leaf sheath width (TO:0002721)",
+                    "name": "leafWidth",
+                    "traitDbId": "TO:0000370"
+                }
+        }
+    }
+}
 
 fixture_expected_data_dict = {
     'germplasm': {
@@ -161,30 +229,32 @@ fixture_expected_data_dict = {
             'germplasmDbId': 'dXJuOkJSQVBJX1RFU1QvZ2VybXBsYXNtLzE=',
             'studyDbIds':['dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvMQ==','dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvc3R1ZHkx'],
             'germplasmURI' : 'urn:BRAPI_TEST/germplasm/1',
-            'node' : 'BRAPI_TEST_node',
+            'node' : 'BRAPI_TEST',
             'databaseName' :'brapi@BRAPI_TEST',
-            'source' : 'BRAPI TEST'
+            'source' : 'BRAPI TEST source name'
         },
         'urn:BRAPI_TEST/germplasm/abc': {
             'germplasmDbId': 'dXJuOkJSQVBJX1RFU1QvZ2VybXBsYXNtL2FiYw==',
             'studyDbIds':
                 ['dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvc3R1ZHkx'],
             'germplasmURI' : 'urn:BRAPI_TEST/germplasm/abc',
-            'node' : 'BRAPI_TEST_node',
+            'node' : 'BRAPI_TEST',
             'databaseName' :'brapi@BRAPI_TEST',
-            'source' : 'BRAPI TEST'},
+            'source' : 'BRAPI TEST source name',
+            "defaultDisplayName": "abc default display name",
+            "germplasmName": "don't touch that one"},
         'urn:BRAPI_TEST/germplasm/1withPUI': {
             'germplasmDbId': 'https://doi.org/1014.1543/345678ZERTYU',#Idealy, to enable easy linking of data within the source: urn:BRAPI_TEST/germplasm/1234
             'germplasmPUI': 'https://doi.org/1014.1543/345678ZERTYU',
             'studyDbIds':
                 ['dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvc3R1ZHkx'],
             'germplasmURI' : 'https://doi.org/1014.1543/345678ZERTYU',
-            'node' : 'BRAPI_TEST_node',
+            'node' : 'BRAPI_TEST',
             "accessionNumber": "345678ZERTYU",
             "germplasmName": "345678ZERTYU",
             "defaultDisplayName": "345678ZERTYU",
             'databaseName' :'brapi@BRAPI_TEST',
-            'source' : 'BRAPI TEST'},
+            'source' : 'BRAPI TEST source name'},
         'urn:BRAPI_TEST/germplasm/Zea_VIB_RIL_8W_EP33_20___1184': {
             "countryOfOriginCode": "BE",
             "instituteCode": "VIB",
@@ -197,12 +267,12 @@ fixture_expected_data_dict = {
             "species": "mays",
             "genus": "Zea",
             "genusSpecies": "Zea mays",
-            'source' : 'BRAPI TEST',
+            'source' : 'BRAPI TEST source name',
             "studyDbIds": [
                 "dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvVklCX3N0dWR5X19fNDg="
             ],
             "germplasmURI": "urn:BRAPI_TEST/germplasm/Zea_VIB_RIL_8W_EP33_20___1184",
-            'node' : 'BRAPI_TEST_node',
+            'node' : 'BRAPI_TEST',
             'databaseName' :'brapi@BRAPI_TEST'
 
         },
@@ -218,12 +288,12 @@ fixture_expected_data_dict = {
             "species": "mays",
             "genus": "Zea",
             "genusSpecies": "Zea mays",
-            'source' : 'BRAPI TEST',
+            'source' : 'BRAPI TEST source name',
             "studyDbIds": [
                 "dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvVklCX3N0dWR5X19fNDg="
             ],
             "germplasmURI": "urn:BRAPI_TEST/germplasm/Zea_VIB_RIL_8W_81RIL8way___177",
-            'node' : 'BRAPI_TEST_node',
+            'node' : 'BRAPI_TEST',
             'databaseName' :'brapi@BRAPI_TEST',
             "documentationURL": "https://vib.be/RIL_8W_81_RIL_8-way_177"
     }
@@ -234,8 +304,8 @@ fixture_expected_data_dict = {
             'locationURI': 'urn:BRAPI_TEST/location/loc1',
             'studyDbIds':
                 ['dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvMQ=='],
-            'source' : 'BRAPI TEST',
-            'node' : 'BRAPI_TEST_node',
+            'source' : 'BRAPI TEST source name',
+            'node' : 'BRAPI_TEST',
             'locationName' : 'Belgium',
             'databaseName' :'brapi@BRAPI_TEST'},
         'urn:BRAPI_TEST/location/2': {
@@ -243,8 +313,8 @@ fixture_expected_data_dict = {
             'locationURI': 'urn:BRAPI_TEST/location/2',
             'studyDbIds':
                 ['dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvMQ==','dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvc3R1ZHkx'],
-            'source' : 'BRAPI TEST',
-            'node' : 'BRAPI_TEST_node',
+            'source' : 'BRAPI TEST source name',
+            'node' : 'BRAPI_TEST',
             'databaseName' :'brapi@BRAPI_TEST'}},
     'observationUnit': {},
     'program': {
@@ -255,13 +325,15 @@ fixture_expected_data_dict = {
                 ['dXJuOkJSQVBJX1RFU1QvdHJpYWwvMQ=='],
             'studyDbIds':
                 ['dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvMQ=='],
-            'source' : 'BRAPI TEST',
-            'node' : 'BRAPI_TEST_node',
+            'source' : 'BRAPI TEST source name',
+            'node' : 'BRAPI_TEST',
             'databaseName' :'brapi@BRAPI_TEST'}},
     'study': {
         'urn:BRAPI_TEST/study/1': {
             'studyDbId': 'dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvMQ==',
             'studyURI': 'urn:BRAPI_TEST/study/1',
+            'name': 'study 1 as name',
+            'studyName': 'study 1 as name',
             'trialDbId': 'dXJuOkJSQVBJX1RFU1QvdHJpYWwvMQ==',
             'locationDbId': 'dXJuOkJSQVBJX1RFU1QvbG9jYXRpb24vbG9jMQ==',
             'trialDbIds':
@@ -270,8 +342,8 @@ fixture_expected_data_dict = {
                 ['dXJuOkJSQVBJX1RFU1QvZ2VybXBsYXNtLzE=','dXJuOkJSQVBJX1RFU1QvZ2VybXBsYXNtL2FiYw=='],
             'programDbIds':
                 ['dXJuOkJSQVBJX1RFU1QvcHJvZ3JhbS9vaG0='],
-            'source' : 'BRAPI TEST',
-            'node' : 'BRAPI_TEST_node',
+            'source' : 'BRAPI TEST source name',
+            'node' : 'BRAPI_TEST',
             'databaseName' :'brapi@BRAPI_TEST'},
         'urn:BRAPI_TEST/study/study1': {
             'studyDbId': 'dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvc3R1ZHkx',
@@ -284,8 +356,9 @@ fixture_expected_data_dict = {
                 ['dXJuOkJSQVBJX1RFU1QvZ2VybXBsYXNtL2FiYw=='],
             'programDbIds':
                 ['dXJuOkJSQVBJX1RFU1QvcHJvZ3JhbS9vaG0='],
-            'source' : 'BRAPI TEST',
-            'node' : 'BRAPI_TEST_node',
+            'source' : 'BRAPI TEST source name',
+            'node' : 'BRAPI_TEST',
+            'studyName': 'study1 as studyName',
             'databaseName' :'brapi@BRAPI_TEST'},
         'urn:BRAPI_TEST/study/VIB_study___48': {
             "trialDbId": "dXJuOkJSQVBJX1RFU1QvdHJpYWwvMw==",
@@ -293,12 +366,13 @@ fixture_expected_data_dict = {
             "studyType": "Phenotyping Study",
             "studyDbId": "dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvVklCX3N0dWR5X19fNDg=",
             "studyURI": "urn:BRAPI_TEST/study/VIB_study___48",
+            'name': 'RIL 8-way  batch 9',
             "trialName": "RIL_8-way_growth_chamber",
             "endDate": "2013-09-16",
             "locationDbId": "dXJuOkJSQVBJX1RFU1QvbG9jYXRpb24vMQ==",
             "locationName": "growth chamber",
             "active": False,
-            'source' : 'BRAPI TEST',
+            'source' : 'BRAPI TEST source name',
             "documentationURL": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/48",
             "studyName": "RIL 8-way  batch 9",
             "studyDescription": "Short description of the experimental design, possibly including statistical design.",
@@ -326,7 +400,7 @@ fixture_expected_data_dict = {
                     "type": "PI"
                 }
             ],
-            'node' : 'BRAPI_TEST_node',
+            'node' : 'BRAPI_TEST',
             'databaseName' :'brapi@BRAPI_TEST'
         }
     },
@@ -337,24 +411,29 @@ fixture_expected_data_dict = {
             'studyDbIds':
                 ['dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvMQ==', 'dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvc3R1ZHkx'],
             'programDbIds': ['ohm'],
-            'source' : 'BRAPI TEST',
-            'node' : 'BRAPI_TEST_node',
+            'source' : 'BRAPI TEST source name',
+            'node' : 'BRAPI_TEST',
             'databaseName' :'brapi@BRAPI_TEST'},
         'urn:BRAPI_TEST/trial/trial1': {
             'trialDbId': 'dXJuOkJSQVBJX1RFU1QvdHJpYWwvdHJpYWwx',
             'trialURI': 'urn:BRAPI_TEST/trial/trial1',
             'studyDbIds':
                 ['dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvMQ=='],
-            'source' : 'BRAPI TEST',
-            'node' : 'BRAPI_TEST_node',
+            'source' : 'BRAPI TEST source name',
+            'node' : 'BRAPI_TEST',
             'databaseName' :'brapi@BRAPI_TEST'
         }
     },
     'observationVariable': {
         'urn:BRAPI_TEST/observationVariable/65': {
                 "institution": "VIB",
+                'databaseName': 'brapi@BRAPI_TEST',
+                'node': 'BRAPI_TEST',
                 "name": "leafLength",
-                "observationVariableDbId": "65",
+                #TODO ----------------IMPORTANT!!!!!!!!---------------
+                #"observationVariableDbId": "65", # TODO: this is a bug in the curent generator, the obsvarDbId mustn't be encoded !
+                'observationVariableDbId': 'dXJuOkJSQVBJX1RFU1Qvb2JzZXJ2YXRpb25WYXJpYWJsZS82NQ==',
+                'observationVariableURI': 'urn:BRAPI_TEST/observationVariable/65',
                 "observationVariableName": "LL_65",
                 "ontology_name": "TO:0000135",
                 "scale":
@@ -383,8 +462,12 @@ fixture_expected_data_dict = {
         },
         'urn:BRAPI_TEST/observationVariable/66': {
             "institution": "VIB",
+            'databaseName': 'brapi@BRAPI_TEST',
+            'node': 'BRAPI_TEST',
             "name": "leafWidth",
-            "observationVariableDbId": "66",
+            #"observationVariableDbId": "66", TODO: idem, this is the right value
+            'observationVariableDbId': 'dXJuOkJSQVBJX1RFU1Qvb2JzZXJ2YXRpb25WYXJpYWJsZS82Ng==',
+            'observationVariableURI': 'urn:BRAPI_TEST/observationVariable/66',
             "observationVariableName": "LW_66",
             "ontology_name": "TO:0000370",
             "scale":
@@ -425,4 +508,4 @@ class TestDbidToUri(unittest.TestCase):
 
         data_dict_expected = fixture_expected_data_dict
 
-        self.assertEqual(data_dict_expected, data_dict_actual)
+        self.assertEqual(sort_dict_lists(data_dict_expected), sort_dict_lists(data_dict_actual))

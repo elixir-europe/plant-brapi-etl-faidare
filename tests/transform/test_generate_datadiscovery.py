@@ -3,6 +3,7 @@ import unittest
 
 from etl.transform.generate_datadiscovery import _generate_datadiscovery_germplasm, _generate_datadiscovery_study
 from test_transform_source_document import fixture_expected_data_dict as data_dict
+from tests.transform.utils import sort_dict_lists
 
 source = {
     '@id': 'http://source.com',
@@ -236,13 +237,6 @@ fixture_expected_study = {
     "url": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/48"
 }
 
-def _sort_dict_lists(dict_to_be_sorted:dict):
-    for key, value in dict_to_be_sorted.items():
-        if isinstance(value, list):
-            dict_to_be_sorted[key] = sorted(value)
-        elif isinstance(value, dict):
-            dict_to_be_sorted[key] = _sort_dict_lists(value)
-    return dict_to_be_sorted
 
 class TestGenerateDataDiscovery(unittest.TestCase):
     maxDiff = None
@@ -252,10 +246,10 @@ class TestGenerateDataDiscovery(unittest.TestCase):
 
         data_dict_expected = fixture_expected_germplasm
 
-        self.assertEqual(_sort_dict_lists(data_dict_expected), _sort_dict_lists(data_dict_actual))
+        self.assertEqual(sort_dict_lists(data_dict_expected), sort_dict_lists(data_dict_actual))
 
     def test_generate_study_datadiscovery(self):
         data_dict_actual = _generate_datadiscovery_study(fixture_source_study, data_dict, test_source)
 
         data_dict_expected = fixture_expected_study
-        self.assertEqual(_sort_dict_lists(data_dict_expected), _sort_dict_lists(data_dict_actual))
+        self.assertEqual(sort_dict_lists(data_dict_expected), sort_dict_lists(data_dict_actual))

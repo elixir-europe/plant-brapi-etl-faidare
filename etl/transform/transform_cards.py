@@ -14,6 +14,17 @@ def _germplasmName(document):
         document["germplasmName"] = document["accessionNumber"]
         return document
 
+def _defaultDisplayName(document):
+    if "defaultDisplayName" in document and len(document["defaultDisplayName"])>0:
+        #document["defaultDisplayName"] = document["defaultDisplayName"]
+        return document
+    if "germplasmName" in document and len(document["germplasmName"])>0:
+        document["defaultDisplayName"] = document["germplasmName"]
+        return document
+    if "accessionNumber" in document :
+        document["defaultDisplayName"] = document["accessionNumber"]
+        return document
+
 def _handle_study_season(document):
     if "seasons" in document and \
             "season" in document["seasons"] and \
@@ -54,7 +65,8 @@ _germplasm_mapping_dict = {
 _germplasm_function_dict = {
     "genusSpecies": _concat_genus_species,
     "seasons": _handle_study_season,
-    "germplasmName": _germplasmName
+    "germplasmName": _germplasmName,
+    "defaultDisplayName": _defaultDisplayName
 }
 
 
@@ -71,14 +83,14 @@ def do_card_transform(document):
         mapping_dict = _germplasm_mapping_dict
         function_dict = _germplasm_function_dict
     else:
-        # raise
-        print("Unknown document type : ")
-        print(document)
+        # raise? Or is this rather normal?
+        #print("Unknown document type : ")
+        #print(document)
         return document
 
     for (oldkey, newkey) in mapping_dict.items():
-        if oldkey in document:
-            document[newkey] = document.pop(oldkey)
+        if oldkey in document and newkey not in document:
+            document[newkey] = document.get(oldkey) # let's keep all existing fields for now #document.pop(oldkey)
 
     for (newkey, transform_function) in function_dict.items():
         transform_function(document)

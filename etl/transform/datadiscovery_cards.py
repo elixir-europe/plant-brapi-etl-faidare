@@ -21,6 +21,7 @@ CHUNK_SIZE = 500
 #   - https://fr.wikipedia.org/wiki/Analyse_de_la_complexit%C3%A9_des_algorithmes
 #############
 
+# TODO : would this be deprecated ?
 document_types = [
         {
             "document-type": "germplasm",
@@ -58,6 +59,10 @@ document_types = [
         {
             "document-type": "trial",
             "source-entity": "trial"
+        },
+        {
+            "document-type": "observationVariable",
+            "source-entity": "observationVariable"
         }
     ]
 
@@ -164,6 +169,8 @@ def load_input_json(source, doc_types, source_json_dir, config):
         #filtered_files = list(filter(lambda x: x[0] in source_entities, all_files))
         for document_type in doc_types:
             if document_type["document-type"] == "observationUnit":
+                #TODO: transformstudyDbIds and write them directly to the output file
+                # use adapted version of transform source document or extract the inner for loop
                 pass
             input_json_filepath = source_json_dir + "/" + document_type["document-type"] + ".json"
             data_dict[document_type["document-type"]] = {}
@@ -205,31 +212,23 @@ def transform_source_documents(data_dict:dict, source:dict, documents_dbid_field
 
     for document_type, documents in data_dict.items():
         for document_id, document in documents.items():
-
             ########## DbId and generation handling ##########
-
             # transform documentDbId *NB*: the URI field is mandatory in transformed documents
-            document[document_type + 'URI'] = get_generated_uri_from_dict(source, document_type, document)
+            document[document_type + 'URI'] = get_generated_uri_from_dict(source, document_type, document) # this should be URN field rather than URI
             document[document_type + 'DbId'] = get_generated_uri_from_dict(source, document_type, document, True)
             simple_transformations(document, source)
-            # transform other DbIds
-            for fields in documents_dbid_fields_plus_field_type[document_type]:
-                if fields[0] in document:
-                    if fields[0].endswith("DbIds"):
-                        field_ids_transformed = map(lambda x: get_generated_uri_from_str(source, fields[1], x, True), document[fields[0]])
-                        document[fields[0]] = list(field_ids_transformed)
-                    elif fields[0].endswith("DbId"):
-                        document[fields[0]] = get_generated_uri_from_str(source, fields[1], document[fields[0]], True)
+            # transform other DbIds , skip observationVariable
+            if document_type in documents_dbid_fields_plus_field_type:
+                for fields in documents_dbid_fields_plus_field_type[document_type]:
+                    if fields[0] in document:
+                        if fields[0].endswith("DbIds"):
+                            field_ids_transformed = map(lambda x: get_generated_uri_from_str(source, fields[1], x, True), document[fields[0]])
+                            document[fields[0]] = list(field_ids_transformed)
+                        elif fields[0].endswith("DbId"):
+                            document[fields[0]] = get_generated_uri_from_str(source, fields[1], document[fields[0]], True)
 
             ########## mapping and transforming fields ##########
             do_card_transform(document)
-
-            ########## generation of data discovery ##########
-            generate_datadiscovery(document, data_dict, source)
-
-            ########## validate and generate report against datadiscovery and cards JSON ##########
-
-
     return data_dict
 
 
@@ -291,8 +290,16 @@ def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config
 
     current_source_data_dict = transform_source_documents(current_source_data_dict, source, documents_dbid_fields_plus_field_type)
 
+    ########## generation of data discovery ##########
+    for document_type, documents in current_source_data_dict.items():
+        for document_id, document in documents.items():
+            generate_datadiscovery(current_source_data_dict)
+            generate_datadiscovery(document, current_source_data_dict, source)
 
-    generate_datadiscovery(current_source_data_dict)
+
+    ########## validate and generate report against datadiscovery and cards JSON ##########
+
+
 
     save_json(source_bulk_dir, current_source_data_dict, logger)
 
