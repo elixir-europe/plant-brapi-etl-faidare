@@ -1,4 +1,5 @@
 # private function to be called through function_dict
+from etl.transform.utils import get_generated_uri_from_dict, get_generated_uri_from_str
 def _concat_genus_species(document):
     if "genus" in document and "species" in document and "genusSpecies" not in document:
         document["genusSpecies"] = document["genus"] + " " + document["species"]
@@ -25,6 +26,15 @@ def _defaultDisplayName(document):
         document["defaultDisplayName"] = document["accessionNumber"]
         return document
 
+def _germplasm_schema_name(document):
+    if "defaultDisplayName" in document:
+        document["schema:name"] = document["defaultDisplayName"]
+    elif "germplasmName" in document:
+        document["schema:name"] = document["germplasmName"]
+    elif "accessionNumber" in document:
+        document["schema:name"] = document["accessionNumber"]
+    return document
+
 def _handle_study_season(document):
     if "seasons" in document and \
             "season" in document["seasons"] and \
@@ -46,11 +56,13 @@ def _handle_study_season(document):
 
 
 
+
 # TODO: contacts not added, not necessary full info seems to be added in the BrAPIV2 spec.
 # check that contacts are integrated in studies for all sources including GnpIS.
 _study_mapping_dict = {
     "study_name": "studyName",
-    "name": "studyName"
+    "name": "studyName",
+    "studyName": "schema:name"
 }
 
 _study_function_dict = {
@@ -66,7 +78,8 @@ _germplasm_function_dict = {
     "genusSpecies": _concat_genus_species,
     "seasons": _handle_study_season,
     "germplasmName": _germplasmName,
-    "defaultDisplayName": _defaultDisplayName
+    "defaultDisplayName": _defaultDisplayName,
+    "schema:name": _germplasm_schema_name
 }
 
 

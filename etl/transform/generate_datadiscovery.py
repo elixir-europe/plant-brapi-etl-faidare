@@ -21,12 +21,13 @@ def _generate_datadiscovery_germplasm(document, data_dict):
     datadiscovery_document["schema:includedInDataCatalog"] = document.get("source")
     datadiscovery_document["schema:identifier"] = document["germplasmDbId"]
 
-    if "defaultDisplayName" in document:
-        datadiscovery_document["schema:name"] = document["defaultDisplayName"]
-    elif "germplasmName" in document:
-        datadiscovery_document["schema:name"] = document["germplasmName"]
-    elif "accessionNumber" in document:
-        datadiscovery_document["schema:name"] = document["accessionNumber"]
+    # moved to card transformation
+    # if "defaultDisplayName" in document:
+    #     datadiscovery_document["schema:name"] = document["defaultDisplayName"]
+    # elif "germplasmName" in document:
+    #     datadiscovery_document["schema:name"] = document["germplasmName"]
+    # elif "accessionNumber" in document:
+    #     datadiscovery_document["schema:name"] = document["accessionNumber"]
 
     if document.get("documentationURL"):
         datadiscovery_document["schema:url"] = document["documentationURL"]
@@ -261,7 +262,8 @@ def _add_linked_location_info(datadiscovery_document, document, data_dict):
         if location:
             if "locationURIs" not in datadiscovery_document:
                 datadiscovery_document["locationURIs"] = list()
-            datadiscovery_document["locationURIs"].append(location.get("locationURI"))
+            if "locationURI" in datadiscovery_document and location.get("locationURI") not in datadiscovery_document["locationURIs"]:
+                datadiscovery_document["locationURIs"].append(location.get("locationURI"))
             datadiscovery_document["locationURI"] = location.get("locationURI")
             if "locationName" not in datadiscovery_document:
                 datadiscovery_document["locationName"] = location.get("locationName")
@@ -347,7 +349,7 @@ def _generate_datadiscovery_study(document, data_dict, source):
     datadiscovery_document["databaseName"] = document.get("databaseName")
     if "documentationURL" in document:
         datadiscovery_document["url"] = document["documentationURL"]
-        datadiscovery_document["schema:url"] = document["documentationURL"]
+    #    datadiscovery_document["schema:url"] = document["documentationURL"]
     datadiscovery_document["entryType"] = _curate_study_entry_type(
         document["studyType"] if "studyType" in document else None)
     datadiscovery_document = _add_linked_germplasm_info(datadiscovery_document, document, data_dict)
@@ -356,7 +358,7 @@ def _generate_datadiscovery_study(document, data_dict, source):
     datadiscovery_document["@id"] = document.get("studyPUI") if document.get("studyPUI") else document["studyURI"]
     datadiscovery_document["identifier"] = document["studyDbId"]
     datadiscovery_document["name"] = document.get("studyName")
-    datadiscovery_document["schema:name"] = document.get("studyName")
+    #datadiscovery_document["schema:name"] = document.get("studyName")
     datadiscovery_document["schema:includedInDataCatalog"] = document.get("source")
     datadiscovery_document["schema:identifier"] = document["studyDbId"]
     datadiscovery_document["description"] = _get_study_description(document, data_dict)

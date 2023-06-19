@@ -58,7 +58,7 @@ class transform_integration_test(unittest.TestCase):
         for actual_germplasm in actual_vib:
             expected_germplasm = next((germplasm for germplasm in expected_vib if germplasm["germplasmDbId"] == actual_germplasm["germplasmDbId"]), None)
             self.assertIsNotNone(expected_germplasm)
-            self.assertDictEqual(actual_germplasm, expected_germplasm)
+            self.assertEqual(sort_dict_lists(expected_germplasm), sort_dict_lists(actual_germplasm))
 
         #self.assertDictEqual(dict(enumerate(actual_vib)), dict(enumerate(expected_vib)))
         #self.assertDictEqual(dict(enumerate(actual_vib)), dict(enumerate(expected_vib)))
@@ -109,7 +109,7 @@ class transform_integration_test(unittest.TestCase):
 
 
     def test_all_studys_generated(self):
-
+        self.maxDiff = None
         self.assertTrue(os.path.exists(self._actual_data_dir+"/VIB/study-1.json.gz"))
         with gzip.open(self._actual_data_dir+"VIB/study-1.json.gz") as actual_vib_f:
             actual_vib = json.load(actual_vib_f)
@@ -117,7 +117,14 @@ class transform_integration_test(unittest.TestCase):
         with gzip.open(self._expected_data_dir+"VIB_study_expected.json.gz") as expected_vib_f:
             expected_vib = json.load(expected_vib_f)
 
-        self.assertEqual(sort_dict_lists(actual_vib), sort_dict_lists(expected_vib))
+        #for each dict in the list actual_vib find the dict with the same studyDbId in expected_vib
+        #compare the 2 dicts
+        for actual_study in actual_vib:
+            expected_study = next((study for study in expected_vib if study["studyDbId"] == actual_study["studyDbId"]), None)
+            self.assertIsNotNone(expected_study)
+            self.assertEqual(sort_dict_lists(expected_study), sort_dict_lists(actual_study))
+
+        self.assertEqual( sort_dict_lists(expected_vib), sort_dict_lists(actual_vib))
         #self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
         #diffJson = DeepDiff(actual_vib, expected_vib)
         #self.assertEqual(diffJson, {}, diffJson)

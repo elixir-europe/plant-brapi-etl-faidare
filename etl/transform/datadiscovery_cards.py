@@ -214,6 +214,9 @@ def simple_transformations(document, source):
     if ("source" not in document):
         document["source"] = source['schema:name']
     document["schema:includedInDataCatalog"] = source["@id"]
+    if "documentationURL" in document:
+        #document["url"] = document["documentationURL"]
+        document["schema:url"] = document["documentationURL"]
     return document
 
 
@@ -232,6 +235,7 @@ def transform_source_documents(data_dict: dict, source: dict, documents_dbid_fie
             document["@id"] = document[document_type + "URI"]
             document["@type"] = document_type
             document[document_type + 'DbId'] = get_generated_uri_from_dict(source, document_type, document, True)
+            document = _handle_study_contacts(document, source)
             # transform other DbIds , skip observationVariable
             if document_type in documents_dbid_fields_plus_field_type:
                 for fields in documents_dbid_fields_plus_field_type[document_type]:
@@ -241,7 +245,7 @@ def transform_source_documents(data_dict: dict, source: dict, documents_dbid_fie
                             #URIs
                             field_uris_transformed = map(
                                 lambda x: get_generated_uri_from_str(source, fields[1], x, False), document[fields[0]])
-                            document[fields[0].replace("DbIds", "URIs")] = list(field_uris_transformed)
+                            document[fields[0].replace("DbIds", "URIs")] = list(set(field_uris_transformed))
                             #DbIds
                             field_ids_transformed = map(
                                 lambda x: get_generated_uri_from_str(source, fields[1], x, True), document[fields[0]])
@@ -265,7 +269,16 @@ def transform_source_documents(data_dict: dict, source: dict, documents_dbid_fie
 def align_formats(current_source_data_dict):
     pass
 
-
+def _handle_study_contacts(document, source):
+    if "contacts" in document:
+        for contact in document["contacts"] :
+            if "contactDbId" in contact:
+                #contact["schema:identifier"] = contact["contactDbId"]
+                contact["contactURI"] = get_generated_uri_from_str(source, "contact", contact["contactDbId"], False)
+                contact["contactDbId"] = get_generated_uri_from_str(source, "contact", contact["contactDbId"], True)
+        return document
+    else:
+        return document
 def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config):
     """
     Full JSON BrAPI transformation process to datadiscovery & cards documents
