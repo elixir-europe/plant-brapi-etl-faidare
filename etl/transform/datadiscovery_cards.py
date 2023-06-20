@@ -98,8 +98,7 @@ def save_json(source_dir, json_dict, logger):
             with open(source_dir + "/" + type + '-' + str(file_number) + '.json', 'rb') as f:
                 with gzip.open(source_dir + "/" + type + '-' + str(file_number) + '.json.gz', 'wb') as f_out:
                     shutil.copyfileobj(f, f_out)
-            #TODO: uncomment: for easier testing
-            #os.remove(source_dir + "/" + type + '-' + str(file_number) + '.json')
+            os.remove(source_dir + "/" + type + '-' + str(file_number) + '.json')
             file_number += 1
             saved_documents += 10000
             logger.debug(f"checkpoint: {saved_documents} documents saved")
@@ -335,7 +334,10 @@ def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config
     for document_type, documents in current_source_data_dict.items():
         for document_id, document in documents.items():
             docKey += 1
-            datadiscovery_document_dict[docKey] = generate_datadiscovery(document, current_source_data_dict, source)
+            datadiscovery_doc = generate_datadiscovery(document, current_source_data_dict, source)
+            if datadiscovery_doc:
+                datadiscovery_document_dict[docKey] = datadiscovery_doc
+
     current_source_data_dict['datadiscovery'] = datadiscovery_document_dict
 
     ########## validate and generate report against datadiscovery and cards JSON ##########

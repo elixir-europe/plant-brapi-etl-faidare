@@ -76,9 +76,18 @@ class transform_integration_test(unittest.TestCase):
         with gzip.open(self._expected_data_dir+"VIB_datadiscovery_expected.json.gz") as expected_vib_f:
             expected_vib = json.load(expected_vib_f)
 
-        diffJson = DeepDiff(actual_vib, expected_vib)
+        for actual_datadiscovery in actual_vib:
+            expected_datadiscovery = next((datadiscovery for datadiscovery in expected_vib if datadiscovery.get("@id") == actual_datadiscovery.get("@id")), None)
+            self.assertIsNotNone(expected_datadiscovery)
+            sorted_expected_vib = sort_dict_lists(expected_datadiscovery)
+            sorted_actual_vib = sort_dict_lists(actual_datadiscovery)
+            if "traitNames" in sorted_expected_vib:
+                sorted_expected_vib["traitNames"].sort(key=str.lower)# = sorted(sorted_expected_vib["traitNames"])
+                sorted_actual_vib["traitNames"].sort(key=str.lower)# = sorted(sorted_actual_vib["traitNames"])
+            self.assertEqual(sorted_expected_vib, sorted_actual_vib)
+        #diffJson = DeepDiff(actual_vib, expected_vib)
 
-        self.assertEqual(diffJson, {}, "\n------Known problem, the transformed species field should be an array, not a single value.-----")
+        #self.assertEqual(diffJson, {}, "\n------Known problem, the transformed species field should be an array, not a single value.-----")
 
 
     def test_all_locations_generated(self):

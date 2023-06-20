@@ -4,7 +4,7 @@ from etl.transform.utils import get_generated_uri_from_str
 
 
 #TODO: naive and dull/barely readable implementation. See if a mapping disct could do the trick
-def _generate_datadiscovery_germplasm(document, data_dict):
+def _generate_datadiscovery_germplasm(document, data_dict, source):
     datadiscovery_document = document.copy()
     datadiscovery_document["node"] = document.get("node")
     datadiscovery_document["databaseName"] = document.get("databaseName")
@@ -16,9 +16,8 @@ def _generate_datadiscovery_germplasm(document, data_dict):
     datadiscovery_document["@id"] = document.get("germplasmPUI") if document.get("germplasmPUI") else document[
         "germplasmURI"]
     datadiscovery_document["identifier"] = document["germplasmDbId"]
-    if "name" in document:
-        datadiscovery_document["name"] = document["germplasmName"]
-    datadiscovery_document["schema:includedInDataCatalog"] = document.get("source")
+    datadiscovery_document["name"] = document.get("germplasmName")
+    datadiscovery_document["schema:includedInDataCatalog"] = source.get("@id")
     datadiscovery_document["schema:identifier"] = document["germplasmDbId"]
 
     # moved to card transformation
@@ -52,8 +51,8 @@ def _generate_datadiscovery_germplasm(document, data_dict):
     if "taxonCommonNames" in document:
         datadiscovery_document["germplasm"]["cropName"].append(document.get("taxonCommonNames"))
     datadiscovery_document["germplasm"]["cropName"].append(document.get("genus"))
-    if "species" in document:
-        datadiscovery_document["germplasm"]["cropName"].append(document.get("species"))
+    # if "species" in document:
+    #     datadiscovery_document["germplasm"]["cropName"].append(document.get("species"))
     if "genus" in document and "species" in document:
         datadiscovery_document["germplasm"]["cropName"].append(document.get("genus") + " " + document.get("species"))
     if "subtaxa" in document:
@@ -203,6 +202,7 @@ def _add_linked_germplasm_info(datadiscovery_document, document, data_dict):
             germplasmURI_set.add(germplasm.get("germplasmURI"))
 
             species_set.add(germplasm.get("genusSpecies"))
+            datadiscovery_document["genusSpecies"] = germplasm.get("genusSpecies")
 
             crop_name_set.add(germplasm.get("cropName") if germplasm.get("cropName") else germplasm.get("genusSpecies"))
             crop_name_set.add(germplasm.get("genusSpecies"))
@@ -359,7 +359,7 @@ def _generate_datadiscovery_study(document, data_dict, source):
     datadiscovery_document["identifier"] = document["studyDbId"]
     datadiscovery_document["name"] = document.get("studyName")
     #datadiscovery_document["schema:name"] = document.get("studyName")
-    datadiscovery_document["schema:includedInDataCatalog"] = document.get("source")
+    datadiscovery_document["schema:includedInDataCatalog"] = source.get("@id")
     datadiscovery_document["schema:identifier"] = document["studyDbId"]
     datadiscovery_document["description"] = _get_study_description(document, data_dict)
     datadiscovery_document = _add_linked_traits_info(datadiscovery_document, document, data_dict, source)
@@ -370,7 +370,7 @@ def _generate_datadiscovery_study(document, data_dict, source):
 def generate_datadiscovery(document: dict, data_dict: dict, source: dict) -> dict:
     """Generate Data Discovery json document."""
     if "germplasmDbId" in document:
-        return _generate_datadiscovery_germplasm(document, data_dict)
+        return _generate_datadiscovery_germplasm(document, data_dict, source)
 
     if "studyDbId" in document:
         return _generate_datadiscovery_study(document, data_dict, source)
