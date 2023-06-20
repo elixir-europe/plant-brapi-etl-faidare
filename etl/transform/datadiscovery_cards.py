@@ -1,15 +1,13 @@
 import threading
 import traceback
 import json
-import glob
-import gzip
-from xml.sax import saxutils as su
 
 from etl.common.templating import parse_template
 from etl.common.utils import *
 from etl.transform.generate_datadiscovery import generate_datadiscovery
 from etl.transform.transform_cards import do_card_transform
-from etl.transform.utils import get_generated_uri_from_dict, get_generated_uri_from_str
+from etl.transform.utils import get_generated_uri_from_dict, get_generated_uri_from_str, save_json, json_to_jsonl, \
+    rm_tags
 
 NB_THREADS = max(int(multiprocessing.cpu_count() * 0.75), 2)
 CHUNK_SIZE = 500
@@ -74,90 +72,12 @@ documents_dbid_fields_plus_field_type = {
     "study": [["germplasmDbIds", "germplasm"], ["locationDbId", "location"], ["locationDbIds", "location"],
               ["trialDbIds", "trial"], ["trialDbId", "trial"], ["programDbId", "program"], ["programDbIds", "program"]],
     "germplasm": [["locationDbIds", "location"], ["studyDbIds", "study"], ["trialDbIds", "trial"]],
+    "observationVariable": [ ["studyDbIds", "study"]],
     "location": [["studyDbIds", "study"], ["trialDbIds", "trial"]],
     "trial": [["germplasmDbIds", "germplasm"], ["locationDbIds", "location"], ["studyDbIds", "study"]],
     "program": [["trialDbIds", "trial"], ["studyDbIds", "study"]],
     "contact": [["trialDbIds", "trial"]]
 }
-
-
-def is_checkpoint(n):
-    return n > 0 and n % 10000 == 0
-
-
-def save_json(source_dir, json_dict, logger):
-    logger.debug("Saving documents to json files...")
-    saved_documents = 0
-    for type, documents in json_dict.items():
-        file_number = 1
-        saved_documents = 0
-        documents_list = documents.values()
-        while saved_documents < len(documents_list):
-            with open(source_dir + "/" + type + '-' + str(file_number) + '.json', 'w') as f:
-                json.dump(list(documents_list)[saved_documents:file_number * 10000], f, ensure_ascii=False)
-            with open(source_dir + "/" + type + '-' + str(file_number) + '.json', 'rb') as f:
-                with gzip.open(source_dir + "/" + type + '-' + str(file_number) + '.json.gz', 'wb') as f_out:
-                    shutil.copyfileobj(f, f_out)
-            os.remove(source_dir + "/" + type + '-' + str(file_number) + '.json')
-            file_number += 1
-            saved_documents += 10000
-            logger.debug(f"checkpoint: {saved_documents} documents saved")
-    logger.debug(f"Total of {saved_documents} documents saved in json files.")
-
-
-def remove_html_tags(text):
-    """
-    Remove html tags from a string
-    """
-    extra_char = {
-        '&apos;': '',
-        '&quot;': '',
-        '&amp;': ''
-    }
-    # unescap HTML tags
-    text = su.unescape(text, extra_char)
-    clean = re.compile('<.*?>')
-    return re.sub(clean, '', text)
-
-
-def json_to_jsonl(source_json_dir):
-    """
-    Conversion from JSON to JSONL (http://jsonlines.org/) for EVA dump
-    :param source_json_dir: the json files directory
-    """
-    json_files = glob.glob(source_json_dir + "/*.json")
-    for json_file in json_files:
-        # read the file
-        try:
-            with open(json_file) as old_json_file:
-                data = json.load(old_json_file)
-        except json.decoder.JSONDecodeError:
-            print("INFO: The file '{}' is already flattened. Removing HTML tags if any ..".format(json_file))
-            continue
-        # write the new one (overriding the old json)
-        with open(json_file, 'w') as new_json_file:
-            for entry in data:
-                json.dump(entry, new_json_file)
-                new_json_file.write('\n')
-
-
-def rm_tags(source_json_dir):
-    json_files = glob.glob(source_json_dir + "/*.json")
-    for json_file in json_files:
-        new_json_list = []
-        with open(json_file) as old_json_file:
-            json_list = list(old_json_file)
-        for json_str in json_list:
-            line = json.loads(json_str)
-            if "studyDescription" in line:
-                # remove escaped html
-                line["studyDescription"] = remove_html_tags(line["studyDescription"])
-            new_json_list.append(line)
-
-        with open(json_file, 'w') as new_json_file:
-            for entry in new_json_list:
-                json.dump(entry, new_json_file)
-                new_json_file.write('\n')
 
 
 def get_document_configs_by_entity(document_configs):
@@ -195,8 +115,8 @@ def load_input_json(source, doc_types, source_json_dir, config):
                 print("No " + document_type["document-type"] + " in " + source['schema:identifier'])
     return data_dict
 
-
-def simple_transformations(document, source):
+# TODO: move to transform cards
+def simple_transformations(document, source, document_type):
     # Hide email
     if ("email" in document):
         document["email"] = document["email"].replace('@', '_')
@@ -216,6 +136,11 @@ def simple_transformations(document, source):
     if "documentationURL" in document:
         #document["url"] = document["documentationURL"]
         document["schema:url"] = document["documentationURL"]
+    if document_type+"Name" in document:
+        document["schema:name"] = document[document_type+"Name"]
+    document["@id"] = document[document_type + "URI"]
+    document["@type"] = document_type
+
     return document
 
 
@@ -230,11 +155,13 @@ def transform_source_documents(data_dict: dict, source: dict, documents_dbid_fie
             document["schema:identifier"] = document[document_type + 'DbId']
             document[document_type + 'URI'] = get_generated_uri_from_dict(source, document_type,
                                                                           document)  # this should be URN field rather than URI
+            if document_type != "observationVariable":
+                document[document_type + 'DbId'] = get_generated_uri_from_dict(source, document_type, document, True)
 
-            document["@id"] = document[document_type + "URI"]
-            document["@type"] = document_type
-            document[document_type + 'DbId'] = get_generated_uri_from_dict(source, document_type, document, True)
+            document = simple_transformations(document, source, document_type) # TODO : in mapping ?
+
             document = _handle_study_contacts(document, source)
+
             # transform other DbIds , skip observationVariable
             if document_type in documents_dbid_fields_plus_field_type:
                 for fields in documents_dbid_fields_plus_field_type[document_type]:
@@ -260,8 +187,8 @@ def transform_source_documents(data_dict: dict, source: dict, documents_dbid_fie
                                                                              True)
 
             ########## mapping and transforming fields ##########
-            do_card_transform(document)
-            document = simple_transformations(document, source) # TODO : in mapping ?
+            document = do_card_transform(document)
+            data_dict[document_type][document_id] = document
     return data_dict
 
 

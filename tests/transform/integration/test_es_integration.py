@@ -8,6 +8,7 @@ from tests.transform.utils import sort_dict_lists
 
 class transform_integration_test(unittest.TestCase):
 
+    maxDiff = None
 
     @classmethod
     def setUpClass(self):
@@ -99,7 +100,7 @@ class transform_integration_test(unittest.TestCase):
         with gzip.open(self._expected_data_dir+"VIB_location_expected.json.gz") as expected_vib_f:
             expected_vib = json.load(expected_vib_f)
 
-        self.assertEqual(sort_dict_lists(actual_vib), sort_dict_lists(expected_vib))
+        self.assertEqual( sort_dict_lists(expected_vib), sort_dict_lists(actual_vib))
         #self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
 
 

@@ -1,5 +1,7 @@
 # private function to be called through function_dict
-from etl.transform.utils import get_generated_uri_from_dict, get_generated_uri_from_str
+from etl.transform.utils import get_generated_uri_from_dict, get_generated_uri_from_str, remove_html_tags
+
+
 def _concat_genus_species(document):
     if "genus" in document and "species" in document and "genusSpecies" not in document:
         document["genusSpecies"] = document["genus"] + " " + document["species"]
@@ -35,6 +37,13 @@ def _germplasm_schema_name(document):
         document["schema:name"] = document["accessionNumber"]
     return document
 
+def _location_schema_name(document):
+    if "locationName" in document and len(document["locationName"])>0:
+        document["schema:name"] = document["locationName"]
+    elif "name" in document and len(document["name"])>0:
+        document["schema:name"] = document["name"]
+    return document
+
 def _handle_study_season(document):
     if "seasons" in document and \
             "season" in document["seasons"] and \
@@ -54,8 +63,9 @@ def _handle_study_season(document):
         return document
         #return document["seasons"]["year"]
 
-
-
+def _description_cleaning(document):
+    if "description" in document:
+        document["description"] = remove_html_tags(document["description"])
 
 # TODO: contacts not added, not necessary full info seems to be added in the BrAPIV2 spec.
 # check that contacts are integrated in studies for all sources including GnpIS.
@@ -67,11 +77,19 @@ _study_mapping_dict = {
 
 _study_function_dict = {
     "genusSpecies": _concat_genus_species,
-    "seasons": _handle_study_season
+    "seasons": _handle_study_season,
+    "description": _description_cleaning
 }
 
 _germplasm_mapping_dict = {
     "study_name": "studyName"
+}
+_location_mapping_dict = {
+    "name": "locationName"
+}
+
+_location_function_dict = {
+    "schema:name": _location_schema_name
 }
 
 _germplasm_function_dict = {
@@ -89,12 +107,15 @@ def do_card_transform(document):
 
     # 2 on enrichis en ajoutant genusSpecies ou en allant chercher les obsVarDbId etc...
 
-    if "studyDbId" in document:
+    if "@type" in document and document.get("@type") == "study" :
         mapping_dict = _study_mapping_dict
         function_dict = _study_function_dict
-    elif "germplasmDbId" in document:
+    elif "@type" in document and document.get("@type") == "germplasm" :
         mapping_dict = _germplasm_mapping_dict
         function_dict = _germplasm_function_dict
+    elif "@type" in document and document.get("@type") == "location":
+        mapping_dict = _location_mapping_dict
+        function_dict = _location_function_dict
     else:
         # raise? Or is this rather normal?
         #print("Unknown document type : ")
