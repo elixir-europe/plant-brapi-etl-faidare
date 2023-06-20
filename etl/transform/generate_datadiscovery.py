@@ -292,8 +292,8 @@ def _get_study_description(document, data_dict):
         locationDbId = document.get("locationDbId") if document.get("locationDbId") else document.get("locationDbIds")[0]
         decoded_locationDbId = base64.b64decode(locationDbId).decode('utf-8')
         location = data_dict.get("location").get(decoded_locationDbId)
-        if location and location.get("locationName") and location.get("countryName"):
-            location_string = f' in {location["locationName"]} {location["locationName"]}).'
+        if location and "locationName" in location and "countryName" in location:
+            location_string = f' in {location["locationName"]} ({location["countryName"]}).'
         elif location and location.get("locationName") and not location.get("countryName"):
             location_string = f' in {location["locationName"]}.'
         elif location and location.get("countryName") and not location.get("locationName"):

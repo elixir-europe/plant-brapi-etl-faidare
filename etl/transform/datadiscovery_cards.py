@@ -74,7 +74,7 @@ documents_dbid_fields_plus_field_type = {
     "germplasm": [["locationDbIds", "location"], ["studyDbIds", "study"], ["trialDbIds", "trial"]],
     "observationVariable": [ ["studyDbIds", "study"]],
     "location": [["studyDbIds", "study"], ["trialDbIds", "trial"]],
-    "trial": [["germplasmDbIds", "germplasm"], ["locationDbIds", "location"], ["studyDbIds", "study"]],
+    "trial": [["germplasmDbIds", "germplasm"], ["locationDbIds", "location"], ["studyDbIds", "study"], ["contactDbIds", "contact"]],
     "program": [["trialDbIds", "trial"], ["studyDbIds", "study"]],
     "contact": [["trialDbIds", "trial"]]
 }
