@@ -91,24 +91,45 @@ def get_document_configs_by_entity(document_configs):
         by_entity[entity].append(document_config)
     return by_entity
 
+#TODO : still very naive and memory inefficient. Uses more than 18Go of memory
+def _handle_observation_units(source, source_bulk_dir, config, document_type, input_json_filepath, logger, start_time):
+    logger.info("Loading observationUnit from " + source['schema:identifier']  )
+    obsUnitDict= {}
+    obsUnitDict["observationUnit"] = {}
+    i = 0
+    try:
+        with open(input_json_filepath, 'r') as json_file:
+            json_list = list(json_file)
+            for json_line in json_list:
+                json_line_data = json.loads(json_line)
+                # transform observationUnit
+                #uri = get_generated_uri_from_dict(source, document_type["document-type"], json_line_data)
+                transformed_obsUnit = _handle_DbId_URI(json_line_data, "observationUnit",
+                                                                     documents_dbid_fields_plus_field_type, source)
+                obsUnitDict["observationUnit"][str(i)] = transformed_obsUnit
+                i += 1
 
-def _handle_observation_units(source, source_json_dir, config, logger, start_time):
-    pass
+    except FileNotFoundError as e:
+        print("No " + document_type["document-type"] + " in " + source['schema:identifier'])
+
+    logger.info("Loaded observationUnit from " + source['schema:identifier'] +
+                ",  duration : " + _get_duration_time_str(time.perf_counter() - start_time))
+    save_json(source_bulk_dir,obsUnitDict,logger)
 
 
-def load_input_json(source, doc_types, source_json_dir, config, logger, start_time):
+def load_input_json(source, doc_types, source_json_dir, config, logger, start_time, source_bulk_dir):
     data_dict = {}
     if source_json_dir:
+        _handle_observation_units(source, source_bulk_dir, config, doc_types, source_json_dir + "/observationUnit.json", logger, start_time)
         # all_files = list_entity_files(source_json_dir)
         # filtered_files = list(filter(lambda x: x[0] in source_entities, all_files))
         for document_type in doc_types:
-            if document_type["document-type"] == "observationUnit":
-                logger.info("Skipping observationUnit")
-                # TODO: transformstudyDbIds and write them directly to the output file
-                _handle_observation_units(source, source_json_dir, config, logger, start_time)
-                # use adapted version of transform source document or extract the inner for loop
-                continue
+
             input_json_filepath = source_json_dir + "/" + document_type["document-type"] + ".json"
+
+            if document_type["document-type"] == "observationUnit":
+                continue
+
             data_dict[document_type["document-type"]] = {}
             try:
                 with open(input_json_filepath, 'r') as json_file:
@@ -123,7 +144,7 @@ def load_input_json(source, doc_types, source_json_dir, config, logger, start_ti
                 print("No " + document_type["document-type"] + " in " + source['schema:identifier'])
             logger.info("Loaded " + str(len(data_dict[document_type["document-type"]])) + " " + document_type[
                 "document-type"] + " from " + source['schema:identifier'] +
-                        ",  duration : " + str((time.process_time() - start_time) / 60) + " minutes" )
+                        ",  duration : " + _get_duration_time_str(time.perf_counter() - start_time)  )
     return data_dict
 
 
@@ -159,48 +180,53 @@ def simple_transformations(document, source, document_type):
 def transform_source_documents(data_dict: dict, source: dict, documents_dbid_fields_plus_field_type: dict, logger, start_time):
     for document_type, documents in data_dict.items():
         logger.info(
-            "Transforming " + str(len(documents)) + " " + document_type + " from " + source['schema:identifier'] +
-            ",time : " + str(start_time) + " duration : " + str((time.process_time() - start_time)/60) + " seconds")
+            "Transforming " + str(len(documents)) + " " + document_type + " from " + source['schema:identifier'] )
         for document_id, document in documents.items():
-            ########## DbId and generation handling ##########
-            # transform documentDbId *NB*: the URI field is mandatory in transformed documents
-            document["schema:identifier"] = document[document_type + 'DbId']
-            document[document_type + 'URI'] = get_generated_uri_from_dict(source, document_type,
-                                                                          document)  # this should be URN field rather than URI
-            if document_type != "observationVariable":
-                document[document_type + 'DbId'] = get_generated_uri_from_dict(source, document_type, document, True)
-
-            document = simple_transformations(document, source, document_type)  # TODO : in mapping ?
-
-            document = _handle_study_contacts(document, source)
-
-            # transform other DbIds , skip observationVariable
-            if document_type in documents_dbid_fields_plus_field_type:
-                for fields in documents_dbid_fields_plus_field_type[document_type]:
-                    if fields[0] in document:
-                        if document[fields[0]] and fields[0].endswith("DbIds"):
-                            # URIs
-                            field_uris_transformed = map(
-                                lambda x: get_generated_uri_from_str(source, fields[1], x, False), document[fields[0]])
-                            document[fields[0].replace("DbIds", "URIs")] = list(set(field_uris_transformed))
-                            # DbIds
-                            field_ids_transformed = map(
-                                lambda x: get_generated_uri_from_str(source, fields[1], x, True), document[fields[0]])
-                            document[fields[0]] = list(field_ids_transformed)
-
-                        elif fields[0].endswith("DbId"):
-                            # URI
-                            document[fields[0].replace("DbId", "URI")] = get_generated_uri_from_str(source, fields[1],
-                                                                                                    document[fields[0]],
-                                                                                                    False)
-                            # DbId
-                            document[fields[0]] = get_generated_uri_from_str(source, fields[1], document[fields[0]],
-                                                                             True)
+            document = _handle_DbId_URI(document, document_type, documents_dbid_fields_plus_field_type, source)
 
             ########## mapping and transforming fields ##########
             document = do_card_transform(document)
             data_dict[document_type][document_id] = document
+        logger.info(
+            "END Transforming " + str(len(documents)) + " " + document_type + " from " + source['schema:identifier'] +
+            " duration :" + _get_duration_time_str(time.perf_counter() - start_time))
     return data_dict
+
+
+def _handle_DbId_URI(document, document_type, documents_dbid_fields_plus_field_type, source):
+    ########## DbId and URI generation handling ##########
+    # transform documentDbId *NB*: the URI field is mandatory in transformed documents
+    document["schema:identifier"] = document[document_type + 'DbId']
+    document[document_type + 'URI'] = get_generated_uri_from_dict(source, document_type,
+                                                                  document)  # this should be URN field rather than URI
+    if document_type != "observationVariable":
+        document[document_type + 'DbId'] = get_generated_uri_from_dict(source, document_type, document, True)
+    document = simple_transformations(document, source, document_type)  # TODO : in mapping ?
+    # TODO : only on study ?
+    document = _handle_study_contacts(document, source)
+    # transform other DbIds , skip observationVariable
+    if document_type in documents_dbid_fields_plus_field_type:
+        for fields in documents_dbid_fields_plus_field_type[document_type]:
+            if fields[0] in document:
+                if document[fields[0]] and fields[0].endswith("DbIds"):
+                    # URIs
+                    field_uris_transformed = map(
+                        lambda x: get_generated_uri_from_str(source, fields[1], x, False), document[fields[0]])
+                    document[fields[0].replace("DbIds", "URIs")] = list(set(field_uris_transformed))
+                    # DbIds
+                    field_ids_transformed = map(
+                        lambda x: get_generated_uri_from_str(source, fields[1], x, True), document[fields[0]])
+                    document[fields[0]] = list(field_ids_transformed)
+
+                elif fields[0].endswith("DbId"):
+                    # URI
+                    document[fields[0].replace("DbId", "URI")] = get_generated_uri_from_str(source, fields[1],
+                                                                                            document[fields[0]],
+                                                                                            False)
+                    # DbId
+                    document[fields[0]] = get_generated_uri_from_str(source, fields[1], document[fields[0]],
+                                                                     True)
+    return document
 
 
 def align_formats(current_source_data_dict):
@@ -232,7 +258,7 @@ def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config
     action = 'transform-es-' + source_name
     log_file = get_file_path([config['log-dir'], action], ext='.log', recreate=True)
     logger = create_logger(action, log_file, config['options']['verbose'])
-    logger.info("Transforming  source, start time : " + str(start_time))
+    logger.info("Transforming  source, start time : " + _get_date_time_str(start_time))
     logger.info("'schema:identifier': " + source['schema:identifier'] + " path : " + source_json_dir)
     logger.info("Transforming BrAPI to Elasticsearch documents for " + source_name)
 
@@ -251,14 +277,11 @@ def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config
             json_to_jsonl(source_json_dir)
             rm_tags(source_json_dir)
 
-        logger.info("Loading data, generating URIs and global identifiers for " + source_name + ",time : " + str(
-            start_time) + " duration : " + str((time.process_time() - start_time) / 60) + " seconds")
+        logger.info("Loading data, generating URIs and global identifiers for " + source_name
+                    + " duration : " + _get_duration_time_str(time.perf_counter() - start_time) )
         # Load each file (aka document type) in a per source hash.
         # structure or the keys: documenttype>documentDbId
-        # TODO: call get_generated_uri at load time
-        # TODO: don't load observationUnit, too big and of little interest.
-        #  Instead stream and do on the fly transform of the relevant dbId at the end of the process
-        current_source_data_dict = load_input_json(source, doc_types, source_json_dir, config, logger, start_time)
+        current_source_data_dict = load_input_json(source, doc_types, source_json_dir, config, logger, start_time, source_bulk_dir)
 
     except Exception as e:
         logger.debug(traceback.format_exc())
@@ -276,14 +299,14 @@ def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config
     docKey = 0
     for document_type, documents in current_source_data_dict.items():
         logger.info("Generating data discovery for " + document_type + " for " + source_name+ ",time : " +
-                    str(start_time) + " duration : " + str((time.process_time() - start_time)/60) + " seconds")
+                    str(start_time) + " duration :" + _get_duration_time_str(time.perf_counter() - start_time))
         for document_id, document in documents.items():
             docKey += 1
             datadiscovery_doc = generate_datadiscovery(document, document_type, current_source_data_dict, source)
             if datadiscovery_doc:
                 datadiscovery_document_dict[docKey] = datadiscovery_doc
         logger.info("DONE generating data discovery for " + document_type + " for " + source_name+ ",time : " +
-                    str(start_time) + " duration : " + str((time.process_time() - start_time)/60) + " seconds")
+                    str(start_time) + " duration :" + _get_duration_time_str(time.perf_counter() - start_time))
 
     current_source_data_dict['datadiscovery'] = datadiscovery_document_dict
 
@@ -291,10 +314,23 @@ def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config
 
     logger.info("Saving JSON results for " + source_name)
     save_json(source_bulk_dir, current_source_data_dict, logger)
+    logger.info("DONE transforming BrAPI to Elasticsearch documents, duration : " + _get_duration_time_str(time.perf_counter() - start_time))
+
+
+def _get_date_time_str(start_time):
+    time_format_str = "%a, %d %b %Y %H:%M:%S +0000"
+    return time.strftime(time_format_str, time.localtime(start_time))
+
+def _get_duration_time_str(time_elapsed):
+    #time_format_str = "%H:%M:%S +0000"
+    #return time.strftime(time_format_str, time.localtime(time_string))
+    return time.strftime("%H:%M:%S.{}".format(str(time_elapsed % 1)[2:])[:15], time.gmtime(time_elapsed))
+    #return str(time_elapsed)
+
 
 
 def main(config):
-    start_time = time.process_time()
+    start_time = time.perf_counter()
     json_dir = get_folder_path([config['data-dir'], 'json'])
     if not os.path.exists(json_dir):
         raise Exception('No json folder found in {}'.format(json_dir))
@@ -320,3 +356,4 @@ def main(config):
     for thread in threads:
         while thread.is_alive():
             thread.join(500)
+
