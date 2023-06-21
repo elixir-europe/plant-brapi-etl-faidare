@@ -45,6 +45,10 @@ def _location_schema_name(document):
     return document
 
 def _handle_study_season(document):
+    if "seasons" in document and  not document["seasons"]:
+        return document
+    if "seasons" in document and isinstance(document["seasons"], str):
+        return document
     if "seasons" in document and \
             "season" in document["seasons"] and \
             "year" in document["seasons"]:  # check season of type dict

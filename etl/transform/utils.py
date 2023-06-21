@@ -51,7 +51,7 @@ def get_generated_uri_from_str(source: dict, entity: str, data: str, do_base64 =
 
     # Generate URI from source id, entity name and data id
     encoded_entity = urllib.parse.quote(entity)
-    encoded_id = urllib.parse.quote(data)
+    encoded_id = urllib.parse.quote(str(data))
     data_uri = f"urn:{source_id}/{encoded_entity}/{encoded_id}"
 
     if not rfc3987.match(data_uri, rule='URI'):

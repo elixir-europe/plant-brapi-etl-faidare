@@ -4,15 +4,17 @@ from etl.transform.utils import get_generated_uri_from_str
 
 
 #TODO: naive and dull/barely readable implementation. See if a mapping disct could do the trick
-def _generate_datadiscovery_germplasm(document, data_dict, source):
+def _generate_datadiscovery_germplasm(document: dict, data_dict: dict, source: dict):
     datadiscovery_document = document.copy()
     datadiscovery_document["node"] = document.get("node")
     datadiscovery_document["databaseName"] = document.get("databaseName")
-    if "documentationURL" in document:
+    if document.get("documentationURL"):
         datadiscovery_document["url"] = document["documentationURL"]
         datadiscovery_document["schema:url"] = document["documentationURL"]
     datadiscovery_document["entryType"] = "Germplasm"
     datadiscovery_document["@type"] = ["Germplasm"]  # TODO deprecated ?
+    #if not document.get("germplasmURI"): #TODO: create a json-schema based validator
+    #    print("document Germplasm ERROR, no germplasmURI ?: ", document)
     datadiscovery_document["@id"] = document.get("germplasmPUI") if document.get("germplasmPUI") else document[
         "germplasmURI"]
     datadiscovery_document["identifier"] = document["germplasmDbId"]
@@ -46,28 +48,35 @@ def _generate_datadiscovery_germplasm(document, data_dict, source):
 
     datadiscovery_document["germplasm"] = {}
     datadiscovery_document["germplasm"]["cropName"] = []
-    if "commonCropName" in document:
+    if  document.get("commonCropName"):
         datadiscovery_document["germplasm"]["cropName"].append(document.get("commonCropName"))
-    if "taxonCommonNames" in document:
+    if  document.get("taxonCommonNames"):
         datadiscovery_document["germplasm"]["cropName"].append(document.get("taxonCommonNames"))
     datadiscovery_document["germplasm"]["cropName"].append(document.get("genus"))
     # if "species" in document:
     #     datadiscovery_document["germplasm"]["cropName"].append(document.get("species"))
-    if "genus" in document and "species" in document:
+    if document.get("genus") and  document.get("species"):
         datadiscovery_document["germplasm"]["cropName"].append(document.get("genus") + " " + document.get("species"))
-    if "subtaxa" in document:
+    if document.get("subtaxa"):
         datadiscovery_document["germplasm"]["cropName"].append(document.get("subtaxa"))
-    if "taxonSynonyms" in document:
+    if document.get("taxonSynonyms"):
         datadiscovery_document["germplasm"]["cropName"].append(document.get("taxonSynonyms"))
 
     g_list = set()
-    if "panel" in document:
-        g_list.add(document.get("panel").get("name"))
-    if "collection" in document:
-        g_list.add(document.get("collection").get("name"))
-    if "population" in document:
-        g_list.add(document.get("population").get("name"))
-    if "holdingGenbank" in document:
+    if  document.get("panel"):# and document.get("panel").get("name"):
+        # get all names from panel
+        for p in document.get("panel"):
+            g_list.add(p.get("name"))
+        #g_list.add(document.get("panel").get("name"))
+    if  document.get("collection"):# and document.get("collection").get("name"):
+        for c in document.get("collection"):
+            g_list.add(c.get("name"))
+        #g_list.add(document.get("collection").get("name"))
+    if  document.get("population"):# and document.get("population").get("name"):
+        for p in document.get("population"):
+            g_list.add(p.get("name"))
+        #g_list.add(document.get("population").get("name"))
+    if  document.get("holdingGenbank") and document.get("holdingGenbank").get("instituteName"):
         g_list.add(document.get("holdingGenbank").get("instituteName"))
     if len(g_list) > 0:
         datadiscovery_document["germplasm"]["germplasmList"] = list(g_list)
@@ -76,31 +85,36 @@ def _generate_datadiscovery_germplasm(document, data_dict, source):
 
     datadiscovery_document["germplasm"]["accession"] = []
     acc_set = set()
-    if "germplasmName" in document:
+    if document.get("germplasmName"):
         acc_set.add(document.get("germplasmName"))
-    if "defaultDisplayName" in document:
+    if document.get("defaultDisplayName"):
         acc_set.add(document.get("defaultDisplayName"))
-    if "accessionNumber" in document:
+    if document.get("accessionNumber"):
         acc_set.add(document.get("accessionNumber"))
-    if "synonyms" in document:
-        acc_set.add(document.get("synonyms"))
+    if document.get("synonyms"):
+        for s in document.get("synonyms"):
+            acc_set.add(s)
+        #acc_set.add(document.get("synonyms"))
     datadiscovery_document["germplasm"]["accession"] = list(acc_set)
     #### END germplasm bloc with cropName, germplasmList, accession
 
-    if "holdingInstitute" in document:
-        g_list.add(document.get("holdingInstitute").get("organisation") + " " + document.get("holdingInstitute").get(
-            "instituteName"))
+    if document.get("holdingInstitute"):
+        g_list.add(
+            " ".join(filter(None,
+                            [document.get("holdingInstitute").get("organisation"),
+                             document.get("holdingInstitute").get("instituteName")]
+                            )))
 
-    if "biologicalStatus" in document:
+    if document.get("biologicalStatusOfAccessionCode"):
         datadiscovery_document["biologicalStatus"] = document.get("biologicalStatusOfAccessionCode")
-    if "geneticNature" in document:
+    if document.get("geneticNature"):
         datadiscovery_document["geneticNature"] = document.get("geneticNature")
-    if "countryOfOriginCode" in document:
+    if document.get("countryOfOriginCode"):
         # datadiscovery_document.pop("countryOfOriginCode")
         datadiscovery_document["countryOfOriginCode"] = document.get("countryOfOriginCode")
-    if "genus" in document:
+    if document.get("genus"):
         datadiscovery_document["taxonGroup"] = document.get("genus")
-    if "accessionHolder" in document:
+    if document.get("accessionHolder"):
         datadiscovery_document["accessionHolder"] = document.get("accessionHolder")
 
     return datadiscovery_document
@@ -108,23 +122,23 @@ def _generate_datadiscovery_germplasm(document, data_dict, source):
 
 def _get_germplasm_datadiscovery_description(document, datadiscovery_document):
     description_string = ""
-    if "germplasmName" in datadiscovery_document:
+    if datadiscovery_document.get("germplasmName"):
         description_string = f'{document["germplasmName"]}'
-    if "species" in datadiscovery_document:
+    if datadiscovery_document.get("species"):
         description_string = f'{description_string} is a {datadiscovery_document["species"]} '
     description_string = (
         f'{description_string}'
         f'{document.get("subtaxa") if document.get("subtaxa") else ""}'
         f'{"(" + document.get("commonCropName", "") + ")"}'
     )
-    if "accessionNumber" in document:
+    if document.get("accessionNumber"):
         description_string = f'{description_string} accession (number: {document["accessionNumber"]})'
-    if "holdingInstitute" in document:
+    if document.get("holdingInstitute"):
         description_string = (
             f'{description_string} '
             f' managed by {document["holdingInstitute"]["instituteName"]} '
         )
-    if "comment" in document:
+    if document.get("comment"):
         description_string = f'{description_string}. {document["comment"]}'
     else:
         description_string = f'{description_string}.'
@@ -187,7 +201,7 @@ def _add_linked_germplasm_info(datadiscovery_document, document, data_dict):
         germplasm = data_dict.get("germplasm").get(decoded_germplasmDbId)
         if germplasm:
 
-            if "genus" in germplasm:
+            if germplasm.get("genus"):
                 datadiscovery_document["taxonGroup"] = germplasm.get("genus")
 
             acc_number_set.add(germplasm.get("accessionNumber"))
@@ -253,18 +267,18 @@ def _add_linked_germplasm_info(datadiscovery_document, document, data_dict):
 
 
 def _add_linked_location_info(datadiscovery_document, document, data_dict):
-    if "locationDbIds" not in document:
+    if not document.get("locationDbIds"):
         return datadiscovery_document
     for locationDbId in document["locationDbIds"]:
         # decode base64 locationDbId
         decoded_locationDbId = base64.b64decode(locationDbId).decode('utf-8')
         location = data_dict.get("location").get(decoded_locationDbId)
         if location:
-            if "locationURIs" not in datadiscovery_document:
+            datadiscovery_document["locationURI"] = location.get("locationURI")
+            if "locationURIs" not in datadiscovery_document and location.get("locationURI"):
                 datadiscovery_document["locationURIs"] = list()
             if "locationURI" in datadiscovery_document and location.get("locationURI") not in datadiscovery_document["locationURIs"]:
                 datadiscovery_document["locationURIs"].append(location.get("locationURI"))
-            datadiscovery_document["locationURI"] = location.get("locationURI")
             if "locationName" not in datadiscovery_document:
                 datadiscovery_document["locationName"] = location.get("locationName")
 
@@ -299,19 +313,20 @@ def _get_study_description(document, data_dict):
         elif location and location.get("countryName") and not location.get("locationName"):
             location_string = f' in {location["countryName"]}.'
 
+    program_string = " This study is part of the " + document["programName"] + " program." if document.get("programName") else ""
     studyDescription = (
         f'{document["studyName"]} is a {document["studyType"] if "studyType" in document else document.get("entryType")}'
         f'{study_date_string}'
         f'{season_date_string}'
         f'{location_string}'
-        f'{" This study is part of the " + document["programName"] + " program." if "programName" in document else ""}'
+        f'{program_string}'
         f' {document["studyDescription"] if "studyDescription" in document else ""}'
     )
     return studyDescription
 
 
 def _add_linked_traits_info(datadiscovery_document, document, data_dict, source):
-    if "observationVariableDbIds" in document:
+    if document.get("observationVariableDbIds"):
         datadiscovery_document["trait"] = dict()
         datadiscovery_document["trait"]["observationVariableDbIds"] = []
         datadiscovery_document["traitNames"] = list()
@@ -335,7 +350,9 @@ def _add_linked_traits_info(datadiscovery_document, document, data_dict, source)
                     pass
 
             if observationVariable:
-                traitName = " ".join([observationVariable.get("observationVariableName"), observationVariable.get("name")])
+                traitName = " ".join(filter(None,
+                                            [observationVariable.get("observationVariableName"),
+                                             observationVariable.get("name")]))
                 if observationVariable.get("trait"):
                     traitName = f'{traitName} {observationVariable.get("trait").get("name")}'
                 datadiscovery_document["traitNames"].append(traitName)
@@ -343,7 +360,7 @@ def _add_linked_traits_info(datadiscovery_document, document, data_dict, source)
     return datadiscovery_document
 
 
-def _generate_datadiscovery_study(document, data_dict, source):
+def _generate_datadiscovery_study(document: dict, data_dict: dict, source: dict):
     datadiscovery_document = document.copy()
     datadiscovery_document["node"] = document.get("node")
     datadiscovery_document["databaseName"] = document.get("databaseName")
@@ -367,12 +384,14 @@ def _generate_datadiscovery_study(document, data_dict, source):
     return datadiscovery_document
 
 
-def generate_datadiscovery(document: dict, data_dict: dict, source: dict) -> dict:
+def generate_datadiscovery(document: dict, document_type:str, data_dict: dict, source: dict) -> dict:
     """Generate Data Discovery json document."""
-    if "germplasmDbId" in document:
+    #if "germplasmDbId" in document:
+    if document_type == "germplasm":
         return _generate_datadiscovery_germplasm(document, data_dict, source)
 
-    if "studyDbId" in document:
+    #if "studyDbId" in document:
+    if document_type == "study":
         return _generate_datadiscovery_study(document, data_dict, source)
 
     return None

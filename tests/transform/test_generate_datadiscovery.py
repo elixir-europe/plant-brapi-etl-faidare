@@ -28,6 +28,7 @@ fixture_source_germplasm = {
     "instituteCode": "VIB",
     "instituteName": "VIB",
     "source": "BRAPI TEST",
+    "schema:name": "RIL_8W_EP33_20",
     "species": "mays",
     "studyDbIds":
         [
@@ -70,6 +71,7 @@ fixture_source_study = {
         ],
     "locationName": "growth chamber",
     "name": "RIL 8-way  batch 9",
+    "schema:name": "RIL 8-way  batch 9",
     "observationVariableDbIds":
         ["65", "urn:BRAPI_TEST/observationVariable/66"],
     # done on purpose for testing: two different situations that should'nt appear in the same dataset with real data.
@@ -114,12 +116,12 @@ fixture_expected_germplasm = {
                 [
                     "Maize",
                     "Zea",
-                    "mays",
                     "Zea mays"
                 ]
         },
     "germplasmDbId": "dXJuOlZJQi9nZXJtcGxhc20vWmVhX1ZJQl9SSUxfOFdfRVAzM18yMF9fXzExODQ=",
     "germplasmName": "RIL_8W_EP33_20",
+    "name": "RIL_8W_EP33_20",
     "germplasmURI": "urn:VIB/germplasm/Zea_VIB_RIL_8W_EP33_20___1184",
     "identifier": "dXJuOlZJQi9nZXJtcGxhc20vWmVhX1ZJQl9SSUxfOFdfRVAzM18yMF9fXzExODQ=",
     "instituteCode": "VIB",
@@ -127,7 +129,7 @@ fixture_expected_germplasm = {
     "node": "BRAPI_TEST_node",
     "schema:description": "RIL_8W_EP33_20 is a Zea mays (Maize) accession (number: 1184).",
     "schema:identifier": "dXJuOlZJQi9nZXJtcGxhc20vWmVhX1ZJQl9SSUxfOFdfRVAzM18yMF9fXzExODQ=",
-    "schema:includedInDataCatalog": "BRAPI TEST",
+    "schema:includedInDataCatalog": "https://test-server.brapi.org",
     "schema:name": "RIL_8W_EP33_20",
     "source": "BRAPI TEST",
     "species": "Zea mays",
@@ -207,14 +209,15 @@ fixture_expected_study = {
     "observationVariableDbIds":
         ["65", "urn:BRAPI_TEST/observationVariable/66"],
     "schema:identifier": "dXJuOlZJQi9zdHVkeS9WSUJfc3R1ZHlfX180OA==",
-    "schema:includedInDataCatalog": "BRAPI TEST",
+    "schema:includedInDataCatalog": "https://test-server.brapi.org",
     "schema:name": "RIL 8-way  batch 9",
-    "schema:url": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/48",
+    #"schema:url": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/48",
     "source": "BRAPI TEST",
     "species":
         [
             "Zea mays"
         ],
+    "genusSpecies":"Zea mays",
     "startDate": "2013-08-20",
     "studyDbId": "dXJuOlZJQi9zdHVkeS9WSUJfc3R1ZHlfX180OA==",
     "studyDescription": "Short description of the experimental design, possibly including statistical design.",
@@ -242,7 +245,7 @@ class TestGenerateDataDiscovery(unittest.TestCase):
     maxDiff = None
 
     def test_generate_germplasm_datadiscovery(self):
-        data_dict_actual = _generate_datadiscovery_germplasm(fixture_source_germplasm, data_dict)
+        data_dict_actual = _generate_datadiscovery_germplasm(fixture_source_germplasm, data_dict, test_source)
 
         data_dict_expected = fixture_expected_germplasm
 

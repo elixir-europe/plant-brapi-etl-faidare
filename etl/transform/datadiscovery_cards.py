@@ -1,6 +1,7 @@
 import threading
 import traceback
 import json
+import time
 
 from etl.common.templating import parse_template
 from etl.common.utils import *
@@ -72,9 +73,10 @@ documents_dbid_fields_plus_field_type = {
     "study": [["germplasmDbIds", "germplasm"], ["locationDbId", "location"], ["locationDbIds", "location"],
               ["trialDbIds", "trial"], ["trialDbId", "trial"], ["programDbId", "program"], ["programDbIds", "program"]],
     "germplasm": [["locationDbIds", "location"], ["studyDbIds", "study"], ["trialDbIds", "trial"]],
-    "observationVariable": [ ["studyDbIds", "study"]],
+    "observationVariable": [["studyDbIds", "study"]],
     "location": [["studyDbIds", "study"], ["trialDbIds", "trial"]],
-    "trial": [["germplasmDbIds", "germplasm"], ["locationDbIds", "location"], ["studyDbIds", "study"], ["contactDbIds", "contact"]],
+    "trial": [["germplasmDbIds", "germplasm"], ["locationDbIds", "location"], ["studyDbIds", "study"],
+              ["contactDbIds", "contact"]],
     "program": [["trialDbIds", "trial"], ["studyDbIds", "study"]],
     "contact": [["trialDbIds", "trial"]]
 }
@@ -90,16 +92,22 @@ def get_document_configs_by_entity(document_configs):
     return by_entity
 
 
-def load_input_json(source, doc_types, source_json_dir, config):
+def _handle_observation_units(source, source_json_dir, config, logger, start_time):
+    pass
+
+
+def load_input_json(source, doc_types, source_json_dir, config, logger, start_time):
     data_dict = {}
     if source_json_dir:
         # all_files = list_entity_files(source_json_dir)
         # filtered_files = list(filter(lambda x: x[0] in source_entities, all_files))
         for document_type in doc_types:
             if document_type["document-type"] == "observationUnit":
+                logger.info("Skipping observationUnit")
                 # TODO: transformstudyDbIds and write them directly to the output file
+                _handle_observation_units(source, source_json_dir, config, logger, start_time)
                 # use adapted version of transform source document or extract the inner for loop
-                pass
+                continue
             input_json_filepath = source_json_dir + "/" + document_type["document-type"] + ".json"
             data_dict[document_type["document-type"]] = {}
             try:
@@ -113,7 +121,11 @@ def load_input_json(source, doc_types, source_json_dir, config):
             #                    entity_names = set(map(first, links))
             except FileNotFoundError as e:
                 print("No " + document_type["document-type"] + " in " + source['schema:identifier'])
+            logger.info("Loaded " + str(len(data_dict[document_type["document-type"]])) + " " + document_type[
+                "document-type"] + " from " + source['schema:identifier'] +
+                        ",  duration : " + str((time.process_time() - start_time) / 60) + " minutes" )
     return data_dict
+
 
 # TODO: move to transform cards
 def simple_transformations(document, source, document_type):
@@ -123,7 +135,7 @@ def simple_transformations(document, source, document_type):
 
     if ("contacts" in document):
         for contact in document["contacts"]:
-            if "email" in contact:
+            if "email" in contact and contact["email"] is not None and contact["email"] != "":
                 contact["email"] = contact["email"].replace('@', '_')
 
     if ("node" not in document):
@@ -134,21 +146,21 @@ def simple_transformations(document, source, document_type):
         document["source"] = source['schema:name']
     document["schema:includedInDataCatalog"] = source["@id"]
     if "documentationURL" in document:
-        #document["url"] = document["documentationURL"]
+        # document["url"] = document["documentationURL"]
         document["schema:url"] = document["documentationURL"]
-    if document_type+"Name" in document:
-        document["schema:name"] = document[document_type+"Name"]
+    if document_type + "Name" in document:
+        document["schema:name"] = document[document_type + "Name"]
     document["@id"] = document[document_type + "URI"]
     document["@type"] = document_type
 
     return document
 
 
-def transform_source_documents(data_dict: dict, source: dict, documents_dbid_fields_plus_field_type: dict):
-    # for each first level of data_dict, apply get_generated_uri to each element filtered by
-    # documents_dbid_fields_plus_field_type
-
+def transform_source_documents(data_dict: dict, source: dict, documents_dbid_fields_plus_field_type: dict, logger, start_time):
     for document_type, documents in data_dict.items():
+        logger.info(
+            "Transforming " + str(len(documents)) + " " + document_type + " from " + source['schema:identifier'] +
+            ",time : " + str(start_time) + " duration : " + str((time.process_time() - start_time)/60) + " seconds")
         for document_id, document in documents.items():
             ########## DbId and generation handling ##########
             # transform documentDbId *NB*: the URI field is mandatory in transformed documents
@@ -158,7 +170,7 @@ def transform_source_documents(data_dict: dict, source: dict, documents_dbid_fie
             if document_type != "observationVariable":
                 document[document_type + 'DbId'] = get_generated_uri_from_dict(source, document_type, document, True)
 
-            document = simple_transformations(document, source, document_type) # TODO : in mapping ?
+            document = simple_transformations(document, source, document_type)  # TODO : in mapping ?
 
             document = _handle_study_contacts(document, source)
 
@@ -166,23 +178,22 @@ def transform_source_documents(data_dict: dict, source: dict, documents_dbid_fie
             if document_type in documents_dbid_fields_plus_field_type:
                 for fields in documents_dbid_fields_plus_field_type[document_type]:
                     if fields[0] in document:
-                        if fields[0].endswith("DbIds"):
-
-                            #URIs
+                        if document[fields[0]] and fields[0].endswith("DbIds"):
+                            # URIs
                             field_uris_transformed = map(
                                 lambda x: get_generated_uri_from_str(source, fields[1], x, False), document[fields[0]])
                             document[fields[0].replace("DbIds", "URIs")] = list(set(field_uris_transformed))
-                            #DbIds
+                            # DbIds
                             field_ids_transformed = map(
                                 lambda x: get_generated_uri_from_str(source, fields[1], x, True), document[fields[0]])
                             document[fields[0]] = list(field_ids_transformed)
 
                         elif fields[0].endswith("DbId"):
-                            #URI
+                            # URI
                             document[fields[0].replace("DbId", "URI")] = get_generated_uri_from_str(source, fields[1],
                                                                                                     document[fields[0]],
                                                                                                     False)
-                            #DbId
+                            # DbId
                             document[fields[0]] = get_generated_uri_from_str(source, fields[1], document[fields[0]],
                                                                              True)
 
@@ -195,22 +206,24 @@ def transform_source_documents(data_dict: dict, source: dict, documents_dbid_fie
 def align_formats(current_source_data_dict):
     pass
 
+
 def _handle_study_contacts(document, source):
     if "contacts" in document:
-        for contact in document["contacts"] :
+        for contact in document["contacts"]:
             if "contactDbId" in contact:
-                #contact["schema:identifier"] = contact["contactDbId"]
+                # contact["schema:identifier"] = contact["contactDbId"]
                 contact["contactURI"] = get_generated_uri_from_str(source, "contact", contact["contactDbId"], False)
                 contact["contactDbId"] = get_generated_uri_from_str(source, "contact", contact["contactDbId"], True)
         return document
     else:
         return document
-def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config):
+
+
+def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config, start_time):
     """
     Full JSON BrAPI transformation process to datadiscovery & cards documents
     """
-    print("Transforming  source")
-    print("'schema:identifier': " + source['schema:identifier'] + " path : " + source_json_dir)
+
     failed_dir = source_bulk_dir + '-failed'
     if os.path.exists(failed_dir):
         shutil.rmtree(failed_dir, ignore_errors=True)
@@ -219,7 +232,8 @@ def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config
     action = 'transform-es-' + source_name
     log_file = get_file_path([config['log-dir'], action], ext='.log', recreate=True)
     logger = create_logger(action, log_file, config['options']['verbose'])
-
+    logger.info("Transforming  source, start time : " + str(start_time))
+    logger.info("'schema:identifier': " + source['schema:identifier'] + " path : " + source_json_dir)
     logger.info("Transforming BrAPI to Elasticsearch documents for " + source_name)
 
     current_source_data_dict = dict()
@@ -237,13 +251,14 @@ def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config
             json_to_jsonl(source_json_dir)
             rm_tags(source_json_dir)
 
-        logger.info("Loading data, generating URIs and global identifiers for " + source_name)
+        logger.info("Loading data, generating URIs and global identifiers for " + source_name + ",time : " + str(
+            start_time) + " duration : " + str((time.process_time() - start_time) / 60) + " seconds")
         # Load each file (aka document type) in a per source hash.
         # structure or the keys: documenttype>documentDbId
         # TODO: call get_generated_uri at load time
         # TODO: don't load observationUnit, too big and of little interest.
         #  Instead stream and do on the fly transform of the relevant dbId at the end of the process
-        current_source_data_dict = load_input_json(source, doc_types, source_json_dir, config)
+        current_source_data_dict = load_input_json(source, doc_types, source_json_dir, config, logger, start_time)
 
     except Exception as e:
         logger.debug(traceback.format_exc())
@@ -253,28 +268,33 @@ def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config
                     .format(source_name, log_file, failed_dir))
 
     current_source_data_dict = transform_source_documents(current_source_data_dict, source,
-                                                          documents_dbid_fields_plus_field_type)
+                                                          documents_dbid_fields_plus_field_type, logger, start_time)
 
     ########## generation of data discovery ##########
+    logger.info("Generating data discovery for " + source_name)
     datadiscovery_document_dict = dict()
     docKey = 0
     for document_type, documents in current_source_data_dict.items():
+        logger.info("Generating data discovery for " + document_type + " for " + source_name+ ",time : " +
+                    str(start_time) + " duration : " + str((time.process_time() - start_time)/60) + " seconds")
         for document_id, document in documents.items():
             docKey += 1
-            datadiscovery_doc = generate_datadiscovery(document, current_source_data_dict, source)
+            datadiscovery_doc = generate_datadiscovery(document, document_type, current_source_data_dict, source)
             if datadiscovery_doc:
                 datadiscovery_document_dict[docKey] = datadiscovery_doc
+        logger.info("DONE generating data discovery for " + document_type + " for " + source_name+ ",time : " +
+                    str(start_time) + " duration : " + str((time.process_time() - start_time)/60) + " seconds")
 
     current_source_data_dict['datadiscovery'] = datadiscovery_document_dict
 
     ########## validate and generate report against datadiscovery and cards JSON ##########
 
+    logger.info("Saving JSON results for " + source_name)
     save_json(source_bulk_dir, current_source_data_dict, logger)
-
-    # TODO: save json from current_source_data_dict with page of reasonable size (10_000 documents per file ? ), gzip
 
 
 def main(config):
+    start_time = time.process_time()
     json_dir = get_folder_path([config['data-dir'], 'json'])
     if not os.path.exists(json_dir):
         raise Exception('No json folder found in {}'.format(json_dir))
@@ -292,7 +312,7 @@ def main(config):
         source_bulk_dir = get_folder_path([bulk_dir, source_name], recreate=True)
 
         thread = threading.Thread(target=transform_source,
-                                  args=(source, document_types, source_json_dir, source_bulk_dir, config))
+                                  args=(source, document_types, source_json_dir, source_bulk_dir, config, start_time))
         thread.daemon = True
         thread.start()
         threads.append(thread)
