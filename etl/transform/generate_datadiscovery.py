@@ -12,7 +12,7 @@ def _generate_datadiscovery_germplasm(document: dict, data_dict: dict, source: d
         datadiscovery_document["url"] = document["documentationURL"]
         datadiscovery_document["schema:url"] = document["documentationURL"]
     datadiscovery_document["entryType"] = "Germplasm"
-    datadiscovery_document["@type"] = ["Germplasm"]  # TODO deprecated ?
+    datadiscovery_document["@type"] = "Germplasm"  # TODO deprecated ?
     #if not document.get("germplasmURI"): #TODO: create a json-schema based validator
     #    print("document Germplasm ERROR, no germplasmURI ?: ", document)
     datadiscovery_document["@id"] = document.get("germplasmPUI") if document.get("germplasmPUI") else document[

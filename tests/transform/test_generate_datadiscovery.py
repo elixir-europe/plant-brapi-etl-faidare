@@ -93,10 +93,7 @@ fixture_source_study = {
 
 fixture_expected_germplasm = {
     "@id": "urn:VIB/germplasm/Zea_VIB_RIL_8W_EP33_20___1184",
-    "@type":
-        [
-            "Germplasm"
-        ],
+    "@type": "Germplasm",
     "accessionNumber": "1184",
     "commonCropName": "Maize",
     "countryOfOriginCode": "BE",
