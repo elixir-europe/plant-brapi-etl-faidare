@@ -12,7 +12,7 @@ def _generate_datadiscovery_germplasm(document: dict, data_dict: dict, source: d
         datadiscovery_document["url"] = document["documentationURL"]
         datadiscovery_document["schema:url"] = document["documentationURL"]
     datadiscovery_document["entryType"] = "Germplasm"
-    datadiscovery_document["@type"] = "Germplasm"  # TODO deprecated ?
+    datadiscovery_document["@type"] = "germplasm"  # TODO deprecated ?
     #if not document.get("germplasmURI"): #TODO: create a json-schema based validator
     #    print("document Germplasm ERROR, no germplasmURI ?: ", document)
     datadiscovery_document["@id"] = document.get("germplasmPUI") if document.get("germplasmPUI") else document[
@@ -41,26 +41,29 @@ def _generate_datadiscovery_germplasm(document: dict, data_dict: dict, source: d
         datadiscovery_document["species"] = document["genus"] + " " + document["species"]
 
     datadiscovery_document["description"] = _get_germplasm_datadiscovery_description(document, datadiscovery_document)
-
     datadiscovery_document["schema:description"] = datadiscovery_document["description"]
+
     # TODO: check those germplasm field are used in FAIDARE, to remove for CropName, not germplasmList ??
     #### germplasm bloc with cropName, germplasmList, accession
 
-    datadiscovery_document["germplasm"] = {}
-    datadiscovery_document["germplasm"]["cropName"] = []
-    if  document.get("commonCropName"):
-        datadiscovery_document["germplasm"]["cropName"].append(document.get("commonCropName"))
+
+    crop_name_set = set()
+    if  document.get("commonCropName") and document.get("commonCropName") != " ":
+        crop_name_set.add(document.get("commonCropName"))
     if  document.get("taxonCommonNames"):
-        datadiscovery_document["germplasm"]["cropName"].append(document.get("taxonCommonNames"))
-    datadiscovery_document["germplasm"]["cropName"].append(document.get("genus"))
+        crop_name_set.update(document.get("taxonCommonNames"))
+    crop_name_set.add(document.get("genus"))
     # if "species" in document:
     #     datadiscovery_document["germplasm"]["cropName"].append(document.get("species"))
     if document.get("genus") and  document.get("species"):
-        datadiscovery_document["germplasm"]["cropName"].append(document.get("genus") + " " + document.get("species"))
+        crop_name_set.add(document.get("genus") + " " + document.get("species"))
     if document.get("subtaxa"):
-        datadiscovery_document["germplasm"]["cropName"].append(document.get("subtaxa"))
+        crop_name_set.add(document.get("subtaxa"))
     if document.get("taxonSynonyms"):
-        datadiscovery_document["germplasm"]["cropName"].append(document.get("taxonSynonyms"))
+        crop_name_set.update(document.get("taxonSynonyms"))
+    if len(crop_name_set) > 0:
+        datadiscovery_document["germplasm"] = {}
+        datadiscovery_document["germplasm"]["cropName"] = list(crop_name_set)
 
     g_list = set()
     if  document.get("panel"):# and document.get("panel").get("name"):
@@ -96,7 +99,6 @@ def _generate_datadiscovery_germplasm(document: dict, data_dict: dict, source: d
             acc_set.add(s)
         #acc_set.add(document.get("synonyms"))
     datadiscovery_document["germplasm"]["accession"] = list(acc_set)
-    #### END germplasm bloc with cropName, germplasmList, accession
 
     if document.get("holdingInstitute"):
         g_list.add(
@@ -116,6 +118,7 @@ def _generate_datadiscovery_germplasm(document: dict, data_dict: dict, source: d
         datadiscovery_document["taxonGroup"] = document.get("genus")
     if document.get("accessionHolder"):
         datadiscovery_document["accessionHolder"] = document.get("accessionHolder")
+    #### END germplasm bloc with cropName, germplasmList, accession
 
     return datadiscovery_document
 
@@ -123,7 +126,7 @@ def _generate_datadiscovery_germplasm(document: dict, data_dict: dict, source: d
 def _get_germplasm_datadiscovery_description(document, datadiscovery_document):
     description_string = ""
     if datadiscovery_document.get("germplasmName"):
-        description_string = f'{document["germplasmName"]}'
+        description_string = f'{datadiscovery_document["germplasmName"]}'
     if datadiscovery_document.get("species"):
         description_string = f'{description_string} is a {datadiscovery_document["species"]} '
     description_string = (
@@ -135,8 +138,8 @@ def _get_germplasm_datadiscovery_description(document, datadiscovery_document):
         description_string = f'{description_string} accession (number: {document["accessionNumber"]})'
     if document.get("holdingInstitute"):
         description_string = (
-            f'{description_string} '
-            f' managed by {document["holdingInstitute"]["instituteName"]} '
+            f' {description_string}'
+            f' managed by {document["holdingInstitute"]["instituteName"]}'
         )
     if document.get("comment"):
         description_string = f'{description_string}. {document["comment"]}'
@@ -388,10 +391,29 @@ def generate_datadiscovery(document: dict, document_type:str, data_dict: dict, s
     """Generate Data Discovery json document."""
     #if "germplasmDbId" in document:
     if document_type == "germplasm":
-        return _generate_datadiscovery_germplasm(document, data_dict, source)
+        germplasm_document =  _generate_datadiscovery_germplasm(document, data_dict, source)
+        # remove None values from germplams_docuemnt dict
+        _remove_none_from_dict(germplasm_document)
+        return germplasm_document
 
     #if "studyDbId" in document:
     if document_type == "study":
         return _generate_datadiscovery_study(document, data_dict, source)
 
     return None
+
+
+def _remove_none_from_dict(document):
+    for key, value in dict(document).items():
+        if isinstance(value, dict):
+            _remove_none_from_dict(value)
+        if value is None:
+            del document[key]
+        elif value == []:
+            del document[key]
+        elif value == {}:
+            del document[key]
+        elif value == "":
+            del document[key]
+
+
