@@ -1,5 +1,4 @@
 import base64
-import re
 from etl.transform.utils import get_generated_uri_from_str
 
 
@@ -40,7 +39,7 @@ def _generate_datadiscovery_germplasm(document: dict, data_dict: dict, source: d
         # re.findall(r'\w+', document["species"]) == 1:
         datadiscovery_document["species"] = document["genus"] + " " + document["species"]
 
-    datadiscovery_document["description"] = _get_germplasm_datadiscovery_description(document, datadiscovery_document)
+    datadiscovery_document["description"] = _get_germplasm_description(document, datadiscovery_document)
     datadiscovery_document["schema:description"] = datadiscovery_document["description"]
 
     # TODO: check those germplasm field are used in FAIDARE, to remove for CropName, not germplasmList ??
@@ -123,7 +122,7 @@ def _generate_datadiscovery_germplasm(document: dict, data_dict: dict, source: d
     return datadiscovery_document
 
 
-def _get_germplasm_datadiscovery_description(document, datadiscovery_document):
+def _get_germplasm_description(document, datadiscovery_document):
     description_string = ""
     if datadiscovery_document.get("germplasmName"):
         description_string = f'{datadiscovery_document["germplasmName"]}'
@@ -244,7 +243,8 @@ def _add_linked_germplasm_info(datadiscovery_document, document, data_dict):
             germplasm_list_set.discard(None)
 
     datadiscovery_document["species"] = list(species_set)
-    # TODO rename that field if it is not used
+
+
     datadiscovery_document["germplasm"] = dict()
     datadiscovery_document["germplasm"]["accession"] = list()
     if len(acc_number_set) > 0:
@@ -391,9 +391,8 @@ def generate_datadiscovery(document: dict, document_type:str, data_dict: dict, s
     """Generate Data Discovery json document."""
     #if "germplasmDbId" in document:
     if document_type == "germplasm":
+        _remove_none_from_dict(document)
         germplasm_document =  _generate_datadiscovery_germplasm(document, data_dict, source)
-        # remove None values from germplams_docuemnt dict
-        _remove_none_from_dict(germplasm_document)
         return germplasm_document
 
     #if "studyDbId" in document:
@@ -402,7 +401,7 @@ def generate_datadiscovery(document: dict, document_type:str, data_dict: dict, s
         _remove_none_from_dict(study_document)
         return study_document
 
-    return None
+    return dict()
 
 
 def _remove_none_from_dict(document):

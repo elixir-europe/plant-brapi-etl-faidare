@@ -99,24 +99,28 @@ def _handle_observation_units(source, source_bulk_dir, config, document_type, in
     obsUnitDict= {}
     obsUnitDict["observationUnit"] = {}
     i = 0
-    try:
-        with open(input_json_filepath, 'r') as json_file:
-            json_list = list(json_file)
-            for json_line in json_list:
-                json_line_data = json.loads(json_line)
-                # transform observationUnit
-                #uri = get_generated_uri_from_dict(source, document_type["document-type"], json_line_data)
-                transformed_obsUnit = _handle_DbId_URI(json_line_data, "observationUnit",
-                                                                     documents_dbid_fields_plus_field_type, source)
-                obsUnitDict["observationUnit"][str(i)] = transformed_obsUnit
-                i += 1
+    if not os.path.isfile(input_json_filepath):
+        logger.info("No observationUnit in " + source['schema:identifier'])
+    else:
+        try:
 
-    except FileNotFoundError as e:
-        print("No " + document_type["document-type"] + " in " + source['schema:identifier'])
+            with open(input_json_filepath, 'r') as json_file:
+                json_list = list(json_file)
+                for json_line in json_list:
+                    json_line_data = json.loads(json_line)
+                    # transform observationUnit
+                    #uri = get_generated_uri_from_dict(source, document_type["document-type"], json_line_data)
+                    transformed_obsUnit = _handle_DbId_URI(json_line_data, "observationUnit",
+                                                                         documents_dbid_fields_plus_field_type, source)
+                    obsUnitDict["observationUnit"][str(i)] = transformed_obsUnit
+                    i += 1
 
-    logger.info("Loaded observationUnit from " + source['schema:identifier'] +
-                ",  duration : " + _get_duration_time_str(time.perf_counter() - start_time))
-    save_json(source_bulk_dir,obsUnitDict,logger)
+        except FileNotFoundError as e:
+            print("No " + document_type["document-type"] + " in " + source['schema:identifier'])
+
+        logger.info("Loaded observationUnit from " + source['schema:identifier'] +
+                    ",  duration : " + _get_duration_time_str(time.perf_counter() - start_time))
+        save_json(source_bulk_dir,obsUnitDict,logger)
 
 
 def load_input_json(source, doc_types, source_json_dir, config, logger, start_time, source_bulk_dir):
@@ -179,18 +183,61 @@ def simple_transformations(document, source, document_type):
     return document
 
 
+def _handle_study_germplasm_linking(document, source, data_dict):
+    #TODO: case not covered by tests
+    if document["@type"] == "study":
+        if "germplasmDbIds" in document:
+            for germplasmDbId in document["germplasmDbIds"]:
+                if germplasmDbId in data_dict["germplasm"]:
+                    if "studyDbIds" in data_dict["germplasm"][germplasmDbId] and \
+                            document["studyDbId"] not in data_dict["germplasm"][germplasmDbId]["studyDbIds"]:
+                        data_dict["germplasm"][germplasmDbId]["studyDbIds"].append(document["studyDbId"])
+                        if document["studyURI"] not in data_dict["germplasm"][germplasmDbId]["studyURIs"]:
+                            data_dict["germplasm"][germplasmDbId]["studyURIs"].append(document["studyURI"])
+
+    elif document["@type"] == "germplasm":
+        if "studyURIs" in document:
+            for studyURI in document["studyURIs"]:
+                if studyURI in data_dict["study"]:
+                    if "germplasmDbIds" in data_dict["study"][studyURI] and \
+                            document["germplasmDbId"] not in data_dict["study"][studyURI]["germplasmDbIds"]:
+                        #b64encoded_studyURI = base64.b64encode(studyURI.encode()).decode()
+                        data_dict["study"][studyURI]["germplasmDbIds"].append(document["germplasmDbId"])
+                        if document["germplasmURI"] not in data_dict["study"][studyURI]["germplasmURIs"]:
+                            data_dict["study"][studyURI]["germplasmURIs"].append(document["germplasmURI"])
+
+    return document
+
+
 def transform_source_documents(data_dict: dict, source: dict, documents_dbid_fields_plus_field_type: dict, logger, start_time):
     for document_type, documents in data_dict.items():
         logger.info(
             "Transforming " + str(len(documents)) + " " + document_type + " from " + source['schema:identifier'] )
         for document_id, document in documents.items():
             document = _handle_DbId_URI(document, document_type, documents_dbid_fields_plus_field_type, source)
+            # must be after URI generation
+            document = simple_transformations(document, source, document_type)  # TODO : in mapping ?
+
+            # TODO : realy only on study ?
+            document = _handle_study_contacts(document, source)
+            document = _handle_trial_studies(document, source)
 
             ########## mapping and transforming fields ##########
             document = do_card_transform(document)
             data_dict[document_type][document_id] = document
         logger.info(
             "END Transforming " + str(len(documents)) + " " + document_type + " from " + source['schema:identifier'] +
+            " duration :" + _get_duration_time_str(time.perf_counter() - start_time))
+
+    #second passs to update the links with correct URIs and DbIds
+    for document_type, documents in data_dict.items():
+        logger.info(
+            "Transforming, updating links " + str(len(documents)) + " " + document_type + " from " + source['schema:identifier'] )
+        for document_id, document in documents.items():
+            document = _handle_study_germplasm_linking(document, source, data_dict)
+
+        logger.info(
+            "END Transforming, updating links " + str(len(documents)) + " " + document_type + " from " + source['schema:identifier'] +
             " duration :" + _get_duration_time_str(time.perf_counter() - start_time))
     return data_dict
 
@@ -203,9 +250,6 @@ def _handle_DbId_URI(document, document_type, documents_dbid_fields_plus_field_t
                                                                   document)  # this should be URN field rather than URI
     if document_type != "observationVariable":
         document[document_type + 'DbId'] = get_generated_uri_from_dict(source, document_type, document, True)
-    document = simple_transformations(document, source, document_type)  # TODO : in mapping ?
-    # TODO : only on study ?
-    document = _handle_study_contacts(document, source)
     # transform other DbIds , skip observationVariable
     if document_type in documents_dbid_fields_plus_field_type:
         for fields in documents_dbid_fields_plus_field_type[document_type]:
@@ -220,7 +264,7 @@ def _handle_DbId_URI(document, document_type, documents_dbid_fields_plus_field_t
                         lambda x: get_generated_uri_from_str(source, fields[1], x, True), document[fields[0]])
                     document[fields[0]] = list(field_ids_transformed)
 
-                elif fields[0].endswith("DbId"):
+                elif document[fields[0]] and fields[0].endswith("DbId"):
                     # URI
                     document[fields[0].replace("DbId", "URI")] = get_generated_uri_from_str(source, fields[1],
                                                                                             document[fields[0]],
@@ -228,6 +272,7 @@ def _handle_DbId_URI(document, document_type, documents_dbid_fields_plus_field_t
                     # DbId
                     document[fields[0]] = get_generated_uri_from_str(source, fields[1], document[fields[0]],
                                                                      True)
+
     return document
 
 
@@ -246,6 +291,17 @@ def _handle_study_contacts(document, source):
     else:
         return document
 
+
+def _handle_trial_studies(document, source):
+    if "studies" in document:
+        for study in document["studies"]:
+            if "studyDbId" in study:
+                # contact["schema:identifier"] = contact["contactDbId"]
+                study["studyURI"] = get_generated_uri_from_str(source, "study", study["studyDbId"], False)
+                study["studyDbId"] = get_generated_uri_from_str(source, "study", study["studyDbId"], True)
+        return document
+    else:
+        return document
 
 def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config, start_time):
     """

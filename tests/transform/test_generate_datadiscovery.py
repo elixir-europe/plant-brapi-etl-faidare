@@ -1,7 +1,7 @@
 import json
 import unittest
 
-from etl.transform.generate_datadiscovery import _generate_datadiscovery_germplasm, _generate_datadiscovery_study, generate_datadiscovery
+from etl.transform.generate_datadiscovery import  generate_datadiscovery
 from test_transform_source_document import fixture_expected_data_dict as data_dict
 from tests.transform.utils import sort_dict_lists
 
@@ -94,10 +94,13 @@ fixture_expected_germplasm = {
 fixture_source_germplasm_URGI_beet = {
     "groupId": 0,
     "documentationURL": None,
-    "germplasmDbId": "97267",
+    "germplasmDbId": "aHR0cHM6Ly9kb2kub3JnLzEwLjE1NDU0L0JFVlhZQQ==",
+    "germplasmURI": "https://doi.org/10.15454/BEVXYA",
+
     "defaultDisplayName": "AKER_2515",
     "accessionNumber": "VIR506202466",
     "germplasmName": "AKER_2515",
+    "schema:name": "AKER_2515",
     "germplasmPUI": "https://doi.org/10.15454/BEVXYA",
     "pedigree": None,
     "seedSource": None,
@@ -250,7 +253,9 @@ fixture_source_germplasm_URGI_beet = {
     "population":
         [],
     "studyDbIds":
-        []
+        [],
+    "node": "INRAE-URGI",
+    "databaseName": "brapi@INRAE-URGI"
 }
 
 fixture_expected_germplasm_URGI_beet = {
@@ -264,7 +269,7 @@ fixture_expected_germplasm_URGI_beet = {
     "commonCropName": "Beta vulgaris",
     "instituteCode": "RUS001",
     "instituteName": "N.I. Vavilova - Federal Research Center All-Russian Plant Genetic Resources Institute",
-    "countryOfOriginCode": "USSR",
+    "countryOfOriginCode": "Russian Federation",
     "genus": "Beta",
     "species": "Beta vulgaris",
     "genusSpecies": "Beta vulgaris",
@@ -305,14 +310,15 @@ fixture_expected_germplasm_URGI_beet = {
     "germplasmURI": "https://doi.org/10.15454/BEVXYA",
     "@type": "germplasm",
     "@id": "https://doi.org/10.15454/BEVXYA",
-    "schema:includedInDataCatalog": "https://urgi.versailles.inrae.fr/gnpis",
+    "schema:includedInDataCatalog": "https://test-server.brapi.org",
     "schema:identifier": "aHR0cHM6Ly9kb2kub3JnLzEwLjE1NDU0L0JFVlhZQQ==",
     "schema:name": "AKER_2515",
     "entryType": "Germplasm",
     "identifier": "aHR0cHM6Ly9kb2kub3JnLzEwLjE1NDU0L0JFVlhZQQ==",
     "name": "AKER_2515",
-    "schema:description": "\"AKER_2515\" is a Beta vulgaris (Beta vulgaris) accession (number: \"VIR506202466\") managed by N.I. Vavilova - Federal Research Center All-Russian Plant Genetic Resources Institute.",
-    "description": "AKER_2515 is a Beta vulgaris (Beta vulgaris) accession (number: VIR506202466) managed by N.I. Vavilova - Federal Research Center All-Russian Plant Genetic Resources Institute.",
+    # aditional space is an acceptable glitch
+    "schema:description": " AKER_2515 is a Beta vulgaris (Beta vulgaris) accession (number: VIR506202466) managed by N.I. Vavilova - Federal Research Center All-Russian Plant Genetic Resources Institute.",
+    "description": " AKER_2515 is a Beta vulgaris (Beta vulgaris) accession (number: VIR506202466) managed by N.I. Vavilova - Federal Research Center All-Russian Plant Genetic Resources Institute.",
     "germplasm":
         {
             "cropName":
@@ -333,7 +339,8 @@ fixture_expected_germplasm_URGI_beet = {
         },
     "node": "INRAE-URGI",
     "databaseName": "brapi@INRAE-URGI",
-    "countryOfOrigin": "USSR",
+    #countryOfOriginCode is available above and replaces that one
+    #"countryOfOrigin": "Russian Federation",
     "taxonGroup": "Beta",
     "germplasmList":
         [
@@ -345,7 +352,8 @@ fixture_expected_germplasm_URGI_beet = {
 fixture_source_germplasm_URGI_populus = {
     "groupId": 0,
     "documentationURL": None,
-    "germplasmDbId": "111165",
+    "germplasmDbId": "aHR0cHM6Ly9kb2kub3JnLzEwLjE1NDU0L0VFVkNaUQ==",
+    'germplasmURI': 'https://doi.org/10.15454/EEVCZQ',
     "defaultDisplayName": "ULI-006",
     "accessionNumber": "ULI-006",
     "germplasmName": "ULI-006",
@@ -354,7 +362,6 @@ fixture_source_germplasm_URGI_populus = {
     "pedigree": None,
     "seedSource": None,
     "source": "INRAE-URGI",
-    "databaseName": "brapi@INRAE-URGI",
     "synonyms":
         [],
     "commonCropName": "Forest tree",
@@ -415,12 +422,15 @@ fixture_source_germplasm_URGI_populus = {
     "population":
         [{"id":104,"name":"ULI","type":"Population","germplasmRef":{"pui":"https://doi.org/10.15454/YDBLI2","name":"ULI"},"germplasmCount":35}],
     "studyDbIds":
-        []
+        [],
+    "node": "INRAE-URGI",
+    "databaseName": "brapi@INRAE-URGI"
 }
 
 fixture_expected_germplasm_URGI_populus = {
     "groupId": 0,
     "germplasmDbId": "aHR0cHM6Ly9kb2kub3JnLzEwLjE1NDU0L0VFVkNaUQ==",
+    "identifier": "aHR0cHM6Ly9kb2kub3JnLzEwLjE1NDU0L0VFVkNaUQ==",
     "defaultDisplayName": "ULI-006",
     "accessionNumber": "ULI-006",
     "germplasmName": "ULI-006",
@@ -457,14 +467,13 @@ fixture_expected_germplasm_URGI_populus = {
     "germplasmURI": "https://doi.org/10.15454/EEVCZQ",
     "@type": "germplasm",
     "@id": "https://doi.org/10.15454/EEVCZQ",
-    "schema:includedInDataCatalog": "https://urgi.versailles.inrae.fr/gnpis",
+    "schema:includedInDataCatalog": "https://test-server.brapi.org",
     "schema:identifier": "aHR0cHM6Ly9kb2kub3JnLzEwLjE1NDU0L0VFVkNaUQ==",
     "schema:name": "ULI-006",
     "entryType": "Germplasm",
-    "identifier": "aHR0cHM6Ly9kb2kub3JnLzEwLjE1NDU0L0VFVkNaUQ==",
     "name": "ULI-006",
-    "schema:description": "\"ULI-006\" is a Populus nigra (Forest tree) accession (number: \"ULI-006\") managed by BioForA - UMR Biologie intégrée pour la valorisation de la diversité des arbres et de la Forêt.",
-    "description": "ULI-006 is a Populus nigra (Forest tree) accession (number: ULI-006) managed by BioForA - UMR Biologie intégrée pour la valorisation de la diversité des arbres et de la Forêt.",
+    "schema:description": " ULI-006 is a Populus nigra (Forest tree) accession (number: ULI-006) managed by BioForA - UMR Biologie intégrée pour la valorisation de la diversité des arbres et de la Forêt.",
+    "description": " ULI-006 is a Populus nigra (Forest tree) accession (number: ULI-006) managed by BioForA - UMR Biologie intégrée pour la valorisation de la diversité des arbres et de la Forêt.",
     "germplasm":
         {
             "cropName":
@@ -477,7 +486,7 @@ fixture_expected_germplasm_URGI_populus = {
     "node": "INRAE-URGI",
     "databaseName": "brapi@INRAE-URGI",
     "biologicalStatus": "Wild",
-    "countryOfOrigin": "France",
+    #"countryOfOrigin": "France", replaced by countryOfOriginCode
     "taxonGroup": "Populus",
     "germplasmList":
         ["BLACK_POPLAR_COLLECTION","ULI"]
@@ -633,19 +642,161 @@ fixture_expected_study = {
     "url": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/48"
 }
 
+fixture_source_study_without_germplasm = {
+    "node": "BRAPI_TEST_node",
+    "databaseName": "brapi@BRAPI_TEST",
+    "active": False,
+    "contacts":
+        [
+            {
+                "contactDbId": "dXJuOlZJQi9jb250YWN0LzVmNGU1NTA5",
+                "contactURI": "urn:VIB/contact/5f4e5509",
+                "email": "bob_bob.com",
+                "instituteName": "The BrAPI Institute",
+                "name": "Bob Robertson",
+                "orcid": "http://orcid.org/0000-0001-8640-1750",
+                "type": "PI"
+            }
+        ],
+    "documentationURL": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/48",
+    "endDate": "2013-09-16",
+    "locationDbId": "dXJuOkJSQVBJX1RFU1QvbG9jYXRpb24vbG9jMQ==",
+    "locationDbIds":
+        [
+            "dXJuOkJSQVBJX1RFU1QvbG9jYXRpb24vbG9jMQ=="
+        ],
+    "locationName": "growth chamber",
+    "name": "RIL 8-way  batch 9",
+    "schema:name": "RIL 8-way  batch 9",
+    "observationVariableDbIds":
+        ["65", "urn:BRAPI_TEST/observationVariable/66"],
+    # done on purpose for testing: two different situations that should'nt appear in the same dataset with real data.
+    "source": "BRAPI TEST",
+    "startDate": "2013-08-20",
+    "studyDbId": "dXJuOlZJQi9zdHVkeS9WSUJfc3R1ZHlfX180OA==",
+    "studyDescription": "Short description of the experimental design, possibly including statistical design.",
+    "studyName": "RIL 8-way  batch 9",
+    "studyType": "Phenotyping Study",
+    "studyURI": "urn:VIB/study/VIB_study___48",
+    "trialDbId": "dXJuOlZJQi90cmlhbC8z",
+    "trialDbIds":
+        [
+            "dXJuOlZJQi90cmlhbC8z"
+        ],
+    'trialURI': 'urn:VIB/trial/3',
+    'trialURIs': ['urn:VIB/trial/3'],
+}
+
+
+fixture_expected_study_without_germplasm = {
+    "@id": "urn:VIB/study/VIB_study___48",
+    "@type": "study",
+    "accessionNumber": ["1184", "177"],
+    "active": False,
+    "contacts":
+        [
+            {
+                "contactDbId": "dXJuOlZJQi9jb250YWN0LzVmNGU1NTA5",
+                "contactURI": "urn:VIB/contact/5f4e5509",
+                "email": "bob_bob.com",
+                "instituteName": "The BrAPI Institute",
+                "name": "Bob Robertson",
+                "orcid": "http://orcid.org/0000-0001-8640-1750",
+                "type": "PI"
+            }
+        ],
+    "databaseName": "brapi@BRAPI_TEST",
+    "description": "RIL 8-way  batch 9 is a Phenotyping Study conducted from 2013-08-20 to 2013-09-16 in Belgium. Short description of the experimental design, possibly including statistical design.",
+    "documentationURL": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/48",
+    "endDate": "2013-09-16",
+    "entryType": "Phenotyping Study",
+    "germplasm":
+        {
+            "accession":
+                [
+                    "1184",
+                    "177",
+                    "RIL_8W_EP33_20",
+                    "RIL_8W_81 RIL 8-way"
+                ],
+            "cropName":
+                [
+                    "Maize",
+                    "Zea mays"
+                ]
+        },
+    "germplasmDbIds":
+        [
+            "dXJuOkJSQVBJX1RFU1QvZ2VybXBsYXNtL1plYV9WSUJfUklMXzhXX0VQMzNfMjBfX18xMTg0",
+            "dXJuOkJSQVBJX1RFU1QvZ2VybXBsYXNtL1plYV9WSUJfUklMXzhXXzgxUklMOHdheV9fXzE3Nw=="
+        ],
+    "germplasmURIs":
+        [
+            "urn:BRAPI_TEST/germplasm/Zea_VIB_RIL_8W_EP33_20___1184",
+            "urn:BRAPI_TEST/germplasm/Zea_VIB_RIL_8W_81RIL8way___177"
+        ],
+    "germplasmNames": ["RIL_8W_EP33_20", "RIL_8W_81 RIL 8-way"],
+    "identifier": "dXJuOlZJQi9zdHVkeS9WSUJfc3R1ZHlfX180OA==",
+    "locationDbId": "dXJuOkJSQVBJX1RFU1QvbG9jYXRpb24vbG9jMQ==",
+    "locationDbIds":
+        [
+            "dXJuOkJSQVBJX1RFU1QvbG9jYXRpb24vbG9jMQ=="
+        ],
+    "locationName": "growth chamber",
+    "locationURI": "urn:BRAPI_TEST/location/loc1",
+    "locationURIs":
+        [
+            "urn:BRAPI_TEST/location/loc1"
+        ],
+    "name": "RIL 8-way  batch 9",
+    "node": "BRAPI_TEST_node",
+    "observationVariableDbIds":
+        ["65", "urn:BRAPI_TEST/observationVariable/66"],
+    "schema:identifier": "dXJuOlZJQi9zdHVkeS9WSUJfc3R1ZHlfX180OA==",
+    "schema:includedInDataCatalog": "https://test-server.brapi.org",
+    "schema:name": "RIL 8-way  batch 9",
+    #"schema:url": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/48",
+    "source": "BRAPI TEST",
+    "species":
+        [
+            "Zea mays"
+        ],
+    "genusSpecies":"Zea mays",
+    "startDate": "2013-08-20",
+    "studyDbId": "dXJuOlZJQi9zdHVkeS9WSUJfc3R1ZHlfX180OA==",
+    "studyDescription": "Short description of the experimental design, possibly including statistical design.",
+    "studyName": "RIL 8-way  batch 9",
+    "studyType": "Phenotyping Study",
+    "studyURI": "urn:VIB/study/VIB_study___48",
+    "taxonGroup": "Zea",
+    "trait":
+        {"observationVariableDbIds": ["65", "urn:BRAPI_TEST/observationVariable/66"]},
+    "trialDbId": "dXJuOlZJQi90cmlhbC8z",
+    "trialDbIds":
+        ["dXJuOlZJQi90cmlhbC8z"],
+    "traitNames": ["LL_65 leafLength leafLength", "LW_66 leafWidth leafWidth"],
+    # "trialName": "RIL_8-way_growth_chamber",
+    "trialURI": "urn:VIB/trial/3",
+    "trialURIs":
+        [
+            "urn:VIB/trial/3"
+        ],
+    "url": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/48"
+}
+
 
 class TestGenerateDataDiscovery(unittest.TestCase):
     maxDiff = None
 
     def test_generate_germplasm_datadiscovery(self):
-        data_dict_actual = _generate_datadiscovery_germplasm(fixture_source_germplasm, data_dict, test_source)
+        data_dict_actual = generate_datadiscovery(fixture_source_germplasm,"germplasm", data_dict, test_source)
 
         data_dict_expected = fixture_expected_germplasm
 
         self.assertEqual(sort_dict_lists(data_dict_expected), sort_dict_lists(data_dict_actual))
 
     def test_generate_germplasm_datadiscoveryURGI_beet(self):
-        data_dict_actual = _generate_datadiscovery_germplasm(fixture_source_germplasm_URGI_beet, data_dict, test_source)
+        data_dict_actual = generate_datadiscovery(fixture_source_germplasm_URGI_beet,"germplasm", data_dict, test_source)
 
         data_dict_expected = fixture_expected_germplasm_URGI_beet
 
@@ -661,7 +812,13 @@ class TestGenerateDataDiscovery(unittest.TestCase):
 
 
     def test_generate_study_datadiscovery(self):
-        data_dict_actual = _generate_datadiscovery_study(fixture_source_study, data_dict, test_source)
+        data_dict_actual = generate_datadiscovery(fixture_source_study,"study", data_dict, test_source)
+
+        data_dict_expected = fixture_expected_study
+        self.assertEqual(sort_dict_lists(data_dict_expected), sort_dict_lists(data_dict_actual))
+
+    def test_generate_study_datadiscovery_should_get_germplasmDbId_from_germplasms_list(self):
+        data_dict_actual = generate_datadiscovery(fixture_source_study,"study", data_dict, test_source)
 
         data_dict_expected = fixture_expected_study
         self.assertEqual(sort_dict_lists(data_dict_expected), sort_dict_lists(data_dict_actual))

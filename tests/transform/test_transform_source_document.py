@@ -127,7 +127,7 @@ fixture_source_data_dict = {
             "documentationURL": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/48",
             "studyDescription": "Short description of the experimental design, possibly including statistical design.",
             "germplasmDbIds": [
-                "Zea_VIB_RIL_8W_75RIL8way___1184",
+                "Zea_VIB_RIL_8W_EP33_20___1184",
                 "Zea_VIB_RIL_8W_81RIL8way___177"
             ],
             "observationVariableDbIds": [
@@ -161,7 +161,11 @@ fixture_source_data_dict = {
         'urn:BRAPI_TEST/trial/trial1': {
             'trialDbId': 'trial1',
             'studyDbIds':
-                ['1']}
+                ['1'],
+            # This shouldn't be here, studies are handled through their studyDbIds only
+            #"studies" : [{"studyDbId" : "Walnut_Creysse", "studyName" : "studyName2", "locationDbId" : "40300", "locationName" : "Creysse"},
+            #             {"studyDbId" : "Walnut_SENuRA", "studyName" : "studyName1", "locationDbId" : "40301", "locationName" : "SENuRA"}]
+        }
     },'observationVariable': {
         'urn:BRAPI_TEST/observationVariable/65': {
             "institution": "VIB",
@@ -181,11 +185,6 @@ fixture_source_data_dict = {
                         }
                 },
             "source": "VIB",
-            "studyDbIds":
-                [
-                    "VIB_study___46",
-                    "VIB_study___48"
-                ],
             "trait":
                 {
                     "description": "actual measurements in centimeters of the leaf",
@@ -211,11 +210,10 @@ fixture_source_data_dict = {
                         }
                 },
             "source": "VIB",
-            "studyDbIds":
-                [
-                    "VIB_study___46",
-                    "VIB_study___48"
-                ],
+            #"studyDbIds":
+            #    [
+            #        "VIB_study___48"
+            #    ],
             "trait":
                 {
                     "description": "actual measurements, in centimeters of the widest portion of the leaf; to be precise use the children terms leaf lamina width (TO:0002720) or 'leaf sheath width (TO:0002721)",
@@ -334,7 +332,6 @@ fixture_expected_data_dict = {
             'node' : 'BRAPI_TEST',
             'databaseName' :'brapi@BRAPI_TEST',
             "documentationURL": "https://vib.be/RIL_8W_81_RIL_8-way_177",
-            "url": "https://vib.be/RIL_8W_81_RIL_8-way_177",
             "schema:url": "https://vib.be/RIL_8W_81_RIL_8-way_177"
     }
 },
@@ -353,6 +350,7 @@ fixture_expected_data_dict = {
             'source' : 'BRAPI TEST source name',
             'node' : 'BRAPI_TEST',
             'locationName' : 'Belgium',
+            'schema:name' : 'Belgium',
             'databaseName' :'brapi@BRAPI_TEST'},
         'urn:BRAPI_TEST/location/2': {
             'schema:includedInDataCatalog': 'https://test-server.brapi.org',
@@ -397,6 +395,7 @@ fixture_expected_data_dict = {
             'studyURI': 'urn:BRAPI_TEST/study/1',
             '@id': 'urn:BRAPI_TEST/study/1',
             'name': 'study 1 as name',
+            'schema:name': 'study 1 as name',
             'studyName': 'study 1 as name',
             'trialDbId': 'dXJuOkJSQVBJX1RFU1QvdHJpYWwvMQ==',
             'trialURI': 'urn:BRAPI_TEST/trial/1',
@@ -433,9 +432,9 @@ fixture_expected_data_dict = {
             'trialURIs':
                 ['urn:BRAPI_TEST/trial/1','urn:BRAPI_TEST/trial/trial1'],
             'germplasmDbIds':
-                ['dXJuOkJSQVBJX1RFU1QvZ2VybXBsYXNtL2FiYw=='],
+                ['dXJuOkJSQVBJX1RFU1QvZ2VybXBsYXNtL2FiYw==',"aHR0cHM6Ly9kb2kub3JnLzEwMTQuMTU0My8zNDU2NzhaRVJUWVU=", 'dXJuOkJSQVBJX1RFU1QvZ2VybXBsYXNtLzE='],
             'germplasmURIs':
-                ['urn:BRAPI_TEST/germplasm/abc'],
+                ['urn:BRAPI_TEST/germplasm/abc',"https://doi.org/1014.1543/345678ZERTYU", 'urn:BRAPI_TEST/germplasm/1'],
             'programDbIds':
                 ['dXJuOkJSQVBJX1RFU1QvcHJvZ3JhbS9vaG0='],
             'programURIs':
@@ -443,6 +442,7 @@ fixture_expected_data_dict = {
             'source' : 'BRAPI TEST source name',
             'node' : 'BRAPI_TEST',
             'studyName': 'study1 as studyName',
+            'schema:name': 'study1 as studyName',
             'databaseName' :'brapi@BRAPI_TEST'},
         'urn:BRAPI_TEST/study/VIB_study___48': {
             'schema:includedInDataCatalog': 'https://test-server.brapi.org',
@@ -465,15 +465,15 @@ fixture_expected_data_dict = {
             'source' : 'BRAPI TEST source name',
             "documentationURL": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/48",
             "schema:url": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/48",
-            "url": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/48",
             "studyName": "RIL 8-way  batch 9",
+            "schema:name": "RIL 8-way  batch 9",
             "studyDescription": "Short description of the experimental design, possibly including statistical design.",
             "germplasmDbIds": [
-                "dXJuOkJSQVBJX1RFU1QvZ2VybXBsYXNtL1plYV9WSUJfUklMXzhXXzc1UklMOHdheV9fXzExODQ=",
+                "dXJuOkJSQVBJX1RFU1QvZ2VybXBsYXNtL1plYV9WSUJfUklMXzhXX0VQMzNfMjBfX18xMTg0",
                 "dXJuOkJSQVBJX1RFU1QvZ2VybXBsYXNtL1plYV9WSUJfUklMXzhXXzgxUklMOHdheV9fXzE3Nw=="
             ],
             "germplasmURIs": [
-                "urn:BRAPI_TEST/germplasm/Zea_VIB_RIL_8W_75RIL8way___1184",
+                "urn:BRAPI_TEST/germplasm/Zea_VIB_RIL_8W_EP33_20___1184",
                 "urn:BRAPI_TEST/germplasm/Zea_VIB_RIL_8W_81RIL8way___177"
             ],
             "observationVariableDbIds": [
@@ -494,7 +494,8 @@ fixture_expected_data_dict = {
             ],
             "contacts": [
                 {
-                    "contactDbId": "5f4e5509",
+                    "contactDbId": "dXJuOkJSQVBJX1RFU1QvY29udGFjdC81ZjRlNTUwOQ==",
+                    "contactURI": "urn:BRAPI_TEST/contact/5f4e5509",
                     "email": "bob_bob.com",
                     "instituteName": "The BrAPI Institute",
                     "name": "Bob Robertson",
@@ -542,41 +543,42 @@ fixture_expected_data_dict = {
         'urn:BRAPI_TEST/observationVariable/65': {
             'schema:includedInDataCatalog': 'https://test-server.brapi.org',
             'schema:identifier':'65',
-                '@type': 'observationVariable',
-                "institution": "VIB",
-                'databaseName': 'brapi@BRAPI_TEST',
-                'node': 'BRAPI_TEST',
-                "name": "leafLength",
-                #TODO ----------------IMPORTANT!!!!!!!!---------------
-                #"observationVariableDbId": "65", # TODO: this is a bug in the curent generator, the obsvarDbId mustn't be encoded !
-                'observationVariableDbId': 'dXJuOkJSQVBJX1RFU1Qvb2JzZXJ2YXRpb25WYXJpYWJsZS82NQ==',
-                'observationVariableURI': 'urn:BRAPI_TEST/observationVariable/65',
+            '@type': 'observationVariable',
+            "institution": "VIB",
+            'databaseName': 'brapi@BRAPI_TEST',
+            'node': 'BRAPI_TEST',
+            "name": "leafLength",
+            #TODO ----------------IMPORTANT!!!!!!!!---------------
+            "observationVariableDbId": "65",
+            #'observationVariableDbId': 'dXJuOkJSQVBJX1RFU1Qvb2JzZXJ2YXRpb25WYXJpYWJsZS82NQ==',# TODO: this is a bug in the curent generator, the obsvarDbId mustn't be encoded !
+            'observationVariableURI': 'urn:BRAPI_TEST/observationVariable/65',
             '@id': 'urn:BRAPI_TEST/observationVariable/65',
-                "observationVariableName": "LL_65",
-                "ontology_name": "TO:0000135",
-                "scale":
-                    {
-                        "dataType": "numeric",
-                        "decimalPlaces": 2,
-                        "name": "cm",
-                        "validValues":
-                            {
-                                "max": 250,
-                                "min": 0
-                            }
-                    },
-                "source": "VIB",
-                "studyDbIds":
-                    [
-                        "VIB_study___46",
-                        "VIB_study___48"
-                    ],
-                "trait":
-                    {
-                        "description": "actual measurements in centimeters of the leaf",
-                        "name": "leafLength",
-                        "traitDbId": "TO:0000135"
-                    }
+            "observationVariableName": "LL_65",
+            "schema:name": "LL_65",
+            "ontology_name": "TO:0000135",
+            "scale":
+                {
+                    "dataType": "numeric",
+                    "decimalPlaces": 2,
+                    "name": "cm",
+                    "validValues":
+                        {
+                            "max": 250,
+                            "min": 0
+                        }
+                },
+            "source": "VIB",
+            # "studyDbIds":
+            #     [
+            #         "VIB_study___46",
+            #         "VIB_study___48"
+            #     ],
+            "trait":
+                {
+                    "description": "actual measurements in centimeters of the leaf",
+                    "name": "leafLength",
+                    "traitDbId": "TO:0000135"
+                }
         },
         'urn:BRAPI_TEST/observationVariable/66': {
             'schema:includedInDataCatalog': 'https://test-server.brapi.org',
@@ -586,11 +588,12 @@ fixture_expected_data_dict = {
             'databaseName': 'brapi@BRAPI_TEST',
             'node': 'BRAPI_TEST',
             "name": "leafWidth",
-            #"observationVariableDbId": "66", TODO: idem, this is the right value
-            'observationVariableDbId': 'dXJuOkJSQVBJX1RFU1Qvb2JzZXJ2YXRpb25WYXJpYWJsZS82Ng==',
+            "observationVariableDbId": "66",
+            #'observationVariableDbId': 'dXJuOkJSQVBJX1RFU1Qvb2JzZXJ2YXRpb25WYXJpYWJsZS82Ng==',
             'observationVariableURI': 'urn:BRAPI_TEST/observationVariable/66',
             '@id': 'urn:BRAPI_TEST/observationVariable/66',
             "observationVariableName": "LW_66",
+            "schema:name": "LW_66",
             "ontology_name": "TO:0000370",
             "scale":
                 {
@@ -604,11 +607,11 @@ fixture_expected_data_dict = {
                         }
                 },
             "source": "VIB",
-            "studyDbIds":
-                [
-                    "VIB_study___46",
-                    "VIB_study___48"
-                ],
+            #"studyDbIds": # there should be no data  in the ontology
+            #    [
+            #        "VIB_study___46",
+            #        "VIB_study___48"
+            #    ],
             "trait":
                 {
                     "description": "actual measurements, in centimeters of the widest portion of the leaf; to be precise use the children terms leaf lamina width (TO:0002720) or 'leaf sheath width (TO:0002721)",

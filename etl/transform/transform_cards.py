@@ -1,5 +1,5 @@
 # private function to be called through function_dict
-from etl.transform.utils import get_generated_uri_from_dict, get_generated_uri_from_str, remove_html_tags
+from etl.transform.utils import  remove_html_tags
 
 
 def _concat_genus_species(document):
@@ -105,13 +105,13 @@ _germplasm_function_dict = {
 }
 
 
-def do_card_transform(document):
+def     do_card_transform(document):
     # 1 on uniformise en 1.3/2.X On transforme vers un modèle commun
     # c'est un mapping tous les champs hétérogènes sont uniformisés: name ==> studyName, accNumb ==> ACCESSION_NUMBER, etc....
 
     # 2 on enrichis en ajoutant genusSpecies ou en allant chercher les obsVarDbId etc...
 
-    if "@type" in document and document.get("@type") == "study" :
+    if "@type" in document and document.get("@type") == "study" : #TODO: too restrictive, this is not going to work for all study types
         mapping_dict = _study_mapping_dict
         function_dict = _study_function_dict
     elif "@type" in document and document.get("@type") == "germplasm" :
