@@ -1,6 +1,9 @@
 import json
+import time
 import unittest
+import logging
 
+from etl.common.utils import create_logger
 from etl.transform.datadiscovery_cards import transform_source_documents, documents_dbid_fields_plus_field_type
 from tests.transform.utils import sort_dict_lists
 
@@ -258,7 +261,7 @@ fixture_expected_data_dict = {
         'urn:BRAPI_TEST/germplasm/1withPUI': {
             'schema:includedInDataCatalog': 'https://test-server.brapi.org',
             '@type': 'germplasm',
-            'germplasmDbId': 'https://doi.org/1014.1543/345678ZERTYU',#Idealy, to enable easy linking of data within the source: urn:BRAPI_TEST/germplasm/1234
+            'germplasmDbId': 'aHR0cHM6Ly9kb2kub3JnLzEwMTQuMTU0My8zNDU2NzhaRVJUWVU=',#Idealy, to enable easy linking of data within the source: urn:BRAPI_TEST/germplasm/1234
             'germplasmPUI': 'https://doi.org/1014.1543/345678ZERTYU',
             'studyDbIds':
                 ['dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvc3R1ZHkx'],
@@ -622,8 +625,10 @@ class TestDbidToUri(unittest.TestCase):
 
     def test_transform_document(self):
 
+        logger =logging.getLogger("test logger")
+        start_time = time.time()
 
-        data_dict_actual = transform_source_documents(fixture_source_data_dict, test_source, documents_dbid_fields_plus_field_type)
+        data_dict_actual = transform_source_documents(fixture_source_data_dict, test_source, documents_dbid_fields_plus_field_type, logger, start_time)
 
         data_dict_expected = fixture_expected_data_dict
 

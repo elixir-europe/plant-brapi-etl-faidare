@@ -101,11 +101,11 @@ def _generate_datadiscovery_germplasm(document: dict, data_dict: dict, source: d
     datadiscovery_document["germplasm"]["accession"] = list(acc_set)
 
     if document.get("holdingInstitute"):
+        holding_institute_str = " ".join(filter(None, [document.get("holdingInstitute").get("organisation"),
+                                      document.get("holdingInstitute").get("instituteName")]))
+        datadiscovery_document["holdingInstitute"] = holding_institute_str
         g_list.add(
-            " ".join(filter(None,
-                            [document.get("holdingInstitute").get("organisation"),
-                             document.get("holdingInstitute").get("instituteName")]
-                            )))
+            holding_institute_str)
 
     if document.get("biologicalStatusOfAccessionCode"):
         datadiscovery_document["biologicalStatus"] = document.get("biologicalStatusOfAccessionCode")
@@ -398,7 +398,9 @@ def generate_datadiscovery(document: dict, document_type:str, data_dict: dict, s
 
     #if "studyDbId" in document:
     if document_type == "study":
-        return _generate_datadiscovery_study(document, data_dict, source)
+        study_document = _generate_datadiscovery_study(document, data_dict, source)
+        _remove_none_from_dict(study_document)
+        return study_document
 
     return None
 

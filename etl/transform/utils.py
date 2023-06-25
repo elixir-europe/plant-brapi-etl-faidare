@@ -25,6 +25,8 @@ def get_generated_uri_from_dict(source: dict, entity: str, data: dict, do_base64
 
     if data_uri and rfc3987.match(data_uri, rule='URI'):
         # The original PUI is a valid URI
+        if do_base64:
+            data_uri = base64.b64encode(data_uri.encode('utf-8')).decode('utf-8')
         return data_uri
 
     source_id = urllib.parse.quote(source['schema:identifier'])
