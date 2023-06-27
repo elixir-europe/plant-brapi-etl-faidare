@@ -169,6 +169,7 @@ class transform_integration_test(unittest.TestCase):
         self.assertEqual( sorted_expected_vib, sorted_actual_vib)
         #self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
 
+
     def test_germplasNames_generated(self):
         with gzip.open(self._actual_data_dir+"VIB/datadiscovery-1.json.gz") as actual_vib_f:
             actual_vib = json.load(actual_vib_f)
