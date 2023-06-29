@@ -211,7 +211,12 @@ def _add_linked_germplasm_info(datadiscovery_document, document, data_dict):
             accession_set.add(germplasm.get("accessionNumber"))
             accession_set.add(germplasm.get("germplasmName"))
             accession_set.add(germplasm.get("defaultDisplayName"))
-            accession_set.add(germplasm.get("synonyms"))
+            if germplasm.get("synonyms"):
+                if isinstance(germplasm.get("synonyms"), list):
+                    for s in germplasm.get("synonyms"):
+                        accession_set.add(s)
+                else:
+                    accession_set.add(germplasm.get("synonyms"))
             accession_set.discard(None)
 
             germplasm_names_set.add(germplasm.get("germplasmName"))
@@ -227,17 +232,33 @@ def _add_linked_germplasm_info(datadiscovery_document, document, data_dict):
             if germplasm.get("subtaxa"):
                 crop_name_set.add(germplasm.get("genusSpecies") + " " + germplasm.get("subtaxa"))
             if germplasm.get("taxonSynonyms"):
-                crop_name_set.add(germplasm.get("taxonSynonyms"))
+                if isinstance(germplasm.get("taxonSynonyms"), list):
+                    for synonym in germplasm.get("taxonSynonyms"):
+                        crop_name_set.add(synonym)
+                else:
+                    crop_name_set.add(germplasm.get("taxonSynonyms"))
             if germplasm.get("commonCropName"):
                 crop_name_set.add(germplasm.get("commonCropName"))
             crop_name_set.discard(None)
 
             if germplasm.get("panel"):
-                germplasm_list_set.add(germplasm.get("panel").get("name"))
+                if isinstance(germplasm.get("panel"), list):
+                    for panel in germplasm.get("panel"):
+                        germplasm_list_set.add(panel.get("name"))
+                else:
+                    germplasm_list_set.add(germplasm.get("panel").get("name"))
             if germplasm.get("collection"):
-                germplasm_list_set.add(germplasm.get("collection").get("name"))
+                if isinstance(germplasm.get("collection"), list):
+                    for collection in germplasm.get("collection"):
+                        germplasm_list_set.add(collection.get("name"))
+                else:
+                    germplasm_list_set.add(germplasm.get("collection").get("name"))
             if germplasm.get("population"):
-                germplasm_list_set.add(germplasm.get("population").get("name"))
+                if isinstance(germplasm.get("population"), list):
+                    for population in germplasm.get("population"):
+                        germplasm_list_set.add(population.get("name"))
+                else:
+                    germplasm_list_set.add(germplasm.get("population").get("name"))
             if germplasm.get("holdingGenbank"):
                 germplasm_list_set.add(germplasm.get("holdingGenbank").get("name"))
             germplasm_list_set.discard(None)
