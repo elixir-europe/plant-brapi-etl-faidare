@@ -167,6 +167,7 @@ def simple_transformations(document, source, document_type):
 
     if ("node" not in document):
         document["node"] = source['schema:identifier']
+    if ("databaseName" not in document):
         document["databaseName"] = "brapi@" + source['schema:identifier']
 
     if ("source" not in document):
@@ -198,13 +199,16 @@ def _handle_study_germplasm_linking(document, source, data_dict):
     elif document["@type"] == "germplasm":
         if "studyURIs" in document:
             for studyURI in document["studyURIs"]:
-                if studyURI in data_dict["study"]:
-                    if "germplasmDbIds" in data_dict["study"][studyURI] and \
-                            document["germplasmDbId"] not in data_dict["study"][studyURI]["germplasmDbIds"]:
-                        #b64encoded_studyURI = base64.b64encode(studyURI.encode()).decode()
-                        data_dict["study"][studyURI]["germplasmDbIds"].append(document["germplasmDbId"])
-                        if document["germplasmURI"] not in data_dict["study"][studyURI]["germplasmURIs"]:
-                            data_dict["study"][studyURI]["germplasmURIs"].append(document["germplasmURI"])
+                current_study = data_dict["study"].get(studyURI)
+                #if studyURI in data_dict["study"]:
+                if not "germplasmDbIds" in current_study:
+                    current_study["germplasmDbIds"] = []
+                    current_study["germplasmURIs"] = []
+                if document["germplasmDbId"] not in current_study["germplasmDbIds"]:
+                    #b64encoded_studyURI = base64.b64encode(studyURI.encode()).decode()
+                    current_study["germplasmDbIds"].append(document["germplasmDbId"])
+                    if document["germplasmURI"] not in current_study["germplasmURIs"]:
+                        current_study["germplasmURIs"].append(document["germplasmURI"])
 
     return document
 

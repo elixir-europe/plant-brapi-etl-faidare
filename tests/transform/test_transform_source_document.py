@@ -3,7 +3,6 @@ import time
 import unittest
 import logging
 
-from etl.common.utils import create_logger
 from etl.transform.datadiscovery_cards import transform_source_documents, documents_dbid_fields_plus_field_type
 from tests.transform.utils import sort_dict_lists
 
@@ -69,7 +68,9 @@ fixture_source_data_dict = {
                 "VIB_study___48"
             ],
             "documentationURL": "https://vib.be/RIL_8W_81_RIL_8-way_177"
-        }
+        },
+        "urn:BRAPI_TEST/germplasm/SAMD00237861": {"germplasmDbId":"SAMD00237861","studyDbIds":["DRX230673"],"germplasmName":"JRC01_Gaisen Mochi - Gaisen Mochi","genus":"Oryza","species":"sativa","subtaxa":"var. Gaisen Mochi","germplasmPUI":"https://ddbj.nig.ac.jp/resource/biosample/SAMD00237861","documentationURL":"https://ddbj.nig.ac.jp/resource/biosample/SAMD00237861","node":"DDBJ","databaseName":"BioSample","holdingInstitute.instituteName":"Breeding Material Development Unit, Institute of Crop Science, National Agriculture and Food Research Organization"}
+
     },
     'location': {
         'urn:BRAPI_TEST/location/loc1': {
@@ -150,7 +151,9 @@ fixture_source_data_dict = {
                     "type": "PI"
                 }
             ]
-        }
+        },
+        "urn:BRAPI_TEST/study/DRX230673": {"studyDbId":"DRX230673","studyName":"HiSeq X Ten paired end sequencing of SAMD00237861","studyType":"Genomic Study","documentationURL":"https://ddbj.nig.ac.jp/resource/sra-experiment/DRX230673"}
+
     },
     'trial': {
         'urn:BRAPI_TEST/trial/1': {
@@ -333,6 +336,34 @@ fixture_expected_data_dict = {
             'databaseName' :'brapi@BRAPI_TEST',
             "documentationURL": "https://vib.be/RIL_8W_81_RIL_8-way_177",
             "schema:url": "https://vib.be/RIL_8W_81_RIL_8-way_177"
+    },
+    'urn:BRAPI_TEST/germplasm/SAMD00237861': {
+        "germplasmDbId": "aHR0cHM6Ly9kZGJqLm5pZy5hYy5qcC9yZXNvdXJjZS9iaW9zYW1wbGUvU0FNRDAwMjM3ODYx",
+        "studyDbIds": [
+            "dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvRFJYMjMwNjcz"
+        ],
+        "germplasmName": "JRC01_Gaisen Mochi - Gaisen Mochi",
+        "genus": "Oryza",
+        "species": "sativa",
+        "subtaxa": "var. Gaisen Mochi",
+        "germplasmPUI": "https://ddbj.nig.ac.jp/resource/biosample/SAMD00237861",
+        "documentationURL": "https://ddbj.nig.ac.jp/resource/biosample/SAMD00237861",
+        "node": "DDBJ",
+        "databaseName": "BioSample",
+        "holdingInstitute.instituteName": "Breeding Material Development Unit, Institute of Crop Science, National Agriculture and Food Research Organization",
+        "schema:identifier": "SAMD00237861",
+        "germplasmURI": "https://ddbj.nig.ac.jp/resource/biosample/SAMD00237861",
+        "studyURIs": [
+            "urn:BRAPI_TEST/study/DRX230673"
+        ],
+        "source": "BRAPI TEST source name",
+        "schema:includedInDataCatalog": "https://test-server.brapi.org",
+        "schema:url": "https://ddbj.nig.ac.jp/resource/biosample/SAMD00237861",
+        "schema:name": "JRC01_Gaisen Mochi - Gaisen Mochi",
+        "@id": "https://ddbj.nig.ac.jp/resource/biosample/SAMD00237861",
+        "@type": "germplasm",
+        "genusSpecies": "Oryza sativa",
+        "defaultDisplayName": "JRC01_Gaisen Mochi - Gaisen Mochi"
     }
 },
     'location': {
@@ -505,6 +536,28 @@ fixture_expected_data_dict = {
             ],
             'node' : 'BRAPI_TEST',
             'databaseName' :'brapi@BRAPI_TEST'
+        },
+        'urn:BRAPI_TEST/study/DRX230673': {
+            "studyDbId": "dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvRFJYMjMwNjcz",
+            "studyName": "HiSeq X Ten paired end sequencing of SAMD00237861",
+            "studyType": "Genomic Study",
+            "documentationURL": "https://ddbj.nig.ac.jp/resource/sra-experiment/DRX230673",
+            "schema:identifier": "DRX230673",
+            "studyURI": "urn:BRAPI_TEST/study/DRX230673",
+            "node": "BRAPI_TEST",
+            "databaseName": "brapi@BRAPI_TEST",
+            "source": "BRAPI TEST source name",
+            "schema:includedInDataCatalog": "https://test-server.brapi.org",
+            "schema:url": "https://ddbj.nig.ac.jp/resource/sra-experiment/DRX230673",
+            "schema:name": "HiSeq X Ten paired end sequencing of SAMD00237861",
+            "@id": "urn:BRAPI_TEST/study/DRX230673",
+            "@type": "study",
+            "germplasmDbIds": [
+                "aHR0cHM6Ly9kZGJqLm5pZy5hYy5qcC9yZXNvdXJjZS9iaW9zYW1wbGUvU0FNRDAwMjM3ODYx"
+            ],
+            "germplasmURIs": [
+                "https://ddbj.nig.ac.jp/resource/biosample/SAMD00237861"
+            ]
         }
     },
     'trial': {

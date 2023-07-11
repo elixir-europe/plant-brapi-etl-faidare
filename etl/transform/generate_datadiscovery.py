@@ -190,6 +190,8 @@ def _curate_study_entry_type(study_type_string):
 
 
 def _add_linked_germplasm_info(datadiscovery_document, document, data_dict):
+    if not document.get("germplasmDbIds"):
+        return datadiscovery_document
     acc_number_set = set()
     accession_set = set()
     germplasm_names_set = set()
@@ -197,6 +199,7 @@ def _add_linked_germplasm_info(datadiscovery_document, document, data_dict):
     crop_name_set = set()
     germplasm_list_set = set()
     species_set = set()
+
     for germplasmDbId in document["germplasmDbIds"]:
         # decode base64 germplasmDbId
         decoded_germplasmDbId = base64.b64decode(germplasmDbId).decode('utf-8')
