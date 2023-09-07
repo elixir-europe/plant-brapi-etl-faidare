@@ -187,7 +187,7 @@ def simple_transformations(document, source, document_type):
 def _handle_study_germplasm_linking(document, source, data_dict):
     #TODO: case not covered by tests
     if document["@type"] == "study":
-        if "germplasmDbIds" in document:
+        if "germplasmDbIds" in document and document["germplasmDbIds"]:
             for germplasmDbId in document["germplasmDbIds"]:
                 if germplasmDbId in data_dict["germplasm"]:
                     if "studyDbIds" in data_dict["germplasm"][germplasmDbId] and \
@@ -197,7 +197,7 @@ def _handle_study_germplasm_linking(document, source, data_dict):
                             data_dict["germplasm"][germplasmDbId]["studyURIs"].append(document["studyURI"])
 
     elif document["@type"] == "germplasm":
-        if "studyURIs" in document:
+        if "studyURIs" in document and document["studyURIs"]:
             for studyURI in document["studyURIs"]:
                 current_study = data_dict["study"].get(studyURI)
                 #if studyURI in data_dict["study"]:
