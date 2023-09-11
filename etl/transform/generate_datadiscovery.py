@@ -2,7 +2,7 @@ import base64
 from etl.transform.utils import get_generated_uri_from_str
 
 
-#TODO: naive and dull/barely readable implementation. See if a mapping disct could do the trick
+#TODO: naive and dull/barely readable implementation. See if a mapping dict could do the trick
 def _generate_datadiscovery_germplasm(document: dict, data_dict: dict, source: dict):
     datadiscovery_document = document.copy()
     datadiscovery_document["node"] = document.get("node")
@@ -355,11 +355,13 @@ def _get_study_description(document, data_dict):
 def _add_linked_traits_info(datadiscovery_document, document, data_dict, source):
     if document.get("observationVariableDbIds"):
         datadiscovery_document["trait"] = dict()
-        datadiscovery_document["trait"]["observationVariableDbIds"] = []
+        datadiscovery_document["trait"]["observationVariableIds"] = []
         datadiscovery_document["traitNames"] = list()
+        datadiscovery_document["observationVariableIds"] = list()
 
         for observationVariableId in document.get("observationVariableDbIds"):
-            datadiscovery_document["trait"]["observationVariableDbIds"].append(observationVariableId)
+            datadiscovery_document["trait"]["observationVariableIds"].append(observationVariableId)
+            datadiscovery_document["observationVariableIds"].append(observationVariableId)
 
             observationVariable = None
             if observationVariableId in data_dict.get("observationVariable"):

@@ -528,6 +528,8 @@ fixture_source_study = {
     "schema:name": "RIL 8-way  batch 9",
     "observationVariableDbIds":
         ["65", "urn:BRAPI_TEST/observationVariable/66"],
+    "observationVariableIds":
+        ["65", "urn:BRAPI_TEST/observationVariable/66"],
     # done on purpose for testing: two different situations that should'nt appear in the same dataset with real data.
     "source": "BRAPI TEST",
     "startDate": "2013-08-20",
@@ -610,6 +612,8 @@ fixture_expected_study = {
     "node": "BRAPI_TEST_node",
     "observationVariableDbIds":
         ["65", "urn:BRAPI_TEST/observationVariable/66"],
+    "observationVariableIds":
+        ["65", "urn:BRAPI_TEST/observationVariable/66"],#TODO duplicate
     "schema:identifier": "dXJuOlZJQi9zdHVkeS9WSUJfc3R1ZHlfX180OA==",
     "schema:includedInDataCatalog": "https://test-server.brapi.org",
     "schema:name": "RIL 8-way  batch 9",
@@ -628,7 +632,7 @@ fixture_expected_study = {
     "studyURI": "urn:VIB/study/VIB_study___48",
     "taxonGroup": "Zea",
     "trait":
-        {"observationVariableDbIds": ["65", "urn:BRAPI_TEST/observationVariable/66"]},
+        {"observationVariableIds": ["65", "urn:BRAPI_TEST/observationVariable/66"]},
     "trialDbId": "dXJuOlZJQi90cmlhbC8z",
     "trialDbIds":
         ["dXJuOlZJQi90cmlhbC8z"],
@@ -752,7 +756,9 @@ fixture_expected_study_without_germplasm = {
     "node": "BRAPI_TEST_node",
     "observationVariableDbIds":
         ["65", "urn:BRAPI_TEST/observationVariable/66"],
-    "schema:identifier": "dXJuOlZJQi9zdHVkeS9WSUJfc3R1ZHlfX180OA==",
+    "observationVariableIds":
+        ["65", "urn:BRAPI_TEST/observationVariable/66"], # TODO: This is more than messy, rationalize obsVarHandling
+"schema:identifier": "dXJuOlZJQi9zdHVkeS9WSUJfc3R1ZHlfX180OA==",
     "schema:includedInDataCatalog": "https://test-server.brapi.org",
     "schema:name": "RIL 8-way  batch 9",
     #"schema:url": "https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/48",
@@ -770,7 +776,7 @@ fixture_expected_study_without_germplasm = {
     "studyURI": "urn:VIB/study/VIB_study___48",
     "taxonGroup": "Zea",
     "trait":
-        {"observationVariableDbIds": ["65", "urn:BRAPI_TEST/observationVariable/66"]},
+        {"observationVariableIds": ["65", "urn:BRAPI_TEST/observationVariable/66"]},
     "trialDbId": "dXJuOlZJQi90cmlhbC8z",
     "trialDbIds":
         ["dXJuOlZJQi90cmlhbC8z"],
