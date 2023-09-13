@@ -201,10 +201,10 @@ def _add_linked_germplasm_info(datadiscovery_document, document, data_dict):
     germplasm_list_set = set()
     species_set = set()
 
-    for germplasmDbId in document["germplasmDbIds"]:
+    for germplasmDbId in document["germplasmURIs"]:
         # decode base64 germplasmDbId
-        decoded_germplasmDbId = base64.b64decode(germplasmDbId).decode('utf-8')
-        germplasm = data_dict.get("germplasm").get(decoded_germplasmDbId)
+        # decoded_germplasmDbId = base64.b64decode(germplasmDbId).decode('utf-8')
+        germplasm = data_dict.get("germplasm").get(germplasmDbId)
         if germplasm:
 
             if germplasm.get("genus"):

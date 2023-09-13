@@ -187,28 +187,39 @@ def simple_transformations(document, source, document_type):
 def _handle_study_germplasm_linking(document, source, data_dict):
     #TODO: case not covered by tests
     if document["@type"] == "study":
-        if "germplasmDbIds" in document and document["germplasmDbIds"]:
-            for germplasmDbId in document["germplasmDbIds"]:
-                if germplasmDbId in data_dict["germplasm"]:
-                    if "studyDbIds" in data_dict["germplasm"][germplasmDbId] and \
-                            document["studyDbId"] not in data_dict["germplasm"][germplasmDbId]["studyDbIds"]:
-                        data_dict["germplasm"][germplasmDbId]["studyDbIds"].append(document["studyDbId"])
-                        if document["studyURI"] not in data_dict["germplasm"][germplasmDbId]["studyURIs"]:
-                            data_dict["germplasm"][germplasmDbId]["studyURIs"].append(document["studyURI"])
+        if "germplasmURIs" in document and document["germplasmURIs"]:
+            document["germplasmDbIds"]=[]
+            for germplasmURI in document["germplasmURIs"]:
+                if germplasmURI in data_dict["germplasm"]:
+                    # update current study germplasmDbId to the Ids used in the final card rather than those used for linking
+                    # ensures that the link in the faidare app will work.
+                    # TODO: Help, this has a sligth sent of a patch on a wooden leg
+                    realGermplasmDbId = data_dict["germplasm"][germplasmURI]["germplasmDbId"]
+                    document["germplasmDbIds"].append(realGermplasmDbId)
+
+                    # Add studyDbIds in current germplasm
+                    if "studyDbIds" in data_dict["germplasm"][germplasmURI] and \
+                            document["studyDbId"] not in data_dict["germplasm"][germplasmURI]["studyDbIds"]:
+                        data_dict["germplasm"][germplasmURI]["studyDbIds"].append(document["studyDbId"])
+                        if "studyURIs" not in data_dict["germplasm"][germplasmURI]:
+                            data_dict["germplasm"][germplasmURI]["studyURIs"]=[]
+                        if document["studyURI"] not in data_dict["germplasm"][germplasmURI]["studyURIs"]:
+                            data_dict["germplasm"][germplasmURI]["studyURIs"].append(document["studyURI"])
 
     elif document["@type"] == "germplasm":
         if "studyURIs" in document and document["studyURIs"]:
             for studyURI in document["studyURIs"]:
                 current_study = data_dict["study"].get(studyURI)
                 #if studyURI in data_dict["study"]:
-                if not "germplasmDbIds" in current_study:
-                    current_study["germplasmDbIds"] = []
-                    current_study["germplasmURIs"] = []
-                if document["germplasmDbId"] not in current_study["germplasmDbIds"]:
-                    #b64encoded_studyURI = base64.b64encode(studyURI.encode()).decode()
-                    current_study["germplasmDbIds"].append(document["germplasmDbId"])
-                    if document["germplasmURI"] not in current_study["germplasmURIs"]:
-                        current_study["germplasmURIs"].append(document["germplasmURI"])
+                if current_study:
+                    if not "germplasmDbIds" in current_study:
+                        current_study["germplasmDbIds"] = []
+                        current_study["germplasmURIs"] = []
+                    if document["germplasmDbId"] not in current_study["germplasmDbIds"]:
+                        #b64encoded_studyURI = base64.b64encode(studyURI.encode()).decode()
+                        current_study["germplasmDbIds"].append(document["germplasmDbId"])
+                        if document["germplasmURI"] not in current_study["germplasmURIs"]:
+                            current_study["germplasmURIs"].append(document["germplasmURI"])
 
     return document
 
@@ -228,6 +239,7 @@ def transform_source_documents(data_dict: dict, source: dict, documents_dbid_fie
 
             ########## mapping and transforming fields ##########
             document = do_card_transform(document)
+            
             data_dict[document_type][document_id] = document
         logger.info(
             "END Transforming " + str(len(documents)) + " " + document_type + " from " + source['schema:identifier'] +
