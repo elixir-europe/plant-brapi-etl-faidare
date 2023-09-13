@@ -13,7 +13,7 @@ import rfc3987
 from etl.common.brapi import get_identifier
 
 
-def get_generated_uri_from_dict(source: dict, entity: str, data: dict, do_base64 = False) -> str:
+def get_generated_uri_from_dict(source: dict, entity: str, data: dict, do_base64 = False, keep_urn = False) -> str:
     """
     Get/Generate URI from BrAPI object or generate one
     """
@@ -23,7 +23,7 @@ def get_generated_uri_from_dict(source: dict, entity: str, data: dict, do_base64
     #TODO (cont): should be ok, check with Célia, Cyril, Maud, Nico ?
     data_uri = data.get(pui_field)
 
-    if data_uri and rfc3987.match(data_uri, rule='URI'):
+    if data_uri and not keep_urn and rfc3987.match(data_uri, rule='URI'):
         # The original PUI is a valid URI
         if do_base64:
             data_uri = base64.b64encode(data_uri.encode('utf-8')).decode('utf-8')
@@ -31,7 +31,7 @@ def get_generated_uri_from_dict(source: dict, entity: str, data: dict, do_base64
 
     source_id = urllib.parse.quote(source['schema:identifier'])
     data_id = get_identifier(entity, data)
-    if not data_uri:
+    if not data_uri or keep_urn:
         # Generate URI from source id, entity name and data id
         encoded_entity = urllib.parse.quote(entity)
         encoded_id = urllib.parse.quote(data_id)

@@ -103,7 +103,6 @@ def _handle_observation_units(source, source_bulk_dir, config, document_type, in
         logger.info("No observationUnit in " + source['schema:identifier'])
     else:
         try:
-
             with open(input_json_filepath, 'r') as json_file:
                 json_list = list(json_file)
                 for json_line in json_list:
@@ -112,6 +111,7 @@ def _handle_observation_units(source, source_bulk_dir, config, document_type, in
                     #uri = get_generated_uri_from_dict(source, document_type["document-type"], json_line_data)
                     transformed_obsUnit = _handle_DbId_URI(json_line_data, "observationUnit",
                                                                          documents_dbid_fields_plus_field_type, source)
+                    transformed_obsUnit = simple_transformations(transformed_obsUnit, source, "observationUnit")
                     obsUnitDict["observationUnit"][str(i)] = transformed_obsUnit
                     i += 1
 
@@ -142,7 +142,7 @@ def load_input_json(source, doc_types, source_json_dir, config, logger, start_ti
                     json_list = list(json_file)
                     for json_line in json_list:
                         data = json.loads(json_line)
-                        uri = get_generated_uri_from_dict(source, document_type["document-type"], data)
+                        uri = get_generated_uri_from_dict(source, document_type["document-type"], data, keep_urn=True)
                         data_dict[document_type["document-type"]][uri] = data
             #                    links = get_entity_links(data, 'DbId')
             #                    entity_names = set(map(first, links))
