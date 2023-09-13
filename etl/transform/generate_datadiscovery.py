@@ -113,6 +113,7 @@ def _generate_datadiscovery_germplasm(document: dict, data_dict: dict, source: d
     if document.get("countryOfOriginCode"):
         # datadiscovery_document.pop("countryOfOriginCode")
         datadiscovery_document["countryOfOriginCode"] = document.get("countryOfOriginCode")
+        datadiscovery_document["countryOfOrigin"] = document.get("countryOfOriginCode")#TODO conserving inconsictency here. We need to rationalize things see GNP-6447.
     if document.get("genus"):
         datadiscovery_document["taxonGroup"] = document.get("genus")
     if document.get("accessionHolder"):

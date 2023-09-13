@@ -43,7 +43,7 @@ class test_python_transform(unittest.TestCase):
                     "species": "mays",
                     "falseField": False, "studyTypeName": "gnomic",
                     "studyDbId": "1234",'studyName': 'thisIsAStudyName'}
-        self.assertEqual(actual, expected)
+        self.assertEqual( expected, actual)
 
     def test_basic_function_safe(self):
         actual = do_card_transform(data_8)
