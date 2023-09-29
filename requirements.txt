@@ -9,4 +9,4 @@ urllib3==1.25.2
 chardet==3.0.3
 pyhashxx==0.1.3
 unqlite==0.7.1
-deepdiff==5.5.0
+deepdiff==6.3.0

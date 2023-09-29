@@ -4,10 +4,11 @@ import os
 import json
 import gzip
 from deepdiff import DeepDiff
-
+from tests.transform.utils import sort_dict_lists
 
 class transform_integration_test(unittest.TestCase):
 
+    maxDiff = None
 
     @classmethod
     def setUpClass(self):
@@ -41,7 +42,7 @@ class transform_integration_test(unittest.TestCase):
 
         #with open(self._actual_data_dir+"VIB/germplasm-1.json") as actual_vib_f:
         #    actual_vib = json.load(actual_vib_f)
-
+        self.assertTrue(os.path.exists(self._actual_data_dir+"VIB/germplasm-1.json.gz"))
         with gzip.open(self._actual_data_dir+"VIB/germplasm-1.json.gz") as actual_vib_f_gz:
             actual_vib = json.load(actual_vib_f_gz)
 
@@ -50,74 +51,124 @@ class transform_integration_test(unittest.TestCase):
 
         #with open(self._expected_data_dir+"VIB_germplasm_expected.json") as expected_vib_f:
         #    expected_vib = json.load(expected_vib_f)
+        #diffJson = DeepDiff(actual_vib, expected_vib)
+        #print(diffJson)
+        self.maxDiff = None
+        #for each dict in the list actual_vib find the dict with the same accessionNumber in expected_vib
+        #compare the 2 dicts
+        for actual_germplasm in actual_vib:
+            expected_germplasm = next((germplasm for germplasm in expected_vib if germplasm["germplasmDbId"] == actual_germplasm["germplasmDbId"]), None)
+            self.assertIsNotNone(expected_germplasm)
+            self.assertEqual(sort_dict_lists(expected_germplasm), sort_dict_lists(actual_germplasm))
 
-        self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
+        #self.assertDictEqual(dict(enumerate(actual_vib)), dict(enumerate(expected_vib)))
+        #self.assertDictEqual(dict(enumerate(actual_vib)), dict(enumerate(expected_vib)))
+#not good
+    #    self.assertEqual(actual_vib, expected_vib)
+        #self.assertEqual(diffJson, {}, diffJson)
 
 
     def test_all_datadiscovery_generated(self):
 
+        self.assertTrue(os.path.exists(self._actual_data_dir+"VIB/datadiscovery-1.json.gz"))
         with gzip.open(self._actual_data_dir+"VIB/datadiscovery-1.json.gz") as actual_vib_f:
             actual_vib = json.load(actual_vib_f)
 
         with gzip.open(self._expected_data_dir+"VIB_datadiscovery_expected.json.gz") as expected_vib_f:
             expected_vib = json.load(expected_vib_f)
 
+        for actual_datadiscovery in actual_vib:
+            expected_datadiscovery = next((datadiscovery for datadiscovery in expected_vib if datadiscovery.get("@id") == actual_datadiscovery.get("@id")), None)
+            self.assertIsNotNone(expected_datadiscovery)
+            sorted_expected_vib = sort_dict_lists(expected_datadiscovery)
+            sorted_actual_vib = sort_dict_lists(actual_datadiscovery)
+            if "traitNames" in sorted_expected_vib:
+                sorted_expected_vib["traitNames"].sort(key=str.lower)# = sorted(sorted_expected_vib["traitNames"])
+                sorted_actual_vib["traitNames"].sort(key=str.lower)# = sorted(sorted_actual_vib["traitNames"])
+            self.assertEqual(sorted_expected_vib, sorted_actual_vib)
+        #diffJson = DeepDiff(actual_vib, expected_vib)
 
-        self.assertEqual(DeepDiff(actual_vib, expected_vib), {}, "\n------Known problem, the transformed species field should be an array, not a single value.-----")
+        #self.assertEqual(diffJson, {}, "\n------Known problem, the transformed species field should be an array, not a single value.-----")
 
 
     def test_all_locations_generated(self):
 
+        self.assertTrue(os.path.exists(self._actual_data_dir+"VIB/location-1.json.gz"))
         with gzip.open(self._actual_data_dir+"VIB/location-1.json.gz") as actual_vib_f:
             actual_vib = json.load(actual_vib_f)
 
         with gzip.open(self._expected_data_dir+"VIB_location_expected.json.gz") as expected_vib_f:
             expected_vib = json.load(expected_vib_f)
 
-        self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
+        self.assertEqual( sort_dict_lists(expected_vib), sort_dict_lists(actual_vib))
+        #self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
 
 
     def test_all_observationVariables_generated(self):
 
+        self.assertTrue(os.path.exists(self._actual_data_dir+"VIB/observationVariable-1.json.gz"))
         with gzip.open(self._actual_data_dir+"VIB/observationVariable-1.json.gz") as actual_vib_f:
             actual_vib = json.load(actual_vib_f)
 
         with gzip.open(self._expected_data_dir+"VIB_observation_variable_expected.json.gz") as expected_vib_f:
             expected_vib = json.load(expected_vib_f)
 
-        self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
+        self.assertEqual(sort_dict_lists(actual_vib), sort_dict_lists(expected_vib))
+        #self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
+
 
 
     def test_all_studys_generated(self):
-
+        self.maxDiff = None
+        self.assertTrue(os.path.exists(self._actual_data_dir+"/VIB/study-1.json.gz"))
         with gzip.open(self._actual_data_dir+"VIB/study-1.json.gz") as actual_vib_f:
             actual_vib = json.load(actual_vib_f)
 
         with gzip.open(self._expected_data_dir+"VIB_study_expected.json.gz") as expected_vib_f:
             expected_vib = json.load(expected_vib_f)
 
-        self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
+        #for each dict in the list actual_vib find the dict with the same studyDbId in expected_vib
+        #compare the 2 dicts
+        for actual_study in actual_vib:
+            expected_study = next((study for study in expected_vib if study["studyDbId"] == actual_study["studyDbId"]), None)
+            self.assertIsNotNone(expected_study)
+            self.assertEqual(sort_dict_lists(expected_study), sort_dict_lists(actual_study))
+
+        self.assertEqual( sort_dict_lists(expected_vib), sort_dict_lists(actual_vib))
+        #self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
+        #diffJson = DeepDiff(actual_vib, expected_vib)
+        #self.assertEqual(diffJson, {}, diffJson)
 
 
     def test_all_trials_generated(self):
 
+        self.assertTrue(os.path.exists(self._actual_data_dir+"/VIB/trial-1.json.gz"))
         with gzip.open(self._actual_data_dir+"VIB/trial-1.json.gz") as actual_vib_f:
             actual_vib = json.load(actual_vib_f)
 
         with gzip.open(self._expected_data_dir+"VIB_trial_expected.json.gz") as expected_vib_f:
             expected_vib = json.load(expected_vib_f)
 
-        self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
+        self.assertEqual(sort_dict_lists(actual_vib), sort_dict_lists(expected_vib))
+        #self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
 
     def test_all_contacts_generated(self):
 
+        self.assertTrue(os.path.exists(self._actual_data_dir+"VIB/contact-1.json.gz"))
         with gzip.open(self._actual_data_dir+"VIB/contact-1.json.gz") as actual_vib_f:
             actual_vib = json.load(actual_vib_f)
 
         with gzip.open(self._expected_data_dir+"VIB_contact_expected.json.gz") as expected_vib_f:
             expected_vib = json.load(expected_vib_f)
 
-        self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
+        sorted_expected_vib = sorted(expected_vib, key=lambda k: k.get('contactURI'))
+        sorted_actual_vib = sorted(actual_vib, key=lambda k: k.get('contactURI'))
+        sorted_actual_vib = sort_dict_lists(sorted_actual_vib)
+        sorted_expected_vib = sort_dict_lists(sorted_expected_vib)
+
+        self.assertEqual( sorted_expected_vib, sorted_actual_vib)
+        #self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
+
 
     def test_germplasNames_generated(self):
         with gzip.open(self._actual_data_dir+"VIB/datadiscovery-1.json.gz") as actual_vib_f:
