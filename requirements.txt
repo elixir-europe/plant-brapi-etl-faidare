@@ -1,4 +1,4 @@
-requests==2.22.0
+requests==2.31.0
 elasticsearch==5.4.0
 rdflib==6.0.0
 rdflib-jsonld==0.6.2
