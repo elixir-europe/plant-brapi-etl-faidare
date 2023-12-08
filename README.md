@@ -7,29 +7,23 @@ Elixir plant Breeding API JSON ETL
 
 ## I. Execution
 
-### From linux binary distribution
-
-You can find a binary distribution of the ETL package in [dist/plant-brapi-etl-data-lookup-gnpis.tar.gz](dist/plant-brapi-etl-data-lookup-gnpis.tar.gz).
- 
-First you will need to extract the archive:
-```sh
-$ tar xzf plant-brapi-etl-data-lookup-gnpis.tar.gz
-``` 
-
-And then you can simply call the main program:
-```sh
-$ ./etl/main
-```
 
 ### From source code
 
 Requirements:
-- Python version 3.6.x
+- Python version 3.6+
 - Python dependencies (pip install -r requirements.txt)
+- OR (prepeferd) use a virtual environment (pipenv, virtualenv, conda, etc) : `pipenv install`
+
+```sh
 
 
 The `main.py` script can be used to launch the full BrAPI to elasticsearch or BrAPI to virtuoso ETL. To get the usage help run the following command:
 
+```sh
+$ pipenv run python main.py --help
+```
+OR (if you have installed the dependencies in your environment)
 ```sh
 $ python3 main.py
 ```
@@ -92,6 +86,4 @@ The BrAPI endpoint must implement the required calls (also listed in `./config/e
 - /brapi/v1/observationunits GET (backward compatibility with phenotype-search) 
 - /brapi/v1/studies/{studyDbId}/observationunits GET
 
-See [`README-elasticsearch.md`](README-elasticsearch.md) for specific details on BrAPI to elasticsearch ETL.
-
-See [`README-virtuoso.md`](README-virtuoso.md) for specific details on BrAPI to virtuoso ETL.
+See [`README-extract-transform-for-FAIDARE.md`](README-extract-transform-for-FAIDARE.md) for specific details on BrAPI to elasticsearch ETL.
