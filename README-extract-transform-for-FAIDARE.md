@@ -101,7 +101,7 @@ $ pipenv run python main.py extract --data-dir ./publish/data sources/VIB.json s
 To transform BrAPI data to Elasticsearch documents, simply run:
 
 ```sh
-pipenv run python transform elasticsearch --data-dir {datadir} --document-types {documenttypes} {datasource.json}
+pipenv run python ./main.py transform elasticsearch --data-dir {datadir} --document-types {documenttypes} {datasource.json}
 ```
 
 Where `{datasource.json}` is the path to the data source configuration file (ex: `sources/VIB.json`) and `{documenttypes}` the list of document type to generate (ex: `study,datadiscovery`).
@@ -111,13 +111,13 @@ Some example command run:
 
 ```sh
 # Transform BrAPI VIB to Elasticsearch documents in  ./publish/data/json-bulk/NIB
-$ pipenv run python main.py trans es  --data-dir ./publish/data sources/VIB.json
+$ pipenv run python ./main.py trans es  --data-dir ./publish/data sources/VIB.json
 ```
 
 
 ```sh
 # Transform BrAPI VIB and NIB to Elasticsearch documents in /tmp/data/json-bulk/VIB and /tmp/data/json-bulk/NIB
-$ pipenv run python main.py trans es --data-dir ./publish/data sources/VIB.json sources/NIB.json
+$ pipenv run python ./main.py trans es --data-dir ./publish/data sources/VIB.json sources/NIB.json
 ```
 
 
