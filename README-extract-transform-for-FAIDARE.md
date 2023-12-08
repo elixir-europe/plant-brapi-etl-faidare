@@ -76,7 +76,7 @@ optional arguments:
 To extract BrAPI data for a data source, simply run:
 
 ```sh
-pipenv run python main.py extract --data-dir {datadir} {datasource.json}
+pipenv run python ./main.py extract --data-dir {datadir} {datasource.json}
 ```
 
 Where `{datasource.json}` is the path to the data source configuration file (ex: `sources/VIB.json`).
@@ -86,13 +86,13 @@ Some example command run:
 
 ```sh
 # Extracting VIB to ./data/json/NIB
-$ pipenv run python main.py extract sources/VIB.json
+$ pipenv run python ./main.py extract sources/VIB.json
 ```
 
 
 ```sh
 # Extracting VIB and NIB to ./publish/data/json/VIB and ./publish/data/json/NIB
-$ pipenv run python main.py extract --data-dir ./publish/data sources/VIB.json sources/NIB.json
+$ pipenv run python ./main.py extract --data-dir ./publish/data sources/VIB.json sources/NIB.json
 ```
 
 
