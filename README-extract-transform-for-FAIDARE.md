@@ -125,4 +125,4 @@ $ pipenv run python main.py trans es --data-dir ./publish/data sources/VIB.json 
 
 Command for transforming the test data 
 
-`pipenv run main.py trans es sources/VIB.json --data-dir ./tests/transform/integration/fixtures/brapi_pheno_source`
+`pipenv run ./main.py trans es sources/VIB.json --data-dir ./tests/transform/integration/fixtures/brapi_pheno_source`
