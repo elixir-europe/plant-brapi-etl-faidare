@@ -49,7 +49,7 @@ The following properties should be modified for each data source:
 To get help on the usage of the command line interface, you can run the following:
 
 ```sh
-$ python3 main.py --help
+$ pipenv run python main.py --help
 
 usage: main.py [-h] [--data-dir DATA_DIR] [--verbose]
                {extract,transform,trans,load} ...
@@ -76,7 +76,7 @@ optional arguments:
 To extract BrAPI data for a data source, simply run:
 
 ```sh
-python3 main.py extract --data-dir {datadir} {datasource.json}
+pipenv run python ./main.py extract --data-dir {datadir} {datasource.json}
 ```
 
 Where `{datasource.json}` is the path to the data source configuration file (ex: `sources/VIB.json`).
@@ -86,13 +86,13 @@ Some example command run:
 
 ```sh
 # Extracting VIB to ./data/json/NIB
-$ python3 main.py extract sources/VIB.json
+$ pipenv run python ./main.py extract sources/VIB.json
 ```
 
 
 ```sh
-# Extracting VIB and NIB to /tmp/data/json/VIB and /tmp/data/json/NIB
-$ python3 main.py extract --data-dir /tmp/data sources/VIB.json sources/NIB.json
+# Extracting VIB and NIB to ./publish/data/json/VIB and ./publish/data/json/NIB
+$ pipenv run python ./main.py extract --data-dir ./publish/data sources/VIB.json sources/NIB.json
 ```
 
 
@@ -101,7 +101,7 @@ $ python3 main.py extract --data-dir /tmp/data sources/VIB.json sources/NIB.json
 To transform BrAPI data to Elasticsearch documents, simply run:
 
 ```sh
-python3 main.py transform elasticsearch --data-dir {datadir} --document-types {documenttypes} {datasource.json}
+pipenv run python ./main.py transform elasticsearch --data-dir {datadir} --document-types {documenttypes} {datasource.json}
 ```
 
 Where `{datasource.json}` is the path to the data source configuration file (ex: `sources/VIB.json`) and `{documenttypes}` the list of document type to generate (ex: `study,datadiscovery`).
@@ -110,43 +110,19 @@ The generated Elasicsearch documents will then be available in the data director
 Some example command run:
 
 ```sh
-# Transform BrAPI VIB to Elasticsearch documents in ./data/json-bulk/NIB
-$ python3 main.py transform elasticsearch sources/VIB.json
+# Transform BrAPI VIB to Elasticsearch documents in  ./publish/data/json-bulk/NIB
+$ pipenv run python ./main.py trans es  --data-dir ./publish/data sources/VIB.json
 ```
 
 
 ```sh
 # Transform BrAPI VIB and NIB to Elasticsearch documents in /tmp/data/json-bulk/VIB and /tmp/data/json-bulk/NIB
-$ python3 main.py trans es --data-dir /tmp/data sources/VIB.json sources/NIB.json
+$ pipenv run python ./main.py trans es --data-dir ./publish/data sources/VIB.json sources/NIB.json
 ```
 
-**Transformation templating documentation :** see test_templating.py
-
-### III.3. Load/index into Elasticsearch (Deprecated!)
-
-To load/index Elasticsearch documents, simply run:
-
-```sh
-python3 main.py load elasticsearch --data-dir {datadir} --document-types {documenttypes} {datasource.json}
-```
-
-Where `{datasource.json}` is the path to the data source configuration file (ex: `sources/VIB.json`) and `{documenttypes}` the list of document type to index (ex: `study,datadiscovery`).
-
-Some example command run:
-
-```sh
-# Load BrAPI VIB to Elasticsearch documents
-$ python3 main.py load elasticsearch sources/VIB.json
-```
-
-
-```sh
-# Load BrAPI VIB and NIB to Elasticsearch documents (from /tmp/data)
-$ python3 main.py load es --data-dir /tmp/data sources/VIB.json sources/NIB.json
-```
 
 # Developemnts tips
 
 Command for transforming the test data 
 
-`pipenv run main.py trans es sources/VIB.json --data-dir ./tests/transform/integration/fixtures/brapi_pheno_source`
+`pipenv run ./main.py trans es sources/VIB.json --data-dir ./tests/transform/integration/fixtures/brapi_pheno_source`
