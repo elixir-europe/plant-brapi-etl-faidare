@@ -69,12 +69,14 @@ document_types = [
     }
 ]
 
+
 documents_dbid_fields_plus_field_type = {
     "study": [["germplasmDbIds", "germplasm"], ["locationDbId", "location"], ["locationDbIds", "location"],
               ["trialDbIds", "trial"], ["trialDbId", "trial"], ["programDbId", "program"], ["programDbIds", "program"]],
     "germplasm": [["locationDbIds", "location"], ["studyDbIds", "study"], ["trialDbIds", "trial"]],
-    "germplasmPedigree": [["germplasmDbId", "germplasm"], ["parent1DbId", "germplasm"], ["parent2DbId", "germplasm"]],
+    "germplasmPedigree": [["germplasmDbId", "germplasm"], ["parent1DbId", "germplasm"], ["parent2DbId", "germplasm"]],#TODO: same with siblings
     "germplasmProgeny": [["germplasmDbId", "germplasm"], ["parent1DbId", "germplasm"], ["parent2DbId", "germplasm"]],
+    "germplasmAttribute": [["germplasmDbId", "germplasm"]],
     "observationVariable": [["studyDbIds", "study"]],
     "location": [["studyDbIds", "study"], ["trialDbIds", "trial"]],
     "trial": [["germplasmDbIds", "germplasm"], ["locationDbIds", "location"], ["studyDbIds", "study"],
