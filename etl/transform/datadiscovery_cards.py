@@ -83,6 +83,7 @@ documents_dbid_fields_plus_field_type = {
     "germplasmProgeny": [["germplasmDbId", "germplasm"], ["parent1DbId", "germplasm"], ["parent2DbId", "germplasm"]],
     "germplasmAttribute": [["germplasmDbId", "germplasm"]],
     "observationVariable": [["studyDbIds", "study"]],
+    "observationUnit": [["studyDbIds", "study"], ["germplasmDbId", "germplasm"], ["studyLocationDbIds", "location"]],
     "location": [["studyDbIds", "study"], ["trialDbIds", "trial"]],
     "trial": [
         ["germplasmDbIds", "germplasm"], ["locationDbIds", "location"], ["studyDbIds", "study"],
