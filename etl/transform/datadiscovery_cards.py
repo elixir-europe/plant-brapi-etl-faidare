@@ -279,6 +279,10 @@ def _handle_DbId_URI(document, document_type, documents_dbid_fields_plus_field_t
     if document_type in documents_dbid_fields_plus_field_type:
         for current_field in documents_dbid_fields_plus_field_type[document_type]:
             if current_field[0] in document:
+                #TODO:  increase lisibility with :
+                #if current_field[0] in document as ident:
+                #if document[ident] and len(current_field)==4 and current_field[2] == "object-list":
+                #TODO: why len(current_field)==4 ? Should remove this if it is safe
                 if document[current_field[0]] and len(current_field)==4 and current_field[2] == "object-list":
                     # DbIds
                     field_ids_transformed = map(
