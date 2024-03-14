@@ -69,16 +69,25 @@ document_types = [
     }
 ]
 
+
 documents_dbid_fields_plus_field_type = {
-    "study": [["germplasmDbIds", "germplasm"], ["locationDbId", "location"], ["locationDbIds", "location"],
-              ["trialDbIds", "trial"], ["trialDbId", "trial"], ["programDbId", "program"], ["programDbIds", "program"]],
+    "study": [
+        ["germplasmDbIds", "germplasm"], ["locationDbId", "location"], ["locationDbIds", "location"],
+        ["trialDbIds", "trial"], ["trialDbId", "trial"], ["programDbId", "program"], ["programDbIds", "program"]
+    ],
     "germplasm": [["locationDbIds", "location"], ["studyDbIds", "study"], ["trialDbIds", "trial"]],
-    "germplasmPedigree": [["germplasmDbId", "germplasm"], ["parent1DbId", "germplasm"], ["parent2DbId", "germplasm"]],
+    "germplasmPedigree":[
+            ["germplasmDbId", "germplasm"], ["parent1DbId", "germplasm"], ["parent2DbId", "germplasm"],
+            ["siblings","germplasmDbId","object-list","germplasm"]#TODO: same with siblings
+    ],
     "germplasmProgeny": [["germplasmDbId", "germplasm"], ["parent1DbId", "germplasm"], ["parent2DbId", "germplasm"]],
+    "germplasmAttribute": [["germplasmDbId", "germplasm"]],
     "observationVariable": [["studyDbIds", "study"]],
     "location": [["studyDbIds", "study"], ["trialDbIds", "trial"]],
-    "trial": [["germplasmDbIds", "germplasm"], ["locationDbIds", "location"], ["studyDbIds", "study"],
-              ["contactDbIds", "contact"]],
+    "trial": [
+        ["germplasmDbIds", "germplasm"], ["locationDbIds", "location"], ["studyDbIds", "study"],
+        ["contactDbIds", "contact"]
+    ],
     "program": [["trialDbIds", "trial"], ["studyDbIds", "study"]],
     "contact": [["trialDbIds", "trial"]]
 }
@@ -268,25 +277,37 @@ def _handle_DbId_URI(document, document_type, documents_dbid_fields_plus_field_t
         document[document_type + 'DbId'] = get_generated_uri_from_dict(source, document_type, document, True)
     # transform other DbIds , skip observationVariable
     if document_type in documents_dbid_fields_plus_field_type:
-        for fields in documents_dbid_fields_plus_field_type[document_type]:
-            if fields[0] in document:
-                if document[fields[0]] and fields[0].endswith("DbIds"):
-                    # URIs
-                    field_uris_transformed = map(
-                        lambda x: get_generated_uri_from_str(source, fields[1], x, False), document[fields[0]])
-                    document[fields[0].replace("DbIds", "URIs")] = list(set(field_uris_transformed))
+        for current_field in documents_dbid_fields_plus_field_type[document_type]:
+            if current_field[0] in document:
+                #TODO:  increase lisibility with :
+                #if current_field[0] in document as ident:
+                #if document[ident] and len(current_field)==4 and current_field[2] == "object-list":
+                #TODO: why len(current_field)==4 ? Should remove this if it is safe
+                if document[current_field[0]] and len(current_field)==4 and current_field[2] == "object-list":
                     # DbIds
                     field_ids_transformed = map(
-                        lambda x: get_generated_uri_from_str(source, fields[1], x, True), document[fields[0]])
-                    document[fields[0]] = list(field_ids_transformed)
+                        lambda x: dict(x, **{
+                            current_field[1]:get_generated_uri_from_str(source, current_field[3], x[current_field[1]], True)
+                        }),
+                        document[current_field[0]])
+                    document[current_field[0]] = list(field_ids_transformed)
+                elif document[current_field[0]] and current_field[0].endswith("DbIds"):#TODO: could be treated as object-list
+                    # URIs
+                    field_uris_transformed = map(
+                        lambda x: get_generated_uri_from_str(source, current_field[1], x, False), document[current_field[0]])
+                    document[current_field[0].replace("DbIds", "URIs")] = list(set(field_uris_transformed))
+                    # DbIds
+                    field_ids_transformed = map(
+                        lambda x: get_generated_uri_from_str(source, current_field[1], x, True), document[current_field[0]])
+                    document[current_field[0]] = list(field_ids_transformed)
 
-                elif document[fields[0]] and fields[0].endswith("DbId"):
+                elif document[current_field[0]] and current_field[0].endswith("DbId"):
                     # URI
-                    document[fields[0].replace("DbId", "URI")] = get_generated_uri_from_str(source, fields[1],
-                                                                                            document[fields[0]],
+                    document[current_field[0].replace("DbId", "URI")] = get_generated_uri_from_str(source, current_field[1],
+                                                                                            document[current_field[0]],
                                                                                             False)
                     # DbId
-                    document[fields[0]] = get_generated_uri_from_str(source, fields[1], document[fields[0]],
+                    document[current_field[0]] = get_generated_uri_from_str(source, current_field[1], document[current_field[0]],
                                                                      True)
 
     return document
