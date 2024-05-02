@@ -1,0 +1,16 @@
+{
+"@context": { "schema": "http://schema.org/", "brapi": "https://brapi.org/" },
+"@type": "schema:DataCatalog",
+"@id": "https://www.fmach.it",
+"schema:identifier": "FEM",
+"schema:name": "FEM PhenoDB",
+"brapi:endpointUrl": "http://brapi.fmach.it:8081/brapi/v1/",
+"implemented-calls": [
+"GET germplasm",
+"GET trials",
+"GET studies",
+"GET studies/{studyDbId}",
+"GET studies/{studyDbId}/germplasm",
+"GET studies/{studyDbId}/observationunits"
+]
+}
