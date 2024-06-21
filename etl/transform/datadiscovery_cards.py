@@ -92,6 +92,14 @@ documents_dbid_fields_plus_field_type = {
     "contact": [["trialDbIds", "trial"]]
 }
 
+# Mapping DbId fields within observationUnit document to corresponding entities
+fields_to_encode_obs_unit = {
+    "studyDbId": "study",
+    "studyLocationDbId": "location",
+    "germplasmDbId": "germplasm",
+    "observationVariableDbId": "observationVariable",
+    "programDbId": "program"
+}
 
 def get_document_configs_by_entity(document_configs):
     by_entity = dict()
@@ -123,7 +131,7 @@ def _handle_observation_units(source, source_bulk_dir, config, document_type, in
                     transformed_obsUnit = simple_transformations(transformed_obsUnit, source, "observationUnit")
 
                     # Apply base64 encoding transformations
-                    transformed_obsUnit = _handle_observation_unit_dbid_fields(transformed_obsUnit, source)
+                    transformed_obsUnit = _handle_observation_unit_dbid_fields(transformed_obsUnit, source, fields_to_encode_obs_unit)
 
                     obsUnitDict["observationUnit"][str(i)] = transformed_obsUnit
                     i += 1
@@ -346,18 +354,40 @@ def _handle_trial_studies(document, source):
     # Add more fields if needed
     return document
     
-#_handle_observation_unit_study
 
-def _handle_observation_unit_dbid_fields(document, source):
-    """
-    handling the transformation of some fields into base64 encoding
-    """
+
+""" def _handle_observation_unit_dbid_fields(document, source):
     fields_to_encode = ['studyDbId', 'studyLocationDbId', 'germplasmDbId', 'observationVariableDbId', 'programDbId']
     for field in fields_to_encode:
         if field in document:
             entity_type = field.replace('DbId', '').replace('studyLocation', 'location')
             document[field] = get_generated_uri_from_str(source, entity_type, document[field], True)
+    return document  """
+
+#_handle_observation_unit_dbid_fields
+def _handle_observation_unit_dbid_fields(document, source, fields_to_encode_obs_unit):
+    """
+    handling the transformation of some fields into base64 encoding
+    """
+    stack = [document]
+
+    while stack:
+        current = stack.pop()
+
+        if isinstance(current, dict):
+            for key, value in current.items():
+                # Check if the field must be encoded
+                if key in fields_to_encode_obs_unit:
+                    current[key] = get_generated_uri_from_str(source, fields_to_encode_obs_unit[key], value, True)
+                # Add embedded fields to the stack
+                elif isinstance(value, (dict, list)):
+                    stack.append(value)
+        elif isinstance(current, list):
+            for item in current:
+                stack.append(item)
+
     return document
+
 
 
 
