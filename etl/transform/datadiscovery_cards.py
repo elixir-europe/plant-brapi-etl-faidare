@@ -309,7 +309,7 @@ def _handle_DbId_URI(document, document_type, documents_dbid_fields_plus_field_t
                     # URIs
                     field_uris_transformed = map(
                         lambda x: get_generated_uri_from_str(source, current_field[1], x, False), document[current_field[0]])
-                    document[current_field[0].replace("DbIds", "URIs")] = list(set(field_uris_transformed)) #field_u_handle_DbId_URI_handle_DbId_URIris_transformed instead of field_uris_transformed, to be confirmed
+                    document[current_field[0].replace("DbIds", "URIs")] = list(set(field_uris_transformed)) 
                     # DbIds
                     field_ids_transformed = map(
                         lambda x: get_generated_uri_from_str(source, current_field[1], x, True), document[current_field[0]])
