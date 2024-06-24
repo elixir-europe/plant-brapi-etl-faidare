@@ -307,9 +307,9 @@ def _handle_DbId_URI(document, document_type, documents_dbid_fields_plus_field_t
                     document[current_field[0]] = list(field_ids_transformed)
                 elif document[current_field[0]] and current_field[0].endswith("DbIds"):#TODO: could be treated as object-list
                     # URIs
-                    field_u_handle_DbId_URI_handle_DbId_URIris_transformed = map(
+                    field_uris_transformed = map(
                         lambda x: get_generated_uri_from_str(source, current_field[1], x, False), document[current_field[0]])
-                    document[current_field[0].replace("DbIds", "URIs")] = list(set(field_u_handle_DbId_URI_handle_DbId_URIris_transformed)) #field_u_handle_DbId_URI_handle_DbId_URIris_transformed instead of field_uris_transformed, to be confirmed
+                    document[current_field[0].replace("DbIds", "URIs")] = list(set(field_uris_transformed)) #field_u_handle_DbId_URI_handle_DbId_URIris_transformed instead of field_uris_transformed, to be confirmed
                     # DbIds
                     field_ids_transformed = map(
                         lambda x: get_generated_uri_from_str(source, current_field[1], x, True), document[current_field[0]])
@@ -344,16 +344,16 @@ def _handle_study_contacts(document, source):
 
 
 def _handle_trial_studies(document, source):
-    """
-    This function handles the transformation of specific fields to base64 encoding.
-    """
-    if "studyDbId" in document:
-        document["studyDbId"] = get_generated_uri_from_str(source, "study", document["studyDbId"], True)
-    if "studyLocationDbId" in document:
-        document["studyLocationDbId"] = get_generated_uri_from_str(source, "studyLocation", document["studyLocationDbId"], True)
-    # Add more fields if needed
-    return document
-    
+   if "studies" in document:
+        for study in document["studies"]:
+            if "studyDbId" in study:
+                # contact["schema:identifier"] = contact["contactDbId"]
+                study["studyURI"] = get_generated_uri_from_str(source, "study", study["studyDbId"], False)
+                study["studyDbId"] = get_generated_uri_from_str(source, "study", study["studyDbId"], True)
+        return document
+   else:
+        return document
+   
 
 
 """ def _handle_observation_unit_dbid_fields(document, source):
