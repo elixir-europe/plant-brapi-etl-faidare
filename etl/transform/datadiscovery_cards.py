@@ -97,7 +97,6 @@ fields_to_encode_obs_unit = {
     "studyDbId": "study",
     "studyLocationDbId": "location",
     "germplasmDbId": "germplasm",
-    "observationVariableDbId": "observationVariable",
     "programDbId": "program"
 }
 
@@ -355,14 +354,6 @@ def _handle_trial_studies(document, source):
         return document
    
 
-
-""" def _handle_observation_unit_dbid_fields(document, source):
-    fields_to_encode = ['studyDbId', 'studyLocationDbId', 'germplasmDbId', 'observationVariableDbId', 'programDbId']
-    for field in fields_to_encode:
-        if field in document:
-            entity_type = field.replace('DbId', '').replace('studyLocation', 'location')
-            document[field] = get_generated_uri_from_str(source, entity_type, document[field], True)
-    return document  """
 
 #_handle_observation_unit_dbid_fields
 def _handle_observation_unit_dbid_fields(document, source, fields_to_encode_obs_unit):
