@@ -40,8 +40,11 @@ def get_generated_uri_from_dict(source: dict, entity: str, data: dict, do_base64
 
 
 def get_generated_uri_from_str(source: dict, entity: str, data: str, do_base64 = False) -> str:
+    
+    if not data:
+        return ""
+    
     source_id = urllib.parse.quote(source['schema:identifier'])
-
     # Generate URI from source id, entity name and data id
     encoded_entity = urllib.parse.quote(entity)
     encoded_id = urllib.parse.quote(str(data))
