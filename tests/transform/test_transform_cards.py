@@ -2,7 +2,7 @@ import unittest
 from etl.transform.transform_cards import do_card_transform
 
 data_0 = {"refURIs": [1, 2, 3, '4', 5], "studyDbId": "1234", "foo": [1, 2, 3], "name": "thisIsAStudyName",
-          "genus": "Zea", "species": "mays", "falseField": False, "studyTypeName": "gnomic"}
+          "genus": "Zea", "species": "mays", "falseField": False, "studyTypeName": "gnomic", "@type":"study"}
 data_1 = {"a": "a", "genus": "Zea", "species": "Zea mays", "name": "thisIsNotAStudy"}
 data_2 = {"a": "b", "g": {"genus": "Populus"}}
 data_3 = {"a": "b", "g": {"genus": "Triticum", "species": "Triticum aestivum"}}
@@ -39,7 +39,7 @@ class test_python_transform(unittest.TestCase):
 
     def test_basic_function(self):
         actual = do_card_transform(data_0)
-        expected = {"genusSpecies": "Zea mays", "refURIs": [1, 2, 3, '4', 5], "foo": [1, 2, 3], "genus": "Zea",
+        expected = {"@type": "study", "genusSpecies": "Zea mays", "name": "thisIsAStudyName", "refURIs": [1, 2, 3, '4', 5], "schema:name": "thisIsAStudyName", "foo": [1, 2, 3], "genus": "Zea",
                     "species": "mays",
                     "falseField": False, "studyTypeName": "gnomic",
                     "studyDbId": "1234",'studyName': 'thisIsAStudyName'}
