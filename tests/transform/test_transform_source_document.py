@@ -262,14 +262,14 @@ fixture_expected_data_dict = {
         'urn:BRAPI_TEST/germplasm/1withPUI': {
             'schema:includedInDataCatalog': 'https://test-server.brapi.org',
             '@type': 'germplasm',
-            'germplasmDbId': 'aHR0cHM6Ly9kb2kub3JnLzEwMTQuMTU0My8zNDU2NzhaRVJUWVU=',#Idealy, to enable easy linking of data within the source: urn:BRAPI_TEST/germplasm/1234
+            'germplasmDbId': 'dXJuOkJSQVBJX1RFU1QvZ2VybXBsYXNtLzEyMzQ=',
             'germplasmPUI': 'https://doi.org/1014.1543/345678ZERTYU',
             'studyDbIds':
                 ['dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvc3R1ZHkx'],
             'studyURIs':
                 ['urn:BRAPI_TEST/study/study1'],
-            'germplasmURI' : 'https://doi.org/1014.1543/345678ZERTYU',
-            '@id' : 'https://doi.org/1014.1543/345678ZERTYU',
+            'germplasmURI' : 'urn:BRAPI_TEST/germplasm/1234',
+            '@id' : 'urn:BRAPI_TEST/germplasm/1234',
             'schema:identifier':'1234',
             'node' : 'BRAPI_TEST',
             "accessionNumber": "345678ZERTYU",
@@ -338,7 +338,7 @@ fixture_expected_data_dict = {
             "schema:url": "https://vib.be/RIL_8W_81_RIL_8-way_177"
     },
     'urn:BRAPI_TEST/germplasm/SAMD00237861': {
-        "germplasmDbId": "aHR0cHM6Ly9kZGJqLm5pZy5hYy5qcC9yZXNvdXJjZS9iaW9zYW1wbGUvU0FNRDAwMjM3ODYx",
+        "germplasmDbId": "dXJuOkJSQVBJX1RFU1QvZ2VybXBsYXNtL1NBTUQwMDIzNzg2MQ==",
         "studyDbIds": [
             "dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvRFJYMjMwNjcz"
         ],
@@ -352,7 +352,7 @@ fixture_expected_data_dict = {
         "databaseName": "BioSample",
         "holdingInstitute.instituteName": "Breeding Material Development Unit, Institute of Crop Science, National Agriculture and Food Research Organization",
         "schema:identifier": "SAMD00237861",
-        "germplasmURI": "https://ddbj.nig.ac.jp/resource/biosample/SAMD00237861",
+        "germplasmURI": "urn:BRAPI_TEST/germplasm/SAMD00237861",
         "studyURIs": [
             "urn:BRAPI_TEST/study/DRX230673"
         ],
@@ -360,7 +360,7 @@ fixture_expected_data_dict = {
         "schema:includedInDataCatalog": "https://test-server.brapi.org",
         "schema:url": "https://ddbj.nig.ac.jp/resource/biosample/SAMD00237861",
         "schema:name": "JRC01_Gaisen Mochi - Gaisen Mochi",
-        "@id": "https://ddbj.nig.ac.jp/resource/biosample/SAMD00237861",
+        "@id": "urn:BRAPI_TEST/germplasm/SAMD00237861",
         "@type": "germplasm",
         "genusSpecies": "Oryza sativa",
         "defaultDisplayName": "JRC01_Gaisen Mochi - Gaisen Mochi"
@@ -463,9 +463,9 @@ fixture_expected_data_dict = {
             'trialURIs':
                 ['urn:BRAPI_TEST/trial/1','urn:BRAPI_TEST/trial/trial1'],
             'germplasmDbIds':
-                ['dXJuOkJSQVBJX1RFU1QvZ2VybXBsYXNtL2FiYw==',"aHR0cHM6Ly9kb2kub3JnLzEwMTQuMTU0My8zNDU2NzhaRVJUWVU=", 'dXJuOkJSQVBJX1RFU1QvZ2VybXBsYXNtLzE='],
+                ['dXJuOkJSQVBJX1RFU1QvZ2VybXBsYXNtL2FiYw==', "dXJuOkJSQVBJX1RFU1QvZ2VybXBsYXNtLzE="],
             'germplasmURIs':
-                ['urn:BRAPI_TEST/germplasm/abc',"https://doi.org/1014.1543/345678ZERTYU", 'urn:BRAPI_TEST/germplasm/1'],
+                ['urn:BRAPI_TEST/germplasm/abc','urn:BRAPI_TEST/germplasm/1'],
             'programDbIds':
                 ['dXJuOkJSQVBJX1RFU1QvcHJvZ3JhbS9vaG0='],
             'programURIs':
@@ -553,10 +553,10 @@ fixture_expected_data_dict = {
             "@id": "urn:BRAPI_TEST/study/DRX230673",
             "@type": "study",
             "germplasmDbIds": [
-                "aHR0cHM6Ly9kZGJqLm5pZy5hYy5qcC9yZXNvdXJjZS9iaW9zYW1wbGUvU0FNRDAwMjM3ODYx"
+                "dXJuOkJSQVBJX1RFU1QvZ2VybXBsYXNtL1NBTUQwMDIzNzg2MQ=="
             ],
             "germplasmURIs": [
-                "https://ddbj.nig.ac.jp/resource/biosample/SAMD00237861"
+                "urn:BRAPI_TEST/germplasm/SAMD00237861"
             ]
         }
     },

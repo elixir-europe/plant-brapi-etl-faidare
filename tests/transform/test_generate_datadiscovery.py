@@ -676,12 +676,14 @@ class TestGenerateDataDiscovery(unittest.TestCase):
         self.assertEqual(data_dict_expected, sort_dict_lists(data_dict_actual))
 
 
+#TODO: bug during refactoring, need to fix
     def test_generate_study_datadiscovery(self):
         data_dict_actual = generate_datadiscovery(fixture_source_study,"study", data_dict, test_source)
 
         data_dict_expected = fixture_expected_study
         self.assertEqual(sort_dict_lists(data_dict_expected), sort_dict_lists(data_dict_actual))
 
+    #TODO: bug during refactoring, need to fix
     def test_generate_study_datadiscovery_should_get_germplasmDbId_from_germplasms_list(self):
         data_dict_actual = generate_datadiscovery(fixture_source_study,"study", data_dict, test_source)
 
