@@ -69,35 +69,69 @@ document_types = [
     }
 ]
 
-
 documents_dbid_fields_plus_field_type = {
-    "study": [
-        ["germplasmDbIds", "germplasm"], ["locationDbId", "location"], ["locationDbIds", "location"],
-        ["trialDbIds", "trial"], ["trialDbId", "trial"], ["programDbId", "program"], ["programDbIds", "program"]
-    ],
-    "germplasm": [["locationDbIds", "location"], ["studyDbIds", "study"], ["trialDbIds", "trial"]],
-    "germplasmPedigree":[
-            ["germplasmDbId", "germplasm"], ["parent1DbId", "germplasm"], ["parent2DbId", "germplasm"],
-            ["siblings","germplasmDbId","object-list","germplasm"]#TODO: same with siblings
-    ],
-    "germplasmProgeny": [["germplasmDbId", "germplasm"], ["parent1DbId", "germplasm"], ["parent2DbId", "germplasm"]],
-    "germplasmAttribute": [["germplasmDbId", "germplasm"]],
-    "observationVariable": [["studyDbIds", "study"]],
-    "location": [["studyDbIds", "study"], ["trialDbIds", "trial"]],
-    "trial": [
-        ["germplasmDbIds", "germplasm"], ["locationDbIds", "location"], ["studyDbIds", "study"],
-        ["contactDbIds", "contact"]
-    ],
-    "program": [["trialDbIds", "trial"], ["studyDbIds", "study"]],
-    "contact": [["trialDbIds", "trial"]]
-}
+    "study": {
+        "germplasmDbIds": "germplasm",
+        "locationDbId": "location",
+        "locationDbIds": "location",
+        "trialDbIds": "trial",
+        "trialDbId": "trial",
+        "programDbId": "program",
+        "programDbIds": "program",
+        "contactDbId": "contact"
+    },
+    "germplasm": {
+        "locationDbIds": "location",
+        "studyDbIds": "study", 
+        "trialDbIds": "trial",
+    },
+    "germplasmPedigree": {
+        "germplasmDbId":"germplasm",
+        "parent1DbId":"germplasm",
+        "parent2DbId":"germplasm",
+        # "siblings":{"type": "object-list", "key": "germplasmDbId", "entity": "germplasm"}
+    },
+    "germplasmProgeny": {
+        "germplasmDbId": "germplasm", 
+        "parent1DbId": "germplasm", 
+        "parent2DbId": "germplasm"
+    },
+    "germplasmAttribute": {
+        "germplasmDbId": "germplasm" 
+        # What about attributeDbId ?
+    },
+    "observationVariable": {
+        "studyDbIds": "study"
+    },
+    "location": {
+        "studyDbIds": "study", 
+        "trialDbIds": "trial"
+    },
+    "trial": {
+        "germplasmDbIds": "germplasm", 
+        "locationDbIds": "location",
+        "locationDbId": "location",
+        "studyDbIds": "study",
+        "studyDbId": "study",
+        "contactDbIds": "contact",
+        "contactDbId": "contact",
 
-# Mapping DbId fields within observationUnit document to corresponding entities
-fields_to_encode_obs_unit = {
-    "studyDbId": "study",
-    "studyLocationDbId": "location",
-    "germplasmDbId": "germplasm",
-    "programDbId": "program"
+    },
+    "program": {
+        "trialDbIds": "trial",
+        "studyDbIds": "study"
+    },
+    "contact": {
+        "trialDbIds": "trial"
+    },
+    "observationUnit":{
+        "studyDbId": "study",
+        "studyLocationDbId": "location",
+        "germplasmDbId": "germplasm",
+        "programDbId": "program"
+    }
+
+
 }
 
 def get_document_configs_by_entity(document_configs):
@@ -130,7 +164,7 @@ def _handle_observation_units(source, source_bulk_dir, config, document_type, in
                     transformed_obsUnit = simple_transformations(transformed_obsUnit, source, "observationUnit")
 
                     # Apply base64 encoding transformations
-                    transformed_obsUnit = _handle_observation_unit_dbid_fields(transformed_obsUnit, source, fields_to_encode_obs_unit)
+                    #transformed_obsUnit = _handle_observation_unit_dbid_fields(transformed_obsUnit, source, fields_to_encode_obs_unit)
 
                     obsUnitDict["observationUnit"][str(i)] = transformed_obsUnit
                     i += 1
@@ -254,8 +288,8 @@ def transform_source_documents(data_dict: dict, source: dict, documents_dbid_fie
             document = simple_transformations(document, source, document_type)  # TODO : in mapping ?
 
             # TODO : realy only on study ?
-            document = _handle_study_contacts(document, source)
-            document = _handle_trial_studies(document, source)
+            #document = _handle_study_contacts(document, source)
+            #document = _handle_trial_studies(document, source)
 
             ##document=_handle_observation_unit_study(document, source)
 
@@ -289,39 +323,42 @@ def _handle_DbId_URI(document, document_type, documents_dbid_fields_plus_field_t
     if document_type != "observationVariable":
         document[document_type + 'DbId'] = get_generated_uri_from_dict(source, document_type, document, True)
     # transform other DbIds , skip observationVariable
+    stack = [document]
+    
     if document_type in documents_dbid_fields_plus_field_type:
-        for current_field in documents_dbid_fields_plus_field_type[document_type]:
-            if current_field[0] in document:
-                #TODO:  increase lisibility with :
-                #if current_field[0] in document as ident:
-                #if document[ident] and len(current_field)==4 and current_field[2] == "object-list":
-                #TODO: why len(current_field)==4 ? Should remove this if it is safe
-                if document[current_field[0]] and len(current_field)==4 and current_field[2] == "object-list":
-                    # DbIds
-                    field_ids_transformed = map(
-                        lambda x: dict(x, **{
-                            current_field[1]:get_generated_uri_from_str(source, current_field[3], x[current_field[1]], True)
-                        }),
-                        document[current_field[0]])
-                    document[current_field[0]] = list(field_ids_transformed)
-                elif document[current_field[0]] and current_field[0].endswith("DbIds"):#TODO: could be treated as object-list
-                    # URIs
-                    field_uris_transformed = map(
-                        lambda x: get_generated_uri_from_str(source, current_field[1], x, False), document[current_field[0]])
-                    document[current_field[0].replace("DbIds", "URIs")] = list(set(field_uris_transformed)) #field_u_handle_DbId_URI_handle_DbId_URIris_transformed instead of field_uris_transformed, to be confirmed
-                    # DbIds
-                    field_ids_transformed = map(
-                        lambda x: get_generated_uri_from_str(source, current_field[1], x, True), document[current_field[0]])
-                    document[current_field[0]] = list(field_ids_transformed)
+        while stack:
+            current = stack.pop()
 
-                elif document[current_field[0]] and current_field[0].endswith("DbId"):
-                    # URI
-                    document[current_field[0].replace("DbId", "URI")] = get_generated_uri_from_str(source, current_field[1],
-                                                                                            document[current_field[0]],
-                                                                                            False)
-                    # DbId
-                    document[current_field[0]] = get_generated_uri_from_str(source, current_field[1], document[current_field[0]],
-                                                                     True)
+            if isinstance(current, dict):
+                for key, value in list(current.items()):
+                    if key in documents_dbid_fields_plus_field_type[document_type]:
+                        field_info = documents_dbid_fields_plus_field_type[document_type][key]
+                        
+                        if isinstance(value, list):
+                            if key.endswith("DbIds"):
+                                # URIs
+                                uris = [get_generated_uri_from_str(source, field_info, v, False) for v in value if isinstance(v, str)]
+                                # DbIds
+                                db_ids = [get_generated_uri_from_str(source, field_info, v, True) for v in value if isinstance(v, str)]
+                                current[key.replace("DbIds", "URIs")] = uris
+                                current[key] = db_ids
+                        elif key.endswith("DbId") and isinstance(value, str):
+                            # URI
+                            current[key.replace("DbId", "URI")] = get_generated_uri_from_str(source, field_info, value, False)
+                            # DbId
+                            current[key] = get_generated_uri_from_str(source, field_info, value, True)
+                    
+                    # Continue traversing the document
+                    if isinstance(value, dict):
+                        stack.append(value)
+                    elif isinstance(value, list):
+                        for element in value:
+                            if isinstance(element, (dict, list)):
+                                stack.append(element)
+
+            elif isinstance(current, list):
+                for item in current:
+                    stack.append(item)
 
     return document
 
@@ -330,54 +367,29 @@ def align_formats(current_source_data_dict):
     pass
 
 
-def _handle_study_contacts(document, source):
-    if "contacts" in document:
-        for contact in document["contacts"]:
-            if "contactDbId" in contact:
-                # contact["schema:identifier"] = contact["contactDbId"]
-                contact["contactURI"] = get_generated_uri_from_str(source, "contact", contact["contactDbId"], False)
-                contact["contactDbId"] = get_generated_uri_from_str(source, "contact", contact["contactDbId"], True)
-        return document
-    else:
-        return document
+# def _handle_study_contacts(document, source):
+#     if "contacts" in document:
+#         for contact in document["contacts"]:
+#             if "contactDbId" in contact:
+#                 # contact["schema:identifier"] = contact["contactDbId"]
+#                 contact["contactURI"] = get_generated_uri_from_str(source, "contact", contact["contactDbId"], False)
+#                 contact["contactDbId"] = get_generated_uri_from_str(source, "contact", contact["contactDbId"], True)
+#         return document
+#     else:
+#         return document
 
 
-def _handle_trial_studies(document, source):
-   if "studies" in document:
-        for study in document["studies"]:
-            if "studyDbId" in study:
-                # contact["schema:identifier"] = contact["contactDbId"]
-                study["studyURI"] = get_generated_uri_from_str(source, "study", study["studyDbId"], False)
-                study["studyDbId"] = get_generated_uri_from_str(source, "study", study["studyDbId"], True)
-        return document
-   else:
-        return document
+# def _handle_trial_studies(document, source):
+#    if "studies" in document:
+#         for study in document["studies"]:
+#             if "studyDbId" in study:
+#                 # contact["schema:identifier"] = contact["contactDbId"]
+#                 study["studyURI"] = get_generated_uri_from_str(source, "study", study["studyDbId"], False)
+#                 study["studyDbId"] = get_generated_uri_from_str(source, "study", study["studyDbId"], True)
+#         return document
+#    else:
+#         return document
    
-
-
-#_handle_observation_unit_dbid_fields
-def _handle_observation_unit_dbid_fields(document, source, fields_to_encode_obs_unit):
-    """
-    handling the transformation of some fields into base64 encoding
-    """
-    stack = [document]
-
-    while stack:
-        current = stack.pop()
-
-        if isinstance(current, dict):
-            for key, value in current.items():
-                # Check if the field must be encoded
-                if key in fields_to_encode_obs_unit:
-                    current[key] = get_generated_uri_from_str(source, fields_to_encode_obs_unit[key], value, True)
-                # Add embedded fields to the stack
-                elif isinstance(value, (dict, list)):
-                    stack.append(value)
-        elif isinstance(current, list):
-            for item in current:
-                stack.append(item)
-
-    return document
 
 
 
