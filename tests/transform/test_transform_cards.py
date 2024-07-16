@@ -15,11 +15,11 @@ data_6 = {"g": {"genus": "Zea", "species": "mays", "subtaxa": "subsp. mexicana"}
 data_7 = {"refURIs": [1, 2, 3, '4', 5], "studyTypeName": "geno", "genus": "Zea", "species": "mays", "falseField": False}
 data_8 = {"a": "a", "genusSpecies": "pasTouche", "genus": "Zea", "species": "Zea mays"}
 data_8_1 = {"germplasmDbId":"34567", "a": "a", "genusSpecies": "pasTouche",
-            "genus": "Zea", "species": "Zea mays", "accessionNumber":"accessionNumber123"}
+            "genus": "Zea", "species": "Zea mays", "accessionNumber":"accessionNumber123", "germplasmName":"accessionNumber123", "@type": "germplasm"}
 data_8_2 = {"germplasmDbId":"34567","a": "a", "genusSpecies": "pasTouche",
-            "genus": "Zea", "species": "Zea mays", "germplasmName":"originalGermplasmName"}
+            "genus": "Zea", "species": "Zea mays", "germplasmName":"originalGermplasmName", "@type": "germplasm"}
 data_8_3 = {"germplasmDbId":"34567","a": "a", "genusSpecies": "pasTouche",
-            "genus": "Zea", "species": "Zea mays", "defaultDisplayName":"defaultDisplayName"}
+            "genus": "Zea", "species": "Zea mays", "defaultDisplayName":"defaultDisplayName", "@type": "germplasm"}
 data_index = {
     'ref': {
         1: data_1, 2: data_2, 3: data_3, '4': data_4, 5: data_5
@@ -65,21 +65,18 @@ class test_python_transform(unittest.TestCase):
 
     def test_germplasmName_transform(self):
         actual = do_card_transform(data_8_1)
-        expected = {"germplasmDbId":"34567", "a": "a", "genusSpecies": "pasTouche",
-                    "genus": "Zea", "species": "Zea mays", "accessionNumber":"accessionNumber123"
-                    , "germplasmName":"accessionNumber123"}
+        expected = {"@type": "germplasm", "germplasmDbId":"34567", "a": "a", "genusSpecies": "pasTouche",
+                    "genus": "Zea", "species": "Zea mays", "accessionNumber": "accessionNumber123", "germplasmName": "accessionNumber123", "defaultDisplayName": "accessionNumber123", "schema:name": "accessionNumber123"}
         self.assertEqual( expected, actual)
 
         actual = do_card_transform(data_8_2)
-        expected = {"germplasmDbId":"34567", "a": "a", "genusSpecies": "pasTouche",
-                    "genus": "Zea", "species": "Zea mays", "accessionNumber":"accessionNumber123"
-            , "germplasmName":"accessionNumber123"}
+        expected = {"@type": "germplasm", "germplasmDbId":"34567", "a": "a", "genusSpecies": "pasTouche",
+                    "genus": "Zea", "species": "Zea mays", "germplasmName": "originalGermplasmName", "defaultDisplayName": "originalGermplasmName", "schema:name": "originalGermplasmName"}
         self.assertEqual( expected, actual)
 
         actual = do_card_transform(data_8_3)
-        expected = {"germplasmDbId":"34567", "a": "a", "genusSpecies": "pasTouche",
-                    "genus": "Zea", "species": "Zea mays", "accessionNumber":"accessionNumber123"
-            , "germplasmName":"accessionNumber123"}
+        expected = {"@type": "germplasm", "germplasmDbId":"34567", "a": "a", "genusSpecies": "pasTouche",
+                    "genus": "Zea", "species": "Zea mays", "germplasmName":"defaultDisplayName", "defaultDisplayName": "defaultDisplayName", "schema:name": "defaultDisplayName"}
         self.assertEqual( expected, actual)
 
 
