@@ -8,9 +8,9 @@ data_2 = {"a": "b", "g": {"genus": "Populus"}}
 data_3 = {"a": "b", "g": {"genus": "Triticum", "species": "Triticum aestivum"}}
 data_4 = {"g": {"genus": "Triticum", "species": "aestivum"}}
 data_5 = {"links": {"objURIs": [1, 2, 3, '4', 'g6']}, "study_name": "the study name", "studyDbId": "5678", "@type": "study"}
-data_5_1 = {"study_name": "the study name", "studyDbId": "5678", "seasons": {"year":"2023", "season": "spring"}}
-data_5_2 = {"study_name": "the study name", "studyDbId": "5678", "seasons":{"year": "2023"}}
-data_5_3 = {"study_name": "the study name", "studyDbId": "5678", "seasons":"2023"}
+data_5_1 = {"study_name": "the study name", "studyDbId": "5678", "seasons": {"year":"2023", "season": "spring"}, "@type": "study"}
+data_5_2 = {"study_name": "the study name", "studyDbId": "5678", "seasons":{"year": "2023"}, "@type": "study"}
+data_5_3 = {"study_name": "the study name", "studyDbId": "5678", "seasons":"2023", "@type": "study"}
 data_6 = {"g": {"genus": "Zea", "species": "mays", "subtaxa": "subsp. mexicana"}}
 data_7 = {"refURIs": [1, 2, 3, '4', 5], "studyTypeName": "geno", "genus": "Zea", "species": "mays", "falseField": False}
 data_8 = {"a": "a", "genusSpecies": "pasTouche", "genus": "Zea", "species": "Zea mays"}
@@ -52,17 +52,15 @@ class test_python_transform(unittest.TestCase):
 
     def test_season_transform(self):
         actual = do_card_transform(data_5_1)
-        expected = {"studyName": "the study name",
-                    "studyDbId": "5678",
-                    "seasons": "spring 2023"}
+        expected = {"@type": "study", 'schema:name': 'the study name', "seasons": "spring 2023", "studyDbId": "5678", "studyName": "the study name", 'study_name': 'the study name'}
         self.assertEqual( expected, actual)
 
         actual = do_card_transform(data_5_2)
-        expected = {"studyName": "the study name", "studyDbId": "5678", "seasons": "2023"}
+        expected = {"@type": "study", 'schema:name': 'the study name', "seasons": "2023", "studyDbId": "5678", "studyName": "the study name", "study_name": "the study name"}
         self.assertEqual(actual, expected)
 
         actual = do_card_transform(data_5_3)
-        expected = {"studyName": "the study name", "studyDbId": "5678", "seasons": "2023"}
+        expected = {"@type": "study", 'schema:name': 'the study name', "seasons": "2023", "studyDbId": "5678", "studyName": "the study name",  "study_name": "the study name"}
         self.assertEqual(actual, expected)
 
     def test_germplasmName_transform(self):
