@@ -3,7 +3,6 @@ import traceback
 import json
 import time
 
-from etl.common.templating import parse_template
 from etl.common.utils import *
 from etl.transform.generate_datadiscovery import generate_datadiscovery
 from etl.transform.transform_cards import do_card_transform
@@ -486,10 +485,6 @@ def main(config):
 
     bulk_dir = get_folder_path([config['data-dir'], 'json-bulk'], create=True)
     sources = config['sources']
-    transform_config = config['transform-elasticsearch']
-
-    # Parse document templates
-    transform_config['documents'] = list(map(parse_template, transform_config['documents']))
 
     threads = list()
     for (source_name, source) in sources.items():
