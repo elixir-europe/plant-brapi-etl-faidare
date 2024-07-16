@@ -2,12 +2,12 @@ import unittest
 from etl.transform.transform_cards import do_card_transform
 
 data_0 = {"refURIs": [1, 2, 3, '4', 5], "studyDbId": "1234", "foo": [1, 2, 3], "name": "thisIsAStudyName",
-          "genus": "Zea", "species": "mays", "falseField": False, "studyTypeName": "gnomic", "@type":"study"}
+          "genus": "Zea", "species": "mays", "falseField": False, "studyTypeName": "gnomic", "@type": "study"}
 data_1 = {"a": "a", "genus": "Zea", "species": "Zea mays", "name": "thisIsNotAStudy"}
 data_2 = {"a": "b", "g": {"genus": "Populus"}}
 data_3 = {"a": "b", "g": {"genus": "Triticum", "species": "Triticum aestivum"}}
 data_4 = {"g": {"genus": "Triticum", "species": "aestivum"}}
-data_5 = {"links": {"objURIs": [1, 2, 3, '4', 'g6']}, "study_name": "the study name", "studyDbId": "5678"}
+data_5 = {"links": {"objURIs": [1, 2, 3, '4', 'g6']}, "study_name": "the study name", "studyDbId": "5678", "@type": "study"}
 data_5_1 = {"study_name": "the study name", "studyDbId": "5678", "seasons": {"year":"2023", "season": "spring"}}
 data_5_2 = {"study_name": "the study name", "studyDbId": "5678", "seasons":{"year": "2023"}}
 data_5_3 = {"study_name": "the study name", "studyDbId": "5678", "seasons":"2023"}
@@ -34,7 +34,7 @@ class test_python_transform(unittest.TestCase):
 
     def test_basic_mapping(self):
         actual = do_card_transform(data_5)
-        expected = {"links": {"objURIs": [1, 2, 3, '4', 'g6']}, "studyName": "the study name", "studyDbId": "5678"}
+        expected = {"@type": "study", "links": {"objURIs": [1, 2, 3, '4', 'g6']}, 'schema:name': 'the study name', "studyName": "the study name", "studyDbId": "5678", 'study_name': 'the study name'}
         self.assertEqual(actual, expected)
 
     def test_basic_function(self):
