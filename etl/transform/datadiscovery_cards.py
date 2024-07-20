@@ -227,7 +227,7 @@ def simple_transformations(document, source, document_type):
         document["source"] = source['schema:name']
     document["schema:includedInDataCatalog"] = source["@id"]
     if "documentationURL" in document:
-        # document["url"] = document["documentationURL"]
+        document["url"] = document["documentationURL"]
         document["schema:url"] = document["documentationURL"]
     if document_type + "Name" in document:
         document["schema:name"] = document[document_type + "Name"]
