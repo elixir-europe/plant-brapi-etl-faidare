@@ -420,8 +420,8 @@ def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config
             )
 
         # TODO: this should be generalised : detect sources that are not jsonl and turn it into the right format
-        if source_name == 'EVA':
-            logger.info("Flattening EVA data...")
+        if source_name in ('EVA', "PHIS"):
+            logger.info("Flattening EVA and PHIS data...")
             json_to_jsonl(source_json_dir)
             rm_tags(source_json_dir)
 
