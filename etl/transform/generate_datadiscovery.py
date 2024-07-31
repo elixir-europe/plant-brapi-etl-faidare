@@ -2,8 +2,16 @@ import base64
 from etl.transform.utils import get_generated_uri_from_str
 
 
+def make_hashable(obj):
+    if isinstance(obj, (tuple, list)):
+        return tuple(make_hashable(e) for e in obj)
+    elif isinstance(obj, dict):
+        return tuple((k, make_hashable(v)) for k, v in obj.items())
+    return obj
+
 #TODO: naive and dull/barely readable implementation. See if a mapping dict could do the trick
 def _generate_datadiscovery_germplasm(document: dict, data_dict: dict, source: dict):
+
     datadiscovery_document = document.copy()
     datadiscovery_document["node"] = document.get("node")
     datadiscovery_document["databaseName"] = document.get("databaseName")
@@ -95,7 +103,7 @@ def _generate_datadiscovery_germplasm(document: dict, data_dict: dict, source: d
         acc_set.add(document.get("accessionNumber"))
     if document.get("synonyms"):
         for s in document.get("synonyms"):
-            acc_set.add(s)
+            acc_set.add(make_hashable(s))
         #acc_set.add(document.get("synonyms"))
     datadiscovery_document["germplasm"]["accession"] = list(acc_set)
 
@@ -218,7 +226,7 @@ def _add_linked_germplasm_info(datadiscovery_document, document, data_dict):
             if germplasm.get("synonyms"):
                 if isinstance(germplasm.get("synonyms"), list):
                     for s in germplasm.get("synonyms"):
-                        accession_set.add(s)
+                        accession_set.add(make_hashable(s))
                 else:
                     accession_set.add(germplasm.get("synonyms"))
             accession_set.discard(None)
@@ -238,7 +246,7 @@ def _add_linked_germplasm_info(datadiscovery_document, document, data_dict):
             if germplasm.get("taxonSynonyms"):
                 if isinstance(germplasm.get("taxonSynonyms"), list):
                     for synonym in germplasm.get("taxonSynonyms"):
-                        crop_name_set.add(synonym)
+                        crop_name_set.add(make_hashable(synonym))
                 else:
                     crop_name_set.add(germplasm.get("taxonSynonyms"))
             if germplasm.get("commonCropName"):
