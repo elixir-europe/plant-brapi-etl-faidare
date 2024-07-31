@@ -227,7 +227,7 @@ def simple_transformations(document, source, document_type):
         document["source"] = source['schema:name']
     document["schema:includedInDataCatalog"] = source["@id"]
     if "documentationURL" in document:
-        # document["url"] = document["documentationURL"]
+        document["url"] = document["documentationURL"]
         document["schema:url"] = document["documentationURL"]
     if document_type + "Name" in document:
         document["schema:name"] = document[document_type + "Name"]
@@ -420,8 +420,8 @@ def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config
             )
 
         # TODO: this should be generalised : detect sources that are not jsonl and turn it into the right format
-        if source_name == 'EVA':
-            logger.info("Flattening EVA data...")
+        if source_name in ('EVA', "PHIS"):
+            logger.info("Flattening EVA and PHIS data...")
             json_to_jsonl(source_json_dir)
             rm_tags(source_json_dir)
 
