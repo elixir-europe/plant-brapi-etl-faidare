@@ -179,7 +179,15 @@ class transform_integration_test(unittest.TestCase):
         with gzip.open(self._expected_data_dir+"VIB_observation_unit_expected.json.gz") as expected_vib_f:
             expected_vib = json.load(expected_vib_f)
 
+        for actual_observationUnit in actual_vib:
+            expected_observationUnit = next((observationUnit for observationUnit in expected_vib if
+                                             observationUnit["observationUnitDbId"] == actual_observationUnit[
+                                                 "observationUnitDbId"]), None)
+            self.assertIsNotNone(expected_observationUnit)
+            self.assertEqual(sort_dict_lists(expected_observationUnit), sort_dict_lists(actual_observationUnit))
+
         self.assertEqual(sort_dict_lists(actual_vib), sort_dict_lists(expected_vib))
+
 
 
     def test_germplasNames_generated(self):
