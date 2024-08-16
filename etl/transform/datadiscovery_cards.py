@@ -319,17 +319,19 @@ def _handle_DbId_URI(document, document_type, documents_dbid_fields_plus_field_t
     document["schema:identifier"] = document[document_type + 'DbId']
     document[document_type + 'URI'] = get_generated_uri_from_dict(source, document_type,
                                                                   document)  # this should be URN field rather than URI
+    # transform other DbIds , skip observationVariable
     if document_type != "observationVariable":
         document[document_type + 'DbId'] = get_generated_uri_from_dict(source, document_type, document, True)
-    # transform other DbIds , skip observationVariable
-    stack = [document]
+    # create a stack for the current document
+    stackDocument = [document]
     
     if document_type in documents_dbid_fields_plus_field_type:
-        while stack:
-            current = stack.pop()
+        while stackDocument:
+            # Retrieve the top item of the stack
+            currentItem = stackDocument.pop()
 
-            if isinstance(current, dict):
-                for key, value in list(current.items()):
+            if isinstance(currentItem, dict):
+                for key, value in list(currentItem.items()):
                     if key in documents_dbid_fields_plus_field_type[document_type]:
                         field_info = documents_dbid_fields_plus_field_type[document_type][key]
                         
@@ -339,58 +341,36 @@ def _handle_DbId_URI(document, document_type, documents_dbid_fields_plus_field_t
                                 uris = [get_generated_uri_from_str(source, field_info, v, False) for v in value if isinstance(v, str)]
                                 # DbIds
                                 db_ids = [get_generated_uri_from_str(source, field_info, v, True) for v in value if isinstance(v, str)]
-                                current[key.replace("DbIds", "URIs")] = uris
-                                current[key] = db_ids
+                                # Create a new item in the document by adding a key where 'DbIds' is replaced with 'URIs' and assigning to it the value 'uris'.
+                                # For example, for a germplasm document, add a new key 'germplasmURIs' with the value 'uris', while keeping 'germplasmDbIds' intact.
+                                currentItem[key.replace("DbIds", "URIs")] = uris
+                                currentItem[key] = db_ids
                         elif key.endswith("DbId") and isinstance(value, str):
                             # URI
-                            current[key.replace("DbId", "URI")] = get_generated_uri_from_str(source, field_info, value, False)
+                            currentItem[key.replace("DbId", "URI")] = get_generated_uri_from_str(source, field_info, value, False)
                             # DbId
-                            current[key] = get_generated_uri_from_str(source, field_info, value, True)
+                            currentItem[key] = get_generated_uri_from_str(source, field_info, value, True)
                     
                     # Continue traversing the document
+                    # If the value is a dictionary, add it to the stack for further processing
                     if isinstance(value, dict):
-                        stack.append(value)
+                        stackDocument.append(value)
+                    # If the value is a list
                     elif isinstance(value, list):
                         for element in value:
+                            # Add to the stack all elements of the list that are either dictionaries or lists for further processing
                             if isinstance(element, (dict, list)):
-                                stack.append(element)
-
-            elif isinstance(current, list):
-                for item in current:
-                    stack.append(item)
+                                stackDocument.append(element)
+            # Add each item from currentItem to the stack if currentItem is a list
+            elif isinstance(currentItem, list):
+                for item in currentItem:
+                    stackDocument.append(item)
 
     return document
 
 
 def align_formats(current_source_data_dict):
     pass
-
-
-# def _handle_study_contacts(document, source):
-#     if "contacts" in document:
-#         for contact in document["contacts"]:
-#             if "contactDbId" in contact:
-#                 # contact["schema:identifier"] = contact["contactDbId"]
-#                 contact["contactURI"] = get_generated_uri_from_str(source, "contact", contact["contactDbId"], False)
-#                 contact["contactDbId"] = get_generated_uri_from_str(source, "contact", contact["contactDbId"], True)
-#         return document
-#     else:
-#         return document
-
-
-# def _handle_trial_studies(document, source):
-#    if "studies" in document:
-#         for study in document["studies"]:
-#             if "studyDbId" in study:
-#                 # contact["schema:identifier"] = contact["contactDbId"]
-#                 study["studyURI"] = get_generated_uri_from_str(source, "study", study["studyDbId"], False)
-#                 study["studyDbId"] = get_generated_uri_from_str(source, "study", study["studyDbId"], True)
-#         return document
-#    else:
-#         return document
-   
-
-
 
 
 def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config, start_time):
