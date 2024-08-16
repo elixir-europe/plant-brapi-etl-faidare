@@ -176,7 +176,7 @@ class transform_integration_test(unittest.TestCase):
         with gzip.open(self._actual_data_dir+"VIB/observationUnit-1.json.gz") as actual_vib_f:
             actual_vib = json.load(actual_vib_f)
 
-        with gzip.open(self._expected_data_dir+"VIB_observation_unit_expected.json.gz") as expected_vib_f:
+        with gzip.open(self._expected_data_dir+"INRAE-URGI_observation_unit_expected.json.gz") as expected_vib_f:
             expected_vib = json.load(expected_vib_f)
 
         for actual_observationUnit in actual_vib:
