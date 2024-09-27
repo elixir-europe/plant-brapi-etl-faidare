@@ -1,0 +1,12 @@
+{
+  "@context": {
+    "schema": "http://schema.org/",
+    "brapi": "https://brapi.org/rdf/"
+  },
+  "@type": "schema:DataCatalog",
+  "@id": "https://www.cirad.fr",
+  "schema:identifier": "CIRAD",
+  "schema:name": "CIRAD GIGWA",
+  "brapi:endpointUrl": "https://gigwa.southgreen.fr/gigwa/rest/Sorghum-JGI_v1/brapi/v1/",
+  "brapi:studyType": "Genotyping"
+}
