@@ -5,6 +5,7 @@ import re
 
 from etl.common.brapi import get_identifier
 from etl.common.utils import get_file_path, is_list_like, remove_empty
+from collections import abc
 
 
 def dict_merge(into, merge_dct):
@@ -18,7 +19,7 @@ def dict_merge(into, merge_dct):
     """
     for k, v in merge_dct.items():
         if (k in into and isinstance(into[k], dict)
-                and isinstance(merge_dct[k], collections.Mapping)):
+                and isinstance(merge_dct[k], abc.Mapping)):
             dict_merge(into[k], merge_dct[k])
         else:
             into[k] = merge_dct[k]
