@@ -236,7 +236,7 @@ def simple_transformations(document, source, document_type):
     if document_type == "germplasm" and "synonyms" in document:
         document = transform_synonyms_germplasm(document)
     if document_type =="germplasm":
-        document = transform_synonyms_institute(document)
+        document = transform_institute_germplasm(document)
 
     return document
 
@@ -264,7 +264,7 @@ def transform_synonyms_germplasm(document):
             document["synonyms"] = [item["synonym"] for item in document["synonyms"] if "synonym" in item]
     return document
 
-def transform_synonyms_institute(document):
+def transform_institute_germplasm(document):
     """
     Ensure compatibility between BrAPI v1 and v2 for the institute-related fields,
     keeping both 'collector' and 'distributors'.
