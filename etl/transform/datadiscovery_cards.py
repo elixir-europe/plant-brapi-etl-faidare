@@ -233,8 +233,62 @@ def simple_transformations(document, source, document_type):
         document["schema:name"] = document[document_type + "Name"]
     document["@id"] = document[document_type + "URI"]
     document["@type"] = document_type
+    if document_type == "germplasm" and "synonyms" in document:
+        document = transform_synonyms_germplasm(document)
+    if document_type =="germplasm":
+        document = transform_institute_germplasm(document)
 
     return document
+
+# def transform_synonyms(synonyms):
+#     #return [{"type": "null", "synonym": synonym["synonym"]} for synonym in synonyms]
+#     if isinstance(synonyms, list) and all(isinstance(s, str) for s in synonyms):
+#             # Transform each synonyms to an object of 'type' and 'synonym'
+#         new_synonyms = [{"type": "null", "synonym": s} for s in synonyms]
+#         synonyms = new_synonyms
+
+def transform_synonyms_germplasm(document):
+    """
+    Transform a germplasm document to ensure compatibility with both BrAPI v1 and v2.
+    Adds a synonymsV2 field if it doesn't already exist.
+    """
+    if "synonyms" in document:
+        if isinstance(document["synonyms"], list) and all(isinstance(item,str) for item in document["synonyms"]):
+            # BrAPI v1 case: Convert string to nested format
+            document["synonymsV2"] = [
+                {"type": "null", "synonym": synonym.strip()} for synonym in document["synonyms"]
+            ]
+        elif isinstance(document["synonyms"], list) and all(isinstance(item,dict) for item in document["synonyms"]):
+            # BrAPI v2 case: Convert string to nested format
+            document["synonymsV2"] = document["synonyms"]
+            document["synonyms"] = [item["synonym"] for item in document["synonyms"] if "synonym" in item]
+    return document
+
+def transform_institute_germplasm(document):
+    """
+    Ensure compatibility between BrAPI v1 and v2 for the institute-related fields,
+    keeping both 'collector' and 'distributors'.
+    """
+    # Initialize 'collector' if missing
+    if "collector" not in document:
+        if "distributors" in document and isinstance(document["distributors"], list) and len(document["distributors"]) > 0:
+            # Use the first distributor as collector if available
+            document["collector"] = document["distributors"][0]
+        else:
+            # Default value
+            document["collector"] = None
+
+    # Initialize 'distributors' if missing
+    if "distributors" not in document:
+        if "collector" in document and isinstance(document["collector"], dict):
+            # Create a single-item list from collector
+            document["distributors"] = [document["collector"]]
+        else:
+            # Default value
+            document["distributors"] = []
+
+    return document
+
 
 
 def _handle_study_germplasm_linking(document, source, data_dict):

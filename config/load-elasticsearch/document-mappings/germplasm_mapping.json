@@ -34,6 +34,13 @@
         "type": "string",
         "index": "not_analyzed"
       },
+      "synonymsV2": {
+        "type": "nested",
+        "properties": {
+          "type": { "type": "string", "index": "not_analyzed" },
+          "synonym": { "type": "string", "index": "not_analyzed" }
+        }
+      },
       "commonCropName": {
         "type": "string",
         "index": "not_analyzed"

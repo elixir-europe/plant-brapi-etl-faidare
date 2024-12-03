@@ -2,7 +2,7 @@ import json
 import unittest
 
 from etl.transform.generate_datadiscovery import  generate_datadiscovery
-from test_transform_source_document import fixture_expected_data_dict as data_dict
+from tests.transform.test_transform_source_document import fixture_expected_data_dict as data_dict
 from tests.transform.utils import sort_dict_lists
 
 source = {
@@ -10,9 +10,19 @@ source = {
     'schema:identifier': 'source'
 }
 
-# load test source from json file sources/TEST.json
-with open('../../sources/TEST.json') as json_file:
-    test_source = json.load(json_file)
+# load test source from json file sources/TEST.json. copied here to solve path problems
+test_source = {
+    "@context": {
+        "schema": "http://schema.org/",
+        "brapi": "https://brapi.org/"
+    },
+    "@type": "schema:DataCatalog",
+    "@id": "https://test-server.brapi.org",
+    "schema:identifier": "BRAPI_TEST",
+    "schema:name": "BRAPI TEST source name",
+    "brapi:endpointUrl": "https://test-server.brapi.org/brapi/v1/"
+}
+
 
 fixture_source_germplasm = {
     "node": "BRAPI_TEST_node",
