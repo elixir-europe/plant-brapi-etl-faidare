@@ -6,7 +6,7 @@ import time
 from etl.common.utils import *
 from etl.transform.generate_datadiscovery import generate_datadiscovery
 from etl.transform.transform_cards import do_card_transform
-from etl.transform.utils import get_generated_uri_from_dict, get_generated_uri_from_str, save_json, json_to_jsonl, \
+from etl.transform.utils import get_generated_uri_from_dict, get_generated_uri_from_str, detect_and_convert_json_files, save_json, json_to_jsonl, \
     rm_tags
 
 NB_THREADS = max(int(multiprocessing.cpu_count() * 0.75), 2)
@@ -453,11 +453,9 @@ def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config
                 'Please make sure you have run the BrAPI extraction before trying to launch the transformation process.'
             )
 
-        # TODO: this should be generalised : detect sources that are not jsonl and turn it into the right format
-        if source_name in ('EVA', "PHIS"):
-            logger.info("Flattening EVA and PHIS data...")
-            json_to_jsonl(source_json_dir)
-            rm_tags(source_json_dir)
+        # Detect and convert json source files to jsonl: EVA and PHIS
+        detect_and_convert_json_files(source_json_dir,source)
+        rm_tags(source_json_dir)
 
         logger.info("Loading data, generating URIs and global identifiers for " + source_name
                     + " duration : " + _get_duration_time_str(time.perf_counter() - start_time) )
