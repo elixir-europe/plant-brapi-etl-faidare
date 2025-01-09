@@ -7,5 +7,6 @@
   "@id": "http://pippa.psb.ugent.be",
   "schema:identifier": "VIB",
   "schema:name": "VIB PIPPA",
-  "brapi:endpointUrl": "https://pippa.psb.ugent.be/BrAPIPPA/brapi/v1/"
+  "brapi:endpointUrl": "https://pippa.psb.ugent.be/BrAPIPPA/brapi/v1/",
+  "brapi:static-file-type":"jsonl"
 }

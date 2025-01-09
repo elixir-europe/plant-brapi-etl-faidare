@@ -6,7 +6,7 @@ import time
 from etl.common.utils import *
 from etl.transform.generate_datadiscovery import generate_datadiscovery
 from etl.transform.transform_cards import do_card_transform
-from etl.transform.utils import get_generated_uri_from_dict, get_generated_uri_from_str, save_json, json_to_jsonl, \
+from etl.transform.utils import get_generated_uri_from_dict, get_generated_uri_from_str, detect_and_convert_json_files, save_json, json_to_jsonl, \
     rm_tags
 
 NB_THREADS = max(int(multiprocessing.cpu_count() * 0.75), 2)
@@ -233,8 +233,55 @@ def simple_transformations(document, source, document_type):
         document["schema:name"] = document[document_type + "Name"]
     document["@id"] = document[document_type + "URI"]
     document["@type"] = document_type
+    if document_type == "germplasm" and "synonyms" in document:
+        document = transform_synonyms_germplasm(document)
+    if document_type =="germplasm":
+        document = transform_institute_germplasm(document)
 
     return document
+
+def transform_synonyms_germplasm(document):
+    """
+    Transform a germplasm document to ensure compatibility with both BrAPI v1 and v2.
+    Adds a synonymsV2 field if it doesn't already exist.
+    """
+    if "synonyms" in document:
+        if isinstance(document["synonyms"], list) and all(isinstance(item,str) for item in document["synonyms"]):
+            # BrAPI v1 case: Convert string to nested format
+            document["synonymsV2"] = [
+                {"type": "null", "synonym": synonym.strip()} for synonym in document["synonyms"]
+            ]
+        elif isinstance(document["synonyms"], list) and all(isinstance(item,dict) for item in document["synonyms"]):
+            # BrAPI v2 case: Convert string to nested format
+            document["synonymsV2"] = document["synonyms"]
+            document["synonyms"] = [item["synonym"] for item in document["synonyms"] if "synonym" in item]
+    return document
+
+def transform_institute_germplasm(document):
+    """
+    Ensure compatibility between BrAPI v1 and v2 for the institute-related fields,
+    keeping both 'collector' and 'distributors'.
+    """
+    # Initialize 'collector' if missing
+    if "collector" not in document:
+        if "distributors" in document and isinstance(document["distributors"], list) and len(document["distributors"]) > 0:
+            # Use the first distributor as collector if available
+            document["collector"] = document["distributors"][0]
+        else:
+            # Default value
+            document["collector"] = None
+
+    # Initialize 'distributors' if missing
+    if "distributors" not in document:
+        if "collector" in document and isinstance(document["collector"], dict):
+            # Create a single-item list from collector
+            document["distributors"] = [document["collector"]]
+        else:
+            # Default value
+            document["distributors"] = []
+
+    return document
+
 
 
 def _handle_study_germplasm_linking(document, source, data_dict):
@@ -323,48 +370,48 @@ def _handle_DbId_URI(document, document_type, documents_dbid_fields_plus_field_t
     if document_type != "observationVariable":
         document[document_type + 'DbId'] = get_generated_uri_from_dict(source, document_type, document, True)
     # create a stack for the current document
-    stackDocument = [document]
+    stackDocumentFields = [document]
     
     if document_type in documents_dbid_fields_plus_field_type:
-        while stackDocument:
+        while stackDocumentFields:
             # Retrieve the top item of the stack
-            currentItem = stackDocument.pop()
+            currentDocumentfield = stackDocumentFields.pop()
 
-            if isinstance(currentItem, dict):
-                for key, value in list(currentItem.items()):
-                    if key in documents_dbid_fields_plus_field_type[document_type]:
-                        field_info = documents_dbid_fields_plus_field_type[document_type][key]
+            if isinstance(currentDocumentfield, dict):
+                for fieldKey, fieldValue in list(currentDocumentfield.items()):
+                    if fieldKey in documents_dbid_fields_plus_field_type[document_type]:
+                        field_info = documents_dbid_fields_plus_field_type[document_type][fieldKey]
                         
-                        if isinstance(value, list):
-                            if key.endswith("DbIds"):
+                        if isinstance(fieldValue, list):
+                            if fieldKey.endswith("DbIds"):
                                 # URIs
-                                uris = [get_generated_uri_from_str(source, field_info, v, False) for v in value if isinstance(v, str)]
+                                uris = [get_generated_uri_from_str(source, field_info, v, False) for v in fieldValue if isinstance(v, str)]
                                 # DbIds
-                                db_ids = [get_generated_uri_from_str(source, field_info, v, True) for v in value if isinstance(v, str)]
-                                # Create a new item in the document by adding a key where 'DbIds' is replaced with 'URIs' and assigning to it the value 'uris'.
-                                # For example, for a germplasm document, add a new key 'germplasmURIs' with the value 'uris', while keeping 'germplasmDbIds' intact.
-                                currentItem[key.replace("DbIds", "URIs")] = uris
-                                currentItem[key] = db_ids
-                        elif key.endswith("DbId") and isinstance(value, str):
+                                db_ids = [get_generated_uri_from_str(source, field_info, v, True) for v in fieldValue if isinstance(v, str)]
+                                # Create a new item in the document by adding a fieldKey where 'DbIds' is replaced with 'URIs' and assigning to it the fieldValue 'uris'.
+                                # For example, for a germplasm document, add a new fieldKey 'germplasmURIs' with the fieldValue 'uris', while keeping 'germplasmDbIds' intact.
+                                currentDocumentfield[fieldKey.replace("DbIds", "URIs")] = uris
+                                currentDocumentfield[fieldKey] = db_ids
+                        elif fieldKey.endswith("DbId") and isinstance(fieldValue, str):
                             # URI
-                            currentItem[key.replace("DbId", "URI")] = get_generated_uri_from_str(source, field_info, value, False)
+                            currentDocumentfield[fieldKey.replace("DbId", "URI")] = get_generated_uri_from_str(source, field_info, fieldValue, False)
                             # DbId
-                            currentItem[key] = get_generated_uri_from_str(source, field_info, value, True)
+                            currentDocumentfield[fieldKey] = get_generated_uri_from_str(source, field_info, fieldValue, True)
                     
                     # Continue traversing the document
-                    # If the value is a dictionary, add it to the stack for further processing
-                    if isinstance(value, dict):
-                        stackDocument.append(value)
-                    # If the value is a list
-                    elif isinstance(value, list):
-                        for element in value:
+                    # If the fieldValue is a dictionary, add it to the stack for further processing
+                    if isinstance(fieldValue, dict):
+                        stackDocumentFields.append(fieldValue)
+                    # If the fieldValue is a list
+                    elif isinstance(fieldValue, list):
+                        for element in fieldValue:
                             # Add to the stack all elements of the list that are either dictionaries or lists for further processing
                             if isinstance(element, (dict, list)):
-                                stackDocument.append(element)
-            # Add each item from currentItem to the stack if currentItem is a list
-            elif isinstance(currentItem, list):
-                for item in currentItem:
-                    stackDocument.append(item)
+                                stackDocumentFields.append(element)
+            # Add each item from currentDocumentfield to the stack if currentDocumentfield is a list
+            elif isinstance(currentDocumentfield, list):
+                for item in currentDocumentfield:
+                    stackDocumentFields.append(item)
 
     return document
 
@@ -399,11 +446,9 @@ def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config
                 'Please make sure you have run the BrAPI extraction before trying to launch the transformation process.'
             )
 
-        # TODO: this should be generalised : detect sources that are not jsonl and turn it into the right format
-        if source_name in ('EVA', "PHIS"):
-            logger.info("Flattening EVA and PHIS data...")
-            json_to_jsonl(source_json_dir)
-            rm_tags(source_json_dir)
+        # Detect and convert json source files to jsonl: EVA and PHIS
+        detect_and_convert_json_files(source_json_dir,source)
+        rm_tags(source_json_dir)
 
         logger.info("Loading data, generating URIs and global identifiers for " + source_name
                     + " duration : " + _get_duration_time_str(time.perf_counter() - start_time) )
