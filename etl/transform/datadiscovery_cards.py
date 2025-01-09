@@ -240,13 +240,6 @@ def simple_transformations(document, source, document_type):
 
     return document
 
-# def transform_synonyms(synonyms):
-#     #return [{"type": "null", "synonym": synonym["synonym"]} for synonym in synonyms]
-#     if isinstance(synonyms, list) and all(isinstance(s, str) for s in synonyms):
-#             # Transform each synonyms to an object of 'type' and 'synonym'
-#         new_synonyms = [{"type": "null", "synonym": s} for s in synonyms]
-#         synonyms = new_synonyms
-
 def transform_synonyms_germplasm(document):
     """
     Transform a germplasm document to ensure compatibility with both BrAPI v1 and v2.
@@ -377,48 +370,48 @@ def _handle_DbId_URI(document, document_type, documents_dbid_fields_plus_field_t
     if document_type != "observationVariable":
         document[document_type + 'DbId'] = get_generated_uri_from_dict(source, document_type, document, True)
     # create a stack for the current document
-    stackDocument = [document]
+    stackDocumentFields = [document]
     
     if document_type in documents_dbid_fields_plus_field_type:
-        while stackDocument:
+        while stackDocumentFields:
             # Retrieve the top item of the stack
-            currentItem = stackDocument.pop()
+            currentDocumentfield = stackDocumentFields.pop()
 
-            if isinstance(currentItem, dict):
-                for key, value in list(currentItem.items()):
-                    if key in documents_dbid_fields_plus_field_type[document_type]:
-                        field_info = documents_dbid_fields_plus_field_type[document_type][key]
+            if isinstance(currentDocumentfield, dict):
+                for fieldKey, fieldValue in list(currentDocumentfield.items()):
+                    if fieldKey in documents_dbid_fields_plus_field_type[document_type]:
+                        field_info = documents_dbid_fields_plus_field_type[document_type][fieldKey]
                         
-                        if isinstance(value, list):
-                            if key.endswith("DbIds"):
+                        if isinstance(fieldValue, list):
+                            if fieldKey.endswith("DbIds"):
                                 # URIs
-                                uris = [get_generated_uri_from_str(source, field_info, v, False) for v in value if isinstance(v, str)]
+                                uris = [get_generated_uri_from_str(source, field_info, v, False) for v in fieldValue if isinstance(v, str)]
                                 # DbIds
-                                db_ids = [get_generated_uri_from_str(source, field_info, v, True) for v in value if isinstance(v, str)]
-                                # Create a new item in the document by adding a key where 'DbIds' is replaced with 'URIs' and assigning to it the value 'uris'.
-                                # For example, for a germplasm document, add a new key 'germplasmURIs' with the value 'uris', while keeping 'germplasmDbIds' intact.
-                                currentItem[key.replace("DbIds", "URIs")] = uris
-                                currentItem[key] = db_ids
-                        elif key.endswith("DbId") and isinstance(value, str):
+                                db_ids = [get_generated_uri_from_str(source, field_info, v, True) for v in fieldValue if isinstance(v, str)]
+                                # Create a new item in the document by adding a fieldKey where 'DbIds' is replaced with 'URIs' and assigning to it the fieldValue 'uris'.
+                                # For example, for a germplasm document, add a new fieldKey 'germplasmURIs' with the fieldValue 'uris', while keeping 'germplasmDbIds' intact.
+                                currentDocumentfield[fieldKey.replace("DbIds", "URIs")] = uris
+                                currentDocumentfield[fieldKey] = db_ids
+                        elif fieldKey.endswith("DbId") and isinstance(fieldValue, str):
                             # URI
-                            currentItem[key.replace("DbId", "URI")] = get_generated_uri_from_str(source, field_info, value, False)
+                            currentDocumentfield[fieldKey.replace("DbId", "URI")] = get_generated_uri_from_str(source, field_info, fieldValue, False)
                             # DbId
-                            currentItem[key] = get_generated_uri_from_str(source, field_info, value, True)
+                            currentDocumentfield[fieldKey] = get_generated_uri_from_str(source, field_info, fieldValue, True)
                     
                     # Continue traversing the document
-                    # If the value is a dictionary, add it to the stack for further processing
-                    if isinstance(value, dict):
-                        stackDocument.append(value)
-                    # If the value is a list
-                    elif isinstance(value, list):
-                        for element in value:
+                    # If the fieldValue is a dictionary, add it to the stack for further processing
+                    if isinstance(fieldValue, dict):
+                        stackDocumentFields.append(fieldValue)
+                    # If the fieldValue is a list
+                    elif isinstance(fieldValue, list):
+                        for element in fieldValue:
                             # Add to the stack all elements of the list that are either dictionaries or lists for further processing
                             if isinstance(element, (dict, list)):
-                                stackDocument.append(element)
-            # Add each item from currentItem to the stack if currentItem is a list
-            elif isinstance(currentItem, list):
-                for item in currentItem:
-                    stackDocument.append(item)
+                                stackDocumentFields.append(element)
+            # Add each item from currentDocumentfield to the stack if currentDocumentfield is a list
+            elif isinstance(currentDocumentfield, list):
+                for item in currentDocumentfield:
+                    stackDocumentFields.append(item)
 
     return document
 
