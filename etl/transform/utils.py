@@ -103,7 +103,7 @@ def detect_and_convert_json_files(source_json_dir, source):
     """
     Detect if files in a data source are JSONL. If not, convert them from JSON to JSONL format.
     """
-    if source['brapi:static-file-type'] == "jsonl":
+    if source.get('brapi:static-file-type') == "jsonl":
         print(f"'{source['schema:name']}' files are already in JSONL format. Skipping...")
     
     else:
