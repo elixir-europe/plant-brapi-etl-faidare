@@ -1,6 +1,9 @@
 import json
+import logging
+import time
 import unittest
 
+from etl.transform.datadiscovery_cards import transform_source_documents, documents_dbid_fields_plus_field_type
 from etl.transform.generate_datadiscovery import  generate_datadiscovery
 from tests.transform.test_transform_source_document import fixture_expected_data_dict as data_dict
 from tests.transform.utils import sort_dict_lists
@@ -558,6 +561,10 @@ fixture_source_study = {
         ],
     'trialURI': 'urn:VIB/trial/3',
     'trialURIs': ['urn:VIB/trial/3'],
+    'germplasmURIs':
+        ['urn:BRAPI_TEST/germplasm/Zea_VIB_RIL_8W_EP33_20___1184', 'urn:BRAPI_TEST/germplasm/Zea_VIB_RIL_8W_81RIL8way___177'],
+        'genusSpecies': 'Zea mays',
+        'germplasmNames': ['RIL_8W_81 RIL 8-way', 'RIL_8W_EP33_20'],
 }
 
 

@@ -44,7 +44,9 @@ fixture_source_data_dict = {
             'germplasmPUI': 'https://doi.org/1014.1543/345678ZERTYU',
             'studyDbIds':
                 ['study1'],
-            "accessionNumber": "345678ZERTYU"},
+            "accessionNumber": "345678ZERTYU",
+            "synonyms":['abc1','abc2']
+        },
         'urn:BRAPI_TEST/germplasm/Zea_VIB_RIL_8W_EP33_20___1184': {
             "countryOfOriginCode": "BE",
             "instituteCode": "VIB",
@@ -76,7 +78,8 @@ fixture_source_data_dict = {
             "studyDbIds": [
                 "VIB_study___48"
             ],
-            "documentationURL": "https://vib.be/RIL_8W_81_RIL_8-way_177"
+            "documentationURL": "https://vib.be/RIL_8W_81_RIL_8-way_177",
+            "synonyms":[{"type": 'null',"synonym": "abc3"}]
         },
         "urn:BRAPI_TEST/germplasm/SAMD00237861": {"germplasmDbId":"SAMD00237861","studyDbIds":["DRX230673"],"germplasmName":"JRC01_Gaisen Mochi - Gaisen Mochi","genus":"Oryza","species":"sativa","subtaxa":"var. Gaisen Mochi","germplasmPUI":"https://ddbj.nig.ac.jp/resource/biosample/SAMD00237861","documentationURL":"https://ddbj.nig.ac.jp/resource/biosample/SAMD00237861","node":"DDBJ","databaseName":"BioSample","holdingInstitute.instituteName":"Breeding Material Development Unit, Institute of Crop Science, National Agriculture and Food Research Organization"}
 
@@ -247,6 +250,8 @@ fixture_expected_data_dict = {
             '@id' : 'urn:BRAPI_TEST/germplasm/1',
             'schema:identifier':'1',
             '@type': 'germplasm',
+            'collector': None,
+            'distributors': [],
             'node' : 'BRAPI_TEST',
             'databaseName' :'brapi@BRAPI_TEST',
             'source' : 'BRAPI TEST source name'
@@ -254,11 +259,13 @@ fixture_expected_data_dict = {
         'urn:BRAPI_TEST/germplasm/abc': {
             'schema:includedInDataCatalog': 'https://test-server.brapi.org',
             '@type': 'germplasm',
+            'collector': None,
+            'distributors': [],
             'germplasmDbId': 'dXJuOkJSQVBJX1RFU1QvZ2VybXBsYXNtL2FiYw==',
             'studyDbIds':
-                ['dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvc3R1ZHkx'],
+                ['dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvMQ==','dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvc3R1ZHkx'],
             'studyURIs':
-                ['urn:BRAPI_TEST/study/study1'],
+                ['urn:BRAPI_TEST/study/1','urn:BRAPI_TEST/study/study1'],
             'germplasmURI' : 'urn:BRAPI_TEST/germplasm/abc',
             '@id' : 'urn:BRAPI_TEST/germplasm/abc',
             'schema:identifier':'abc',
@@ -271,6 +278,8 @@ fixture_expected_data_dict = {
         'urn:BRAPI_TEST/germplasm/1withPUI': {
             'schema:includedInDataCatalog': 'https://test-server.brapi.org',
             '@type': 'germplasm',
+            'collector': None,
+            'distributors': [],
             'germplasmDbId': 'dXJuOkJSQVBJX1RFU1QvZ2VybXBsYXNtLzEyMzQ=',
             'germplasmPUI': 'https://doi.org/1014.1543/345678ZERTYU',
             'studyDbIds':
@@ -286,11 +295,16 @@ fixture_expected_data_dict = {
             "schema:name": "345678ZERTYU",
             "defaultDisplayName": "345678ZERTYU",
             'databaseName' :'brapi@BRAPI_TEST',
-            'source' : 'BRAPI TEST source name'},
+            'source' : 'BRAPI TEST source name',
+            "synonyms":["abc1","abc2"],
+            "synonymsV2":[{"type": 'null',"synonym": "abc1"},{"type": 'null',"synonym": "abc2"}]
+        },
         'urn:BRAPI_TEST/germplasm/Zea_VIB_RIL_8W_EP33_20___1184': {
             'schema:includedInDataCatalog': 'https://test-server.brapi.org',
             'schema:identifier':'Zea_VIB_RIL_8W_EP33_20___1184',
             '@type': 'germplasm',
+            'collector': None,
+            'distributors': [],
             "countryOfOriginCode": "BE",
             "instituteCode": "VIB",
             "accessionNumber": "1184",
@@ -320,6 +334,8 @@ fixture_expected_data_dict = {
             'schema:includedInDataCatalog': 'https://test-server.brapi.org',
             'schema:identifier':'Zea_VIB_RIL_8W_81RIL8way___177',
             '@type': 'germplasm',
+            'collector': None,
+            'distributors': [],
             "countryOfOriginCode": "BE",
             "instituteCode": "VIB",
             "accessionNumber": "177",
@@ -339,12 +355,16 @@ fixture_expected_data_dict = {
             "studyURIs": [
                 "urn:BRAPI_TEST/study/VIB_study___48"
             ],
+            'url': 'https://vib.be/RIL_8W_81_RIL_8-way_177',
             "germplasmURI": "urn:BRAPI_TEST/germplasm/Zea_VIB_RIL_8W_81RIL8way___177",
             "@id": "urn:BRAPI_TEST/germplasm/Zea_VIB_RIL_8W_81RIL8way___177",
             'node' : 'BRAPI_TEST',
             'databaseName' :'brapi@BRAPI_TEST',
             "documentationURL": "https://vib.be/RIL_8W_81_RIL_8-way_177",
-            "schema:url": "https://vib.be/RIL_8W_81_RIL_8-way_177"
+            "schema:url": "https://vib.be/RIL_8W_81_RIL_8-way_177",
+            "synonyms":["abc3"],
+            "synonymsV2":[{"type": 'null',"synonym": "abc3"}]
+
     },
     'urn:BRAPI_TEST/germplasm/SAMD00237861': {
         "germplasmDbId": "dXJuOkJSQVBJX1RFU1QvZ2VybXBsYXNtL1NBTUQwMDIzNzg2MQ==",
@@ -355,6 +375,7 @@ fixture_expected_data_dict = {
         "genus": "Oryza",
         "species": "sativa",
         "subtaxa": "var. Gaisen Mochi",
+        'url': 'https://ddbj.nig.ac.jp/resource/biosample/SAMD00237861',
         "germplasmPUI": "https://ddbj.nig.ac.jp/resource/biosample/SAMD00237861",
         "documentationURL": "https://ddbj.nig.ac.jp/resource/biosample/SAMD00237861",
         "node": "DDBJ",
@@ -371,6 +392,8 @@ fixture_expected_data_dict = {
         "schema:name": "JRC01_Gaisen Mochi - Gaisen Mochi",
         "@id": "urn:BRAPI_TEST/germplasm/SAMD00237861",
         "@type": "germplasm",
+        'collector': None,
+        'distributors': [],
         "genusSpecies": "Oryza sativa",
         "defaultDisplayName": "JRC01_Gaisen Mochi - Gaisen Mochi"
     }
@@ -400,7 +423,7 @@ fixture_expected_data_dict = {
             'locationURI': 'urn:BRAPI_TEST/location/2',
             '@id': 'urn:BRAPI_TEST/location/2',
             'studyDbIds':
-                ['dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvMQ==','dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvc3R1ZHkx'],
+                ['dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvMQ==', 'dXJuOkJSQVBJX1RFU1Qvc3R1ZHkvc3R1ZHkx'],
             'studyURIs':
                 ['urn:BRAPI_TEST/study/1','urn:BRAPI_TEST/study/study1'],
             'source' : 'BRAPI TEST source name',
@@ -474,7 +497,7 @@ fixture_expected_data_dict = {
             'germplasmDbIds':
                 ['dXJuOkJSQVBJX1RFU1QvZ2VybXBsYXNtL2FiYw==', "dXJuOkJSQVBJX1RFU1QvZ2VybXBsYXNtLzE="],
             'germplasmURIs':
-                ['urn:BRAPI_TEST/germplasm/abc','urn:BRAPI_TEST/germplasm/1'],
+                ['urn:BRAPI_TEST/germplasm/abc','urn:BRAPI_TEST/germplasm/1234','urn:BRAPI_TEST/germplasm/1'],
             'programDbIds':
                 ['dXJuOkJSQVBJX1RFU1QvcHJvZ3JhbS9vaG0='],
             'programURIs':
@@ -532,6 +555,7 @@ fixture_expected_data_dict = {
             "trialURIs": [
                 "urn:BRAPI_TEST/trial/3"
             ],
+            'url': 'https://pippa.psb.ugent.be/pippa_experiments/consult_experiment_basic_info/48',
             "contacts": [
                 {
                     "contactDbId": "dXJuOkJSQVBJX1RFU1QvY29udGFjdC81ZjRlNTUwOQ==",
@@ -553,6 +577,7 @@ fixture_expected_data_dict = {
             "documentationURL": "https://ddbj.nig.ac.jp/resource/sra-experiment/DRX230673",
             "schema:identifier": "DRX230673",
             "studyURI": "urn:BRAPI_TEST/study/DRX230673",
+            'url': 'https://ddbj.nig.ac.jp/resource/sra-experiment/DRX230673',
             "node": "BRAPI_TEST",
             "databaseName": "brapi@BRAPI_TEST",
             "source": "BRAPI TEST source name",
