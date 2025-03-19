@@ -1,0 +1,10 @@
+{
+  "@context": {
+    "schema": "http://schema.org/",
+    "brapi": "https://brapi.org/rdf/"
+  },
+  "@type": "schema:DataCatalog",
+  "@id": "https://ddbj.nig.ac.jp",
+  "schema:identifier": "DDBJ",
+  "schema:name": "DDBJ"
+}
