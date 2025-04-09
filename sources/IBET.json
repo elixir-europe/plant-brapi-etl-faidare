@@ -7,6 +7,5 @@
   "@id": "https://biodata.pt",
   "schema:identifier": "IBET",
   "schema:name": "IBET BioData",
-  "brapi:endpointUrl": "https://brapi.biodata.pt/brapi/v1/",
-  "brapi:static-file-type":"jsonl"
+  "brapi:endpointUrl": "https://brapi.biodata.pt/brapi/v1/"
 }

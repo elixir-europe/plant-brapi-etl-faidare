@@ -17,6 +17,5 @@
     "GET studies",
     "GET studies/{studyDbId}",
     "GET studies/{studyDbId}/germplasm"
-  ],
-  "brapi:static-file-type":"jsonl"
+  ]
 }

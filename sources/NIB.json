@@ -7,6 +7,5 @@
   "@id": "http://www.nib.si",
   "schema:identifier": "NIB",
   "schema:name": "NIB",
-  "brapi:endpointUrl": "http://pisa.nib.si/brapi/v1/",
-  "brapi:static-file-type":"jsonl"
+  "brapi:endpointUrl": "http://pisa.nib.si/brapi/v1/"
 }

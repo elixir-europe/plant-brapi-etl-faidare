@@ -7,6 +7,5 @@
   "@id": "https://urgi.versailles.inrae.fr/gnpis",
   "schema:identifier": "INRAE-URGI",
   "schema:name": "URGI GnpIS",
-  "brapi:endpointUrl": "https://urgi.versailles.inrae.fr/faidare/brapi/v1/",
-  "brapi:static-file-type":"jsonl"
+  "brapi:endpointUrl": "https://urgi.versailles.inrae.fr/faidare/brapi/v1/"
 }

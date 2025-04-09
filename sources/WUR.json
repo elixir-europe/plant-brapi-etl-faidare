@@ -7,6 +7,5 @@
   "@id": "https://www.eu-sol.wur.nl/",
   "schema:name": "WUR EU-SOL BreeDB",
   "schema:identifier": "WUR",
-  "brapi:endpointUrl": "https://www.eu-sol.wur.nl/webapi/tomato/brapi/v1/",
-  "brapi:static-file-type":"jsonl"
+  "brapi:endpointUrl": "https://www.eu-sol.wur.nl/webapi/tomato/brapi/v1/"
 }

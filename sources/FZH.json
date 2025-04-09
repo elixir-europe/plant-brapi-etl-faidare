@@ -9,5 +9,5 @@
   "schema:name": "FZH",
   "brapi:static-file-repository-url": "http://apps.fz-juelich.de/faidare/",
   "brapi:studyType": "Phenotyping",
-  "brapi:static-file-type":"jsonl"
+  "brapi:static-file-type":"json"
 }

@@ -7,6 +7,5 @@
   "@id": "https://terraref.org",
   "schema:name": "TERRA-REF",
   "schema:identifier": "TERRA-REF",
-  "brapi:endpointUrl": "https://terraref.org/brapi/v1/",
-  "brapi:static-file-type":"jsonl"
+  "brapi:endpointUrl": "https://terraref.org/brapi/v1/"
 }
