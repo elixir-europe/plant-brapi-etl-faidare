@@ -236,7 +236,7 @@ def simple_transformations(document, source, document_type):
     if document_type == "germplasm" and "synonyms" in document:
         document = transform_synonyms_germplasm(document)
     if document_type =="germplasm":
-        document = transform_institute_germplasm(document)
+        document = create_breeder(document)
 
     return document
 
@@ -257,28 +257,20 @@ def transform_synonyms_germplasm(document):
             document["synonyms"] = [item["synonym"] for item in document["synonyms"] if "synonym" in item]
     return document
 
-def transform_institute_germplasm(document):
-    """
-    Ensure compatibility between BrAPI v1 and v2 for the institute-related fields,
-    keeping both 'collector' and 'distributors'.
-    """
-    # Initialize 'collector' if missing
-    if "collector" not in document:
-        if "distributors" in document and isinstance(document["distributors"], list) and len(document["distributors"]) > 0:
-            # Use the first distributor as collector if available
-            document["collector"] = document["distributors"][0]
-        else:
-            # Default value
-            document["collector"] = None
+def create_breeder(document):
+    if "breeder" not in document:
+        if "breedingInstitutes" in document:
+            document["breeder"] = {}
+            document["breeder"]["institute"] = document["breedingInstitutes"]
 
-    # Initialize 'distributors' if missing
-    if "distributors" not in document:
-        if "collector" in document and isinstance(document["collector"], dict):
-            # Create a single-item list from collector
-            document["distributors"] = [document["collector"]]
-        else:
-            # Default value
-            document["distributors"] = []
+        if "catalogRegistrationYear" in document:
+            document["breeder"]["registrationYear"] = document["catalogRegistrationYear"]
+
+        if "catalogDeregistrationYear" in document:
+            document["breeder"]["deregistrationYear"] = document["catalogDeregistrationYear"]
+
+        if "breedingCreationYear" in document:
+            document["breeder"]["breedingCreationYear"] = document["breedingCreationYear"]
 
     return document
 
