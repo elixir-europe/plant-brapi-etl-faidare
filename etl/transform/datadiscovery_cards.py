@@ -259,6 +259,7 @@ def transform_synonyms_germplasm(document):
 
 def create_breeder(document):
     if "breeder" not in document:
+        document["breeder"] = {}
         if "breedingInstitutes" in document:
             document["breeder"] = {}
             document["breeder"]["institute"] = document["breedingInstitutes"]
