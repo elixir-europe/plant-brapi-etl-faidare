@@ -142,6 +142,16 @@ def get_document_configs_by_entity(document_configs):
         by_entity[entity].append(document_config)
     return by_entity
 
+def clean_nulls_in_lists(obj):
+    if isinstance(obj, dict):
+        return {k: clean_nulls_in_lists(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [clean_nulls_in_lists(i) for i in obj if i is not None]
+    else:
+        return obj
+
+
+
 #TODO : still very naive and memory inefficient. Uses more than 18Go of memory
 def _handle_observation_units(source, source_bulk_dir, config, document_type, input_json_filepath, logger, start_time):
     logger.info("Loading observationUnit from " + source['schema:identifier']  )
@@ -161,6 +171,8 @@ def _handle_observation_units(source, source_bulk_dir, config, document_type, in
                     transformed_obsUnit = _handle_DbId_URI(json_line_data, "observationUnit",
                                                                          documents_dbid_fields_plus_field_type, source)
                     transformed_obsUnit = simple_transformations(transformed_obsUnit, source, "observationUnit")
+
+                    transformed_obsUnit = clean_nulls_in_lists(transformed_obsUnit)
 
                     # Apply base64 encoding transformations
                     #transformed_obsUnit = _handle_observation_unit_dbid_fields(transformed_obsUnit, source, fields_to_encode_obs_unit)
