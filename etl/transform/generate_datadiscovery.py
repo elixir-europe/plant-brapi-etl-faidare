@@ -2,8 +2,20 @@ import base64
 from etl.transform.utils import get_generated_uri_from_str
 
 
+def make_hashable(obj):
+    """
+    Handles TypeError: unhashable type: 'dict', caused by 'synonyms' changing from list[str] to list[dict].
+    Converts lists/dicts into hashable structures as a workaround for this data model change.
+    """
+    if isinstance(obj, (tuple, list)):
+        return tuple(make_hashable(e) for e in obj)
+    elif isinstance(obj, dict):
+        return tuple((k, make_hashable(v)) for k, v in obj.items())
+    return obj
+
 #TODO: naive and dull/barely readable implementation. See if a mapping dict could do the trick
 def _generate_datadiscovery_germplasm(document: dict, data_dict: dict, source: dict):
+
     datadiscovery_document = document.copy()
     datadiscovery_document["node"] = document.get("node")
     datadiscovery_document["databaseName"] = document.get("databaseName")
@@ -96,6 +108,9 @@ def _generate_datadiscovery_germplasm(document: dict, data_dict: dict, source: d
     if document.get("synonyms"):
         for s in document.get("synonyms"):
             acc_set.add(s)
+    if document.get("synonymsV2"):
+        for s in document.get("synonymsV2"):
+            acc_set.add(make_hashable(s))
         #acc_set.add(document.get("synonyms"))
     datadiscovery_document["germplasm"]["accession"] = list(acc_set)
 
@@ -219,6 +234,12 @@ def _add_linked_germplasm_info(datadiscovery_document, document, data_dict):
                 if isinstance(germplasm.get("synonyms"), list):
                     for s in germplasm.get("synonyms"):
                         accession_set.add(s)
+                else:
+                    accession_set.add(germplasm.get("synonyms"))
+            if germplasm.get("synonymsV2"):
+                if isinstance(germplasm.get("synonymsV2"), list):
+                    for s in germplasm.get("synonyms"):
+                        accession_set.add(make_hashable(s))
                 else:
                     accession_set.add(germplasm.get("synonyms"))
             accession_set.discard(None)

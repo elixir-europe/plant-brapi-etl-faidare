@@ -1,8 +1,11 @@
 import json
+import logging
+import time
 import unittest
 
+from etl.transform.datadiscovery_cards import transform_source_documents, documents_dbid_fields_plus_field_type
 from etl.transform.generate_datadiscovery import  generate_datadiscovery
-from test_transform_source_document import fixture_expected_data_dict as data_dict
+from tests.transform.test_transform_source_document import fixture_expected_data_dict as data_dict
 from tests.transform.utils import sort_dict_lists
 
 source = {
@@ -10,9 +13,19 @@ source = {
     'schema:identifier': 'source'
 }
 
-# load test source from json file sources/TEST.json
-with open('../../sources/TEST.json') as json_file:
-    test_source = json.load(json_file)
+# load test source from json file sources/TEST.json. copied here to solve path problems
+test_source = {
+    "@context": {
+        "schema": "http://schema.org/",
+        "brapi": "https://brapi.org/"
+    },
+    "@type": "schema:DataCatalog",
+    "@id": "https://test-server.brapi.org",
+    "schema:identifier": "BRAPI_TEST",
+    "schema:name": "BRAPI TEST source name",
+    "brapi:endpointUrl": "https://test-server.brapi.org/brapi/v1/"
+}
+
 
 fixture_source_germplasm = {
     "node": "BRAPI_TEST_node",
@@ -548,6 +561,10 @@ fixture_source_study = {
         ],
     'trialURI': 'urn:VIB/trial/3',
     'trialURIs': ['urn:VIB/trial/3'],
+    'germplasmURIs':
+        ['urn:BRAPI_TEST/germplasm/Zea_VIB_RIL_8W_EP33_20___1184', 'urn:BRAPI_TEST/germplasm/Zea_VIB_RIL_8W_81RIL8way___177'],
+        'genusSpecies': 'Zea mays',
+        'germplasmNames': ['RIL_8W_81 RIL 8-way', 'RIL_8W_EP33_20'],
 }
 
 
@@ -676,12 +693,14 @@ class TestGenerateDataDiscovery(unittest.TestCase):
         self.assertEqual(data_dict_expected, sort_dict_lists(data_dict_actual))
 
 
+#TODO: bug during refactoring, need to fix
     def test_generate_study_datadiscovery(self):
         data_dict_actual = generate_datadiscovery(fixture_source_study,"study", data_dict, test_source)
 
         data_dict_expected = fixture_expected_study
         self.assertEqual(sort_dict_lists(data_dict_expected), sort_dict_lists(data_dict_actual))
 
+    #TODO: bug during refactoring, need to fix
     def test_generate_study_datadiscovery_should_get_germplasmDbId_from_germplasms_list(self):
         data_dict_actual = generate_datadiscovery(fixture_source_study,"study", data_dict, test_source)
 

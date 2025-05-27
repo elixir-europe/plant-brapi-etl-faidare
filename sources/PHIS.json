@@ -1,0 +1,10 @@
+{
+  "@context": {
+    "schema": "http://schema.org/",
+    "brapi": "https://brapi.org/rdf/"
+  },
+  "@type": "schema:DataCatalog",
+  "@id": "http://www.phis.inrae.fr/",
+  "schema:identifier": "PHIS",
+  "schema:name": "PHIS"
+}

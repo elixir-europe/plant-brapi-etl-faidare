@@ -40,8 +40,11 @@ def get_generated_uri_from_dict(source: dict, entity: str, data: dict, do_base64
 
 
 def get_generated_uri_from_str(source: dict, entity: str, data: str, do_base64 = False) -> str:
+    
+    if not data:
+        return ""
+    
     source_id = urllib.parse.quote(source['schema:identifier'])
-
     # Generate URI from source id, entity name and data id
     encoded_entity = urllib.parse.quote(entity)
     encoded_id = urllib.parse.quote(str(data))
@@ -83,6 +86,8 @@ def remove_html_tags(text):
     """
     Remove html tags from a string
     """
+    if text is None:
+        return None
     extra_char = {
         '&apos;': '',
         '&quot;': '',
@@ -93,6 +98,17 @@ def remove_html_tags(text):
     clean = re.compile('<.*?>')
     return re.sub(clean, '', text)
 
+
+def detect_and_convert_json_files(source_json_dir, source):
+    """
+    Detect if files in a data source are JSONL. If not, convert them from JSON to JSONL format.
+    """
+    if source.get('brapi:static-file-type'):
+        print(f"Converting '{source['schema:name']}' files from JSON to JSONL format...")
+        json_to_jsonl(source_json_dir)
+    
+    else:
+        print(f"'{source['schema:name']}' files are already in JSONL format. Skipping...")
 
 def json_to_jsonl(source_json_dir):
     """

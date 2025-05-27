@@ -3,11 +3,10 @@ import traceback
 import json
 import time
 
-from etl.common.templating import parse_template
 from etl.common.utils import *
 from etl.transform.generate_datadiscovery import generate_datadiscovery
 from etl.transform.transform_cards import do_card_transform
-from etl.transform.utils import get_generated_uri_from_dict, get_generated_uri_from_str, save_json, json_to_jsonl, \
+from etl.transform.utils import get_generated_uri_from_dict, get_generated_uri_from_str, detect_and_convert_json_files, save_json, json_to_jsonl, \
     rm_tags
 
 NB_THREADS = max(int(multiprocessing.cpu_count() * 0.75), 2)
@@ -69,29 +68,70 @@ document_types = [
     }
 ]
 
-
 documents_dbid_fields_plus_field_type = {
-    "study": [
-        ["germplasmDbIds", "germplasm"], ["locationDbId", "location"], ["locationDbIds", "location"],
-        ["trialDbIds", "trial"], ["trialDbId", "trial"], ["programDbId", "program"], ["programDbIds", "program"]
-    ],
-    "germplasm": [["locationDbIds", "location"], ["studyDbIds", "study"], ["trialDbIds", "trial"]],
-    "germplasmPedigree":[
-            ["germplasmDbId", "germplasm"], ["parent1DbId", "germplasm"], ["parent2DbId", "germplasm"],
-            ["siblings","germplasmDbId","object-list","germplasm"]#TODO: same with siblings
-    ],
-    "germplasmProgeny": [["germplasmDbId", "germplasm"], ["parent1DbId", "germplasm"], ["parent2DbId", "germplasm"]],
-    "germplasmAttribute": [["germplasmDbId", "germplasm"]],
-    "observationVariable": [["studyDbIds", "study"]],
-    "location": [["studyDbIds", "study"], ["trialDbIds", "trial"]],
-    "trial": [
-        ["germplasmDbIds", "germplasm"], ["locationDbIds", "location"], ["studyDbIds", "study"],
-        ["contactDbIds", "contact"]
-    ],
-    "program": [["trialDbIds", "trial"], ["studyDbIds", "study"]],
-    "contact": [["trialDbIds", "trial"]]
-}
+    "study": {
+        "germplasmDbIds": "germplasm",
+        "locationDbId": "location",
+        "locationDbIds": "location",
+        "trialDbIds": "trial",
+        "trialDbId": "trial",
+        "programDbId": "program",
+        "programDbIds": "program",
+        "contactDbId": "contact"
+    },
+    "germplasm": {
+        "locationDbIds": "location",
+        "studyDbIds": "study", 
+        "trialDbIds": "trial",
+    },
+    "germplasmPedigree": {
+        "germplasmDbId":"germplasm",
+        "parent1DbId":"germplasm",
+        "parent2DbId":"germplasm",
+        # "siblings":{"type": "object-list", "key": "germplasmDbId", "entity": "germplasm"}
+    },
+    "germplasmProgeny": {
+        "germplasmDbId": "germplasm", 
+        "parent1DbId": "germplasm", 
+        "parent2DbId": "germplasm"
+    },
+    "germplasmAttribute": {
+        "germplasmDbId": "germplasm" 
+        # What about attributeDbId ?
+    },
+    "observationVariable": {
+        "studyDbIds": "study"
+    },
+    "location": {
+        "studyDbIds": "study", 
+        "trialDbIds": "trial"
+    },
+    "trial": {
+        "germplasmDbIds": "germplasm", 
+        "locationDbIds": "location",
+        "locationDbId": "location",
+        "studyDbIds": "study",
+        "studyDbId": "study",
+        "contactDbIds": "contact",
+        "contactDbId": "contact",
 
+    },
+    "program": {
+        "trialDbIds": "trial",
+        "studyDbIds": "study"
+    },
+    "contact": {
+        "trialDbIds": "trial"
+    },
+    "observationUnit":{
+        "studyDbId": "study",
+        "studyLocationDbId": "location",
+        "germplasmDbId": "germplasm",
+        "programDbId": "program"
+    }
+
+
+}
 
 def get_document_configs_by_entity(document_configs):
     by_entity = dict()
@@ -101,6 +141,16 @@ def get_document_configs_by_entity(document_configs):
             by_entity[entity] = list()
         by_entity[entity].append(document_config)
     return by_entity
+
+def clean_nulls_in_lists(obj):
+    if isinstance(obj, dict):
+        return {k: clean_nulls_in_lists(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [clean_nulls_in_lists(i) for i in obj if i is not None]
+    else:
+        return obj
+
+
 
 #TODO : still very naive and memory inefficient. Uses more than 18Go of memory
 def _handle_observation_units(source, source_bulk_dir, config, document_type, input_json_filepath, logger, start_time):
@@ -121,6 +171,12 @@ def _handle_observation_units(source, source_bulk_dir, config, document_type, in
                     transformed_obsUnit = _handle_DbId_URI(json_line_data, "observationUnit",
                                                                          documents_dbid_fields_plus_field_type, source)
                     transformed_obsUnit = simple_transformations(transformed_obsUnit, source, "observationUnit")
+
+                    transformed_obsUnit = clean_nulls_in_lists(transformed_obsUnit)
+
+                    # Apply base64 encoding transformations
+                    #transformed_obsUnit = _handle_observation_unit_dbid_fields(transformed_obsUnit, source, fields_to_encode_obs_unit)
+
                     obsUnitDict["observationUnit"][str(i)] = transformed_obsUnit
                     i += 1
 
@@ -183,14 +239,54 @@ def simple_transformations(document, source, document_type):
         document["source"] = source['schema:name']
     document["schema:includedInDataCatalog"] = source["@id"]
     if "documentationURL" in document:
-        # document["url"] = document["documentationURL"]
+        document["url"] = document["documentationURL"]
         document["schema:url"] = document["documentationURL"]
     if document_type + "Name" in document:
         document["schema:name"] = document[document_type + "Name"]
     document["@id"] = document[document_type + "URI"]
     document["@type"] = document_type
+    if document_type == "germplasm" and "synonyms" in document:
+        document = transform_synonyms_germplasm(document)
+    if document_type =="germplasm":
+        document = create_breeder(document)
 
     return document
+
+def transform_synonyms_germplasm(document):
+    """
+    Transform a germplasm document to ensure compatibility with both BrAPI v1 and v2.
+    Adds a synonymsV2 field if it doesn't already exist.
+    """
+    if "synonyms" in document:
+        if isinstance(document["synonyms"], list) and all(isinstance(item,str) for item in document["synonyms"]):
+            # BrAPI v1 case: Convert string to nested format
+            document["synonymsV2"] = [
+                {"type": "null", "synonym": synonym.strip()} for synonym in document["synonyms"]
+            ]
+        elif isinstance(document["synonyms"], list) and all(isinstance(item,dict) for item in document["synonyms"]):
+            # BrAPI v2 case: Convert string to nested format
+            document["synonymsV2"] = document["synonyms"]
+            document["synonyms"] = [item["synonym"] for item in document["synonyms"] if "synonym" in item]
+    return document
+
+def create_breeder(document):
+    if "breeder" not in document:
+        document["breeder"] = {}
+        if "breedingInstitutes" in document:
+            document["breeder"] = {}
+            document["breeder"]["institute"] = document["breedingInstitutes"]
+
+        if "catalogRegistrationYear" in document:
+            document["breeder"]["registrationYear"] = document["catalogRegistrationYear"]
+
+        if "catalogDeregistrationYear" in document:
+            document["breeder"]["deregistrationYear"] = document["catalogDeregistrationYear"]
+
+        if "breedingCreationYear" in document:
+            document["breeder"]["breedingCreationYear"] = document["breedingCreationYear"]
+
+    return document
+
 
 
 def _handle_study_germplasm_linking(document, source, data_dict):
@@ -243,8 +339,10 @@ def transform_source_documents(data_dict: dict, source: dict, documents_dbid_fie
             document = simple_transformations(document, source, document_type)  # TODO : in mapping ?
 
             # TODO : realy only on study ?
-            document = _handle_study_contacts(document, source)
-            document = _handle_trial_studies(document, source)
+            #document = _handle_study_contacts(document, source)
+            #document = _handle_trial_studies(document, source)
+
+            ##document=_handle_observation_unit_study(document, source)
 
             ########## mapping and transforming fields ##########
             document = do_card_transform(document)
@@ -273,42 +371,52 @@ def _handle_DbId_URI(document, document_type, documents_dbid_fields_plus_field_t
     document["schema:identifier"] = document[document_type + 'DbId']
     document[document_type + 'URI'] = get_generated_uri_from_dict(source, document_type,
                                                                   document)  # this should be URN field rather than URI
+    # transform other DbIds , skip observationVariable
     if document_type != "observationVariable":
         document[document_type + 'DbId'] = get_generated_uri_from_dict(source, document_type, document, True)
-    # transform other DbIds , skip observationVariable
+    # create a stack for the current document
+    stackDocumentFields = [document]
+    
     if document_type in documents_dbid_fields_plus_field_type:
-        for current_field in documents_dbid_fields_plus_field_type[document_type]:
-            if current_field[0] in document:
-                #TODO:  increase lisibility with :
-                #if current_field[0] in document as ident:
-                #if document[ident] and len(current_field)==4 and current_field[2] == "object-list":
-                #TODO: why len(current_field)==4 ? Should remove this if it is safe
-                if document[current_field[0]] and len(current_field)==4 and current_field[2] == "object-list":
-                    # DbIds
-                    field_ids_transformed = map(
-                        lambda x: dict(x, **{
-                            current_field[1]:get_generated_uri_from_str(source, current_field[3], x[current_field[1]], True)
-                        }),
-                        document[current_field[0]])
-                    document[current_field[0]] = list(field_ids_transformed)
-                elif document[current_field[0]] and current_field[0].endswith("DbIds"):#TODO: could be treated as object-list
-                    # URIs
-                    field_uris_transformed = map(
-                        lambda x: get_generated_uri_from_str(source, current_field[1], x, False), document[current_field[0]])
-                    document[current_field[0].replace("DbIds", "URIs")] = list(set(field_uris_transformed))
-                    # DbIds
-                    field_ids_transformed = map(
-                        lambda x: get_generated_uri_from_str(source, current_field[1], x, True), document[current_field[0]])
-                    document[current_field[0]] = list(field_ids_transformed)
+        while stackDocumentFields:
+            # Retrieve the top item of the stack
+            currentDocumentfield = stackDocumentFields.pop()
 
-                elif document[current_field[0]] and current_field[0].endswith("DbId"):
-                    # URI
-                    document[current_field[0].replace("DbId", "URI")] = get_generated_uri_from_str(source, current_field[1],
-                                                                                            document[current_field[0]],
-                                                                                            False)
-                    # DbId
-                    document[current_field[0]] = get_generated_uri_from_str(source, current_field[1], document[current_field[0]],
-                                                                     True)
+            if isinstance(currentDocumentfield, dict):
+                for fieldKey, fieldValue in list(currentDocumentfield.items()):
+                    if fieldKey in documents_dbid_fields_plus_field_type[document_type]:
+                        field_info = documents_dbid_fields_plus_field_type[document_type][fieldKey]
+                        
+                        if isinstance(fieldValue, list):
+                            if fieldKey.endswith("DbIds"):
+                                # URIs
+                                uris = [get_generated_uri_from_str(source, field_info, v, False) for v in fieldValue if isinstance(v, str)]
+                                # DbIds
+                                db_ids = [get_generated_uri_from_str(source, field_info, v, True) for v in fieldValue if isinstance(v, str)]
+                                # Create a new item in the document by adding a fieldKey where 'DbIds' is replaced with 'URIs' and assigning to it the fieldValue 'uris'.
+                                # For example, for a germplasm document, add a new fieldKey 'germplasmURIs' with the fieldValue 'uris', while keeping 'germplasmDbIds' intact.
+                                currentDocumentfield[fieldKey.replace("DbIds", "URIs")] = uris
+                                currentDocumentfield[fieldKey] = db_ids
+                        elif fieldKey.endswith("DbId") and isinstance(fieldValue, str):
+                            # URI
+                            currentDocumentfield[fieldKey.replace("DbId", "URI")] = get_generated_uri_from_str(source, field_info, fieldValue, False)
+                            # DbId
+                            currentDocumentfield[fieldKey] = get_generated_uri_from_str(source, field_info, fieldValue, True)
+                    
+                    # Continue traversing the document
+                    # If the fieldValue is a dictionary, add it to the stack for further processing
+                    if isinstance(fieldValue, dict):
+                        stackDocumentFields.append(fieldValue)
+                    # If the fieldValue is a list
+                    elif isinstance(fieldValue, list):
+                        for element in fieldValue:
+                            # Add to the stack all elements of the list that are either dictionaries or lists for further processing
+                            if isinstance(element, (dict, list)):
+                                stackDocumentFields.append(element)
+            # Add each item from currentDocumentfield to the stack if currentDocumentfield is a list
+            elif isinstance(currentDocumentfield, list):
+                for item in currentDocumentfield:
+                    stackDocumentFields.append(item)
 
     return document
 
@@ -316,29 +424,6 @@ def _handle_DbId_URI(document, document_type, documents_dbid_fields_plus_field_t
 def align_formats(current_source_data_dict):
     pass
 
-
-def _handle_study_contacts(document, source):
-    if "contacts" in document:
-        for contact in document["contacts"]:
-            if "contactDbId" in contact:
-                # contact["schema:identifier"] = contact["contactDbId"]
-                contact["contactURI"] = get_generated_uri_from_str(source, "contact", contact["contactDbId"], False)
-                contact["contactDbId"] = get_generated_uri_from_str(source, "contact", contact["contactDbId"], True)
-        return document
-    else:
-        return document
-
-
-def _handle_trial_studies(document, source):
-    if "studies" in document:
-        for study in document["studies"]:
-            if "studyDbId" in study:
-                # contact["schema:identifier"] = contact["contactDbId"]
-                study["studyURI"] = get_generated_uri_from_str(source, "study", study["studyDbId"], False)
-                study["studyDbId"] = get_generated_uri_from_str(source, "study", study["studyDbId"], True)
-        return document
-    else:
-        return document
 
 def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config, start_time):
     """
@@ -366,11 +451,9 @@ def transform_source(source, doc_types, source_json_dir, source_bulk_dir, config
                 'Please make sure you have run the BrAPI extraction before trying to launch the transformation process.'
             )
 
-        # TODO: this should be generalised : detect sources that are not jsonl and turn it into the right format
-        if source_name == 'EVA':
-            logger.info("Flattening EVA data...")
-            json_to_jsonl(source_json_dir)
-            rm_tags(source_json_dir)
+        # Detect and convert json source files to jsonl: EVA and PHIS
+        detect_and_convert_json_files(source_json_dir,source)
+        rm_tags(source_json_dir)
 
         logger.info("Loading data, generating URIs and global identifiers for " + source_name
                     + " duration : " + _get_duration_time_str(time.perf_counter() - start_time) )
@@ -432,10 +515,6 @@ def main(config):
 
     bulk_dir = get_folder_path([config['data-dir'], 'json-bulk'], create=True)
     sources = config['sources']
-    transform_config = config['transform-elasticsearch']
-
-    # Parse document templates
-    transform_config['documents'] = list(map(parse_template, transform_config['documents']))
 
     threads = list()
     for (source_name, source) in sources.items():

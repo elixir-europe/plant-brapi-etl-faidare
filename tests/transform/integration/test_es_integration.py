@@ -36,6 +36,7 @@ class transform_integration_test(unittest.TestCase):
         self.assertTrue(os.path.exists(self._actual_data_dir+"/VIB/location-1.json.gz"))
         self.assertTrue(os.path.exists(self._actual_data_dir+"/VIB/observationVariable-1.json.gz"))
         self.assertTrue(os.path.exists(self._actual_data_dir+"/VIB/trial-1.json.gz"))
+        self.assertTrue(os.path.exists(self._actual_data_dir+"/VIB/observationUnit-1.json.gz"))
 
 
     def test_all_germplasms_generated(self):
@@ -168,6 +169,25 @@ class transform_integration_test(unittest.TestCase):
 
         self.assertEqual( sorted_expected_vib, sorted_actual_vib)
         #self.assertEqual(DeepDiff(actual_vib, expected_vib), {})
+    
+    def test_all_observationUnits_generated(self):
+
+        self.assertTrue(os.path.exists(self._actual_data_dir+"/VIB/observationUnit-1.json.gz"))
+        with gzip.open(self._actual_data_dir+"VIB/observationUnit-1.json.gz") as actual_vib_f:
+            actual_vib = json.load(actual_vib_f)
+
+        with gzip.open(self._expected_data_dir+"INRAE-URGI_observation_unit_expected.json.gz") as expected_vib_f:
+            expected_vib = json.load(expected_vib_f)
+
+        for actual_observationUnit in actual_vib:
+            expected_observationUnit = next((observationUnit for observationUnit in expected_vib if
+                                             observationUnit["observationUnitDbId"] == actual_observationUnit[
+                                                 "observationUnitDbId"]), None)
+            self.assertIsNotNone(expected_observationUnit)
+            self.assertEqual(sort_dict_lists(expected_observationUnit), sort_dict_lists(actual_observationUnit))
+
+        self.assertEqual(sort_dict_lists(actual_vib), sort_dict_lists(expected_vib))
+
 
 
     def test_germplasNames_generated(self):

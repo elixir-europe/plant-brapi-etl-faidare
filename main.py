@@ -4,8 +4,6 @@ import signal
 import sys
 
 import etl.extract.brapi
-import etl.load.elasticsearch
-import etl.load.virtuoso
 import etl.transform.datadiscovery_cards
 import etl.transform.jsonld
 import etl.transform.rdf
@@ -42,20 +40,10 @@ def main():
         etl.extract.brapi.main(config)
 
     if 'transform_elasticsearch' in options or 'etl_es' in options:
-        #etl.transform.elasticsearch.main(config)
         etl.transform.datadiscovery_cards.main(config)
 
     if 'transform_jsonld' in options or 'transform_rdf' in options or 'etl_virtuoso' in options:
         etl.transform.jsonld.main(config)
-
-    if 'transform_rdf' in options or 'etl_virtuoso' in options:
-        etl.transform.rdf.main(config)
-
-    if 'load_elasticsearch' in options or 'etl_es' in options:
-        etl.load.elasticsearch.main(config)
-
-    if 'load_virtuoso' in options or 'etl_virtuoso' in options:
-        etl.load.virtuoso.main(config)
 
 
 # If used directly in command line
