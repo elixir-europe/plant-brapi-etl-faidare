@@ -1,3 +1,5 @@
+# This project is now maintained at https://forge.inrae.fr/urgi/is/plant-brapi-etl-faidare. 
+
 Elixir plant Breeding API JSON ETL
 ==================================
 
