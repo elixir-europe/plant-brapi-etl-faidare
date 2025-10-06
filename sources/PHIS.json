@@ -6,5 +6,7 @@
   "@type": "schema:DataCatalog",
   "@id": "http://www.phis.inrae.fr/",
   "schema:identifier": "PHIS",
-  "schema:name": "PHIS"
+  "schema:name": "PHIS",
+  "brapi:static-file-type": "json",
+  "studyOnly": true
 }
