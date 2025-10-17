@@ -438,7 +438,7 @@ def _generate_datadiscovery_study(document: dict, data_dict: dict, source: dict)
 def generate_datadiscovery(document: dict, document_type:str, data_dict: dict, source: dict) -> dict:
     """Generate Data Discovery json document."""
     #if "germplasmDbId" in document:
-    if document_type == "germplasm":
+    if document_type == "germplasm" and not source.get('studyOnly'):
         _remove_none_from_dict(document)
         germplasm_document =  _generate_datadiscovery_germplasm(document, data_dict, source)
         return germplasm_document
