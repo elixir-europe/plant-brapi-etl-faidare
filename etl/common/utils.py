@@ -130,7 +130,7 @@ def replace_template(template, value_dict):
         for sub_template in template:
             value.append(replace_template(sub_template, value_dict))
     elif isinstance(template, str):
-        matches = re.findall('({(\w+)})', template, re.DOTALL)
+        matches = re.findall(r'({(\w+)})', template, re.DOTALL)
         for var_sub, var_name in matches:
             value = value.replace(var_sub, value_dict[var_name])
     return value

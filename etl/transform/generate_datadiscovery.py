@@ -13,6 +13,61 @@ def make_hashable(obj):
         return tuple((k, make_hashable(v)) for k, v in obj.items())
     return obj
 
+def extract_geographic_locations_from_germplasm(document):
+    geo_locations = []
+
+    def site_to_geo(site, default_type):
+        return {
+            "siteId": site.get("siteId"),
+            "siteName": site.get("siteName"),
+            "siteType": site.get("siteType", default_type),
+            "lat": site.get("latitude"),
+            "lon": site.get("longitude")
+        }
+
+    for field, default_type in [
+        ("originSite", "Origin site"),
+        ("collectingSite", "Collecting site"),
+        ("evaluationSites", "Evaluation site")
+    ]:
+        val = document.get(field)
+        if isinstance(val, list):
+            for site in val:
+                loc = site_to_geo(site, default_type)
+                if loc:
+                    geo_locations.append(loc)
+        elif isinstance(val, dict):
+            loc = site_to_geo(val, default_type)
+            if loc:
+                geo_locations.append(loc)
+
+    return geo_locations if geo_locations else None
+
+
+def extract_geographic_locations_from_study(document, data_dict):
+    geo_locations = []
+
+    location_ids = document.get("locationDbIds") or [document.get("locationDbId")]
+    for location_id in location_ids:
+        if not location_id:
+            continue
+        try:
+            decoded_id = base64.b64decode(location_id).decode("utf-8")
+            location = data_dict.get("location", {}).get(decoded_id)
+            if location and location.get("latitude") and location.get("longitude"):
+                geo_locations.append({
+                    "siteId": int(decoded_id.split("/")[-1]) if "/" in decoded_id else decoded_id,
+                    "siteName": location.get("locationName"),
+                    "siteType": "Evaluation site",
+                    "lat": location.get("latitude"),
+                    "lon": location.get("longitude")
+                })
+        except Exception as e:
+            continue
+
+    return geo_locations if geo_locations else None
+
+
 #TODO: naive and dull/barely readable implementation. See if a mapping dict could do the trick
 def _generate_datadiscovery_germplasm(document: dict, data_dict: dict, source: dict):
 
@@ -133,6 +188,12 @@ def _generate_datadiscovery_germplasm(document: dict, data_dict: dict, source: d
         datadiscovery_document["taxonGroup"] = document.get("genus")
     if document.get("accessionHolder"):
         datadiscovery_document["accessionHolder"] = document.get("accessionHolder")
+    geographic_locations = extract_geographic_locations_from_germplasm(document)
+    if geographic_locations:
+        datadiscovery_document["geographicLocations"] = geographic_locations
+    for redundant_field in ["originSite", "collectingSite", "evaluationSites"]:
+        datadiscovery_document.pop(redundant_field, None)
+
     #### END germplasm bloc with cropName, germplasmList, accession
 
     return datadiscovery_document
@@ -431,6 +492,9 @@ def _generate_datadiscovery_study(document: dict, data_dict: dict, source: dict)
     datadiscovery_document["schema:identifier"] = document["studyDbId"]
     datadiscovery_document["description"] = _get_study_description(document, data_dict)
     datadiscovery_document = _add_linked_traits_info(datadiscovery_document, document, data_dict, source)
+    geographic_locations = extract_geographic_locations_from_study(document, data_dict)
+    if geographic_locations:
+        datadiscovery_document["geographicLocations"] = geographic_locations
 
     return datadiscovery_document
 

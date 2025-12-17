@@ -47,6 +47,10 @@ document_types = [
         "source-entity": "observationUnit"
     },
     {
+        "document-type": "observation",
+        "source-entity": "observation"
+    },
+    {
         "document-type": "program",
         "source-entity": "program"
     },
@@ -127,7 +131,16 @@ documents_dbid_fields_plus_field_type = {
         "studyDbId": "study",
         "studyLocationDbId": "location",
         "germplasmDbId": "germplasm",
-        "programDbId": "program"
+        "programDbId": "program",
+        "trialDbId":"trial"
+    },
+    "observation":{
+        "observationUnitDbId": "observationUnit",
+        "observationVariableDbId": "observationVariable",
+        "studyDbId": "study",
+        "germplasmDbId": "germplasm",
+        "trialDbId": "trial",
+        "studyLocationDbId": "location"
     }
 
 

@@ -27,7 +27,7 @@ def dict_merge(into, merge_dct):
 
 def list_entity_files(json_dir):
     for file_name in os.listdir(json_dir):
-        matches = re.search('^([a-zA-Z]+).*\.json$', file_name)
+        matches = re.search(r'^([a-zA-Z]+).*\.json$', file_name)
         if not matches:
             continue
         entity_name = matches.groups()[0]

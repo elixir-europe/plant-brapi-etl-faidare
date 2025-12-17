@@ -100,7 +100,7 @@ def transform_folder(institution_add_jsonld, json_dir, jsonld_dir):
     # List of options
     options = list()
     for file_name in os.listdir(json_dir):
-        matches = re.search('(\D+)(\d+).json', file_name)
+        matches = re.search(r'(\D+)(\d+).json', file_name)
         if matches:
             (entity_name, index) = matches.groups()
 
