@@ -28,7 +28,7 @@ def transform_folder(jsonld_dir, rdf_dir):
 
     options = list()
     for file_name in os.listdir(jsonld_dir):
-        matches = re.search('(\D+)(\d+).jsonld', file_name)
+        matches = re.search(r'(\D+)(\d+).jsonld', file_name)
         if matches:
             (entity_name, index) = matches.groups()
 
