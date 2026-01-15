@@ -498,6 +498,38 @@ def _generate_datadiscovery_study(document: dict, data_dict: dict, source: dict)
 
     return datadiscovery_document
 
+def _get_trial_description(document, data_dict):
+    trial_date_string = ""
+    if document.get("startDate") and document.get("endDate"):
+        trial_date_string = f' conducted from {document["startDate"]} to {document["endDate"]}'
+    elif document.get("startDate"):
+        trial_date_string = f' starting from {document["startDate"]}'
+    program_string = " This phenotyping dataset is part of the " + document["programName"] + " program." if document.get("programName") else ""
+    trialDescription = (
+        f'{document["trialName"]} is a {document["trialType"] if "trialType" in document else document.get("entryType")}'
+        f'{trial_date_string}.'
+        f'{program_string}'
+    )
+    return trialDescription
+
+def _generate_datadiscovery_trial(document: dict, data_dict: dict, source: dict):
+    datadiscovery_document = document.copy()
+    datadiscovery_document["node"] = document.get("node")
+    datadiscovery_document["databaseName"] = document.get("databaseName")
+    if "documentationURL" in document:
+        datadiscovery_document["url"] = document["documentationURL"]
+    datadiscovery_document["entryType"] = " Phenotyping Dataset"
+    datadiscovery_document["@type"] = "trial"
+    datadiscovery_document["@id"] = document.get("trialPUI") if document.get("trialPUI") else document["trialURI"]
+    datadiscovery_document["identifier"] = document["trialDbId"]
+    datadiscovery_document["name"] = document.get("trialName")
+    datadiscovery_document["schema:includedInDataCatalog"] = source.get("@id")
+    datadiscovery_document["schema:identifier"] = document["trialDbId"]
+    datadiscovery_document["description"] = _get_trial_description(document, data_dict)
+    datadiscovery_document["geographicLocations"] = None
+
+    return datadiscovery_document
+
 
 def generate_datadiscovery(document: dict, document_type:str, data_dict: dict, source: dict) -> dict:
     """Generate Data Discovery json document."""
@@ -512,6 +544,12 @@ def generate_datadiscovery(document: dict, document_type:str, data_dict: dict, s
         study_document = _generate_datadiscovery_study(document, data_dict, source)
         _remove_none_from_dict(study_document)
         return study_document
+
+    #if "trialDbId" in document:
+    if document_type == "trial":
+        trial_document = _generate_datadiscovery_trial(document, data_dict, source)
+        _remove_none_from_dict(trial_document)
+        return trial_document
 
     return dict()
 
