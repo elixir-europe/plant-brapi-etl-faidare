@@ -110,8 +110,7 @@ def detect_and_convert_json_files(source_json_dir, source):
         else:
             print(f"'{source['schema:name']}' files are already in JSONL format. Skipping...")
     else:
-        print(f"Missing brapi:static-file-type:json|jsonl in '{source['schema:name']}'. Please add that information in the ./sources/'{source['schema:name']} file ")
-        exit (0)
+        pass
 
 def json_to_jsonl(source_json_dir):
     """
