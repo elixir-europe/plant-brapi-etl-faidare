@@ -136,7 +136,6 @@ documents_dbid_fields_plus_field_type = {
     },
     "observation":{
         "observationUnitDbId": "observationUnit",
-        "observationVariableDbId": "observationVariable",
         "studyDbId": "study",
         "germplasmDbId": "germplasm",
         "trialDbId": "trial",
