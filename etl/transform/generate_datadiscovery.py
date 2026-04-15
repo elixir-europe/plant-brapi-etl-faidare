@@ -217,6 +217,15 @@ def _get_germplasm_description(document, datadiscovery_document):
             f' {description_string}'
             f' managed by {document["holdingInstitute"]["instituteName"]}'
         )
+    if document.get("synonyms"):
+        synonyms = ", ".join(document["synonyms"])
+        description_string = f'{description_string}. Accession synonyms are: {synonyms}'
+    if document.get("pedigree"):
+        pedigree = ", ".join(document["pedigree"])
+        description_string = f'{description_string}. Pedigree is: {pedigree}'
+    if document.get("familyCode"):
+        familyCode = ", ".join(document["familyCode"])
+        description_string = f'{description_string}. familyCode is: {familyCode}'
     if document.get("comment"):
         description_string = f'{description_string}. {document["comment"]}'
     else:
