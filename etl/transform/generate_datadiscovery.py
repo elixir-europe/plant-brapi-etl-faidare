@@ -139,7 +139,7 @@ def _generate_datadiscovery_germplasm(document: dict, data_dict: dict, source: d
         #g_list.add(document.get("panel").get("name"))
     if  document.get("collection"):# and document.get("collection").get("name"):
         for c in document.get("collection"):
-            g_list.add(c.get("name"))
+            g_list.add(c.get("collectionName"))
         #g_list.add(document.get("collection").get("name"))
     if  document.get("population"):# and document.get("population").get("name"):
         for p in document.get("population"):
@@ -221,11 +221,11 @@ def _get_germplasm_description(document, datadiscovery_document):
         synonyms = ", ".join(document["synonyms"])
         description_string = f'{description_string}. Accession synonyms are: {synonyms}'
     if document.get("pedigree"):
-        pedigree = ", ".join(document["pedigree"])
-        description_string = f'{description_string}. Pedigree is: {pedigree}'
-    if document.get("familyCode"):
-        familyCode = ", ".join(document["familyCode"])
-        description_string = f'{description_string}. familyCode is: {familyCode}'
+        description_string = f'{description_string}. Pedigree is: {document["pedigree"]}'
+    genealogy = document.get("genealogy")
+    if genealogy and genealogy.get("familyCode"):
+        family_code = genealogy["familyCode"]
+        description_string = f'{description_string}. Family code is: {family_code}'
     if document.get("comment"):
         description_string = f'{description_string}. {document["comment"]}'
     else:
@@ -345,9 +345,9 @@ def _add_linked_germplasm_info(datadiscovery_document, document, data_dict):
             if germplasm.get("collection"):
                 if isinstance(germplasm.get("collection"), list):
                     for collection in germplasm.get("collection"):
-                        germplasm_list_set.add(collection.get("name"))
+                        germplasm_list_set.add(collection.get("collectionName"))
                 else:
-                    germplasm_list_set.add(germplasm.get("collection").get("name"))
+                    germplasm_list_set.add(germplasm.get("collection").get("collectionName"))
             if germplasm.get("population"):
                 if isinstance(germplasm.get("population"), list):
                     for population in germplasm.get("population"):

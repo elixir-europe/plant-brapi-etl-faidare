@@ -64,7 +64,7 @@
       "germplasmList": {
         "{flatten_distinct}": [
           "{.panel.name}",
-          "{.collection.name}",
+          "{.collection.collectionName}",
           "{.population.name}",
           "{.holdingGenbank.instituteName}"
         ]
@@ -97,7 +97,7 @@
     "germplasmList": {
       "{flatten_distinct}": [
         "{.panel.name}",
-        "{.collection.name}",
+        "{.collection.collectionName}",
         "{.population.name}",
         "{.holdingGenbank.instituteName}"
       ],

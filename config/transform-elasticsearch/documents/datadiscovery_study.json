@@ -166,7 +166,7 @@
       "germplasmList": {
         "{flatten_distinct}": [
           "{.germplasmURIs => .panel.name}",
-          "{.germplasmURIs => .collection.name}",
+          "{.germplasmURIs => .collection.collectionName}",
           "{.germplasmURIs => .population.name}",
           "{.germplasmURIs => .holdingGenbank.instituteName}"
         ]
@@ -222,7 +222,7 @@
     "germplasmList": {
       "{flatten_distinct}": [
         "{.germplasmURIs => .panel.name}",
-        "{.germplasmURIs => .collection.name}",
+        "{.germplasmURIs => .collection.collectionName}",
         "{.germplasmURIs => .population.name}",
         "{.germplasmURIs => .holdingGenbank.instituteName}"
       ]
