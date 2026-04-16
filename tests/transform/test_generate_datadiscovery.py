@@ -252,15 +252,15 @@ fixture_source_germplasm_URGI_beet = {
     "collection":
         [
             {
-                "id": 146,
-                "name": "Collection AKER",
-                "type": "Base collection",
+                "collectionDbId": 146,
+                "collectionName": "Collection AKER",
+                "collectionType": "Base collection",
                 "germplasmCount": 10630
             },
             {
-                "id": 146,
-                "name": "AKER collection",
-                "type": "Base collection",
+                "collectionDbId": 146,
+                "collectionName": "AKER collection",
+                "collectionType": "Base collection",
                 "germplasmCount": 10630
             }
         ],
@@ -310,15 +310,15 @@ fixture_expected_germplasm_URGI_beet = {
     "collection":
         [
             {
-                "id": 146,
-                "name": "Collection AKER",
-                "type": "Base collection",
+                "collectionDbId": 146,
+                "collectionName": "Collection AKER",
+                "collectionType": "Base collection",
                 "germplasmCount": 10630
             },
             {
-                "id": 146,
-                "name": "AKER collection",
-                "type": "Base collection",
+                "collectionDbId": 146,
+                "collectionName": "AKER collection",
+                "collectionType": "Base collection",
                 "germplasmCount": 10630
             }
         ],
@@ -433,7 +433,7 @@ fixture_source_germplasm_URGI_populus = {
     "panel":
         [],
     "collection":
-        [{"id":189,"name":"BLACK_POPLAR_COLLECTION","type":"Active collection","germplasmCount":2757}],
+        [{"collectionDbId":189,"collectionName":"BLACK_POPLAR_COLLECTION","collectionType":"Active collection","germplasmCount":2757}],
     "population":
         [{"id":104,"name":"ULI","type":"Population","germplasmRef":{"pui":"https://doi.org/10.15454/YDBLI2","name":"ULI"},"germplasmCount":35}],
     "studyDbIds":
@@ -477,7 +477,7 @@ fixture_expected_germplasm_URGI_populus = {
     "collector":
         {"institute":{"instituteName":"BioForA - UMR Biologie intégrée pour la valorisation de la diversité des arbres et de la Forêt","acronym":"INRAE_ONF_UMR_BioForA","organisation":"INRAE-ONF","instituteType":"Public-sector research organization","webSite":"https://www6.val-de-loire.inrae.fr/biofora","address":"2163 avenue de la Pomme de Pin - CS 40001 ARDON, 45075 ORLÉANS CEDEX 2, France"},"accessionCreationDate":20091200,"materialType":"Cutting"},
     "collection":
-        [{"id":189,"name":"BLACK_POPLAR_COLLECTION","type":"Active collection","germplasmCount":2757}],
+        [{"collectionDbId":189,"collectionName":"BLACK_POPLAR_COLLECTION","collectionType":"Active collection","germplasmCount":2757}],
     "population":
         [{"id":104,"name":"ULI","type":"Population","germplasmRef":{"pui":"https://doi.org/10.15454/YDBLI2","name":"ULI"},"germplasmCount":35}],
     "germplasmURI": "https://doi.org/10.15454/EEVCZQ",
