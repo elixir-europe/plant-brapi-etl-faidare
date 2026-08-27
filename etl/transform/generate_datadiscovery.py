@@ -527,7 +527,7 @@ def _generate_datadiscovery_trial(document: dict, data_dict: dict, source: dict)
     datadiscovery_document["databaseName"] = document.get("databaseName")
     if "documentationURL" in document:
         datadiscovery_document["url"] = document["documentationURL"]
-    datadiscovery_document["entryType"] = " Phenotyping Dataset"
+    datadiscovery_document["entryType"] = "Phenotyping Dataset"
     datadiscovery_document["@type"] = "trial"
     datadiscovery_document["@id"] = document.get("trialPUI") if document.get("trialPUI") else document["trialURI"]
     datadiscovery_document["identifier"] = document["trialDbId"]
